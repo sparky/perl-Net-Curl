@@ -327,13 +327,12 @@ than it's C counterpart. Please see the section about WWW::Curl::Multi above.
 
 =item curl_multi_fdset
 
-This method returns three arrayrefs: the read, write and exception fds libcurl knows about.
-In the case of no file descriptors in the given set, an empty array is returned.
+This method returns three binary vectors: the read, write and exception fds
+libcurl knows about. Those vectors can be used directly in select() and vec().
 
-=item $curl_multi->fdset_vec
+Vectors can be quickly converted to arrays using following code:
 
-Retrieves the same information as curl_multi_fdset, but returns three scalars (vectors)
-which can be used directly in select() and vec().
+	my @fds = grep vec( $fds, $_, 1 ), 0..8 * length( $fds ) - 1;
 
 =item curl_multi_setopt
 
