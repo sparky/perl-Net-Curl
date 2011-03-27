@@ -280,7 +280,7 @@ to Perl code.
 Used internally. Not exposed through the public API, as this call has no relevance
 to Perl code.
 
-=item curl_getdate
+=item getdate
 
 Works. Not exported, use it as: my $time = WWW::Curl::getdate( $string );
 
