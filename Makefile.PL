@@ -12,7 +12,9 @@ my %curl = (
 );
 
 
-my $minimum_libcurl_ver = 0x070a08;
+# - this version added curl_multi_socket_action() and many symbols
+my $minimum_libcurl_verstr = "7.15.4";
+my $minimum_libcurl_ver = 0x070f04;
 my $constant_names;
 
 if ( $curl{libs} and $curl{libs} ) {
@@ -122,7 +124,7 @@ sub get_curl_config
 	if ( $cc{vernum} and hex( $cc{vernum} ) < $minimum_libcurl_ver) {
 		print
 			"Your currently installed libcurl version - $cc{version} - is too old.\n".
-			"This module doesn't seek compatibility with versions older than 7.10.8\n".
+			"This module doesn't seek compatibility with versions older than $minimum_libcurl_verstr\n".
 			"Proceed manually if you know what you're doing.\n";
 		exit 1;
 	}
@@ -280,3 +282,5 @@ sub write_defenums
 	}
 	close $o;
 }
+
+# vim: ts=4:sw=4
