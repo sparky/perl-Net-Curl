@@ -1,3 +1,4 @@
+/* vim: ts=4:sw=4: */
 
 /*
  * Perl interface for libcurl. Check out the file README for more info.
@@ -1670,5 +1671,3 @@ curl_share_strerror(self, errornum)
 	}
 	OUTPUT:
 		RETVAL
-
-/* vim: set ts=4 sw=4 : */
