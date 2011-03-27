@@ -17,7 +17,7 @@ my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 
 sub action_wait {
 	my $curlm = shift;
-	my ($rin, $win, $ein) = $curlm->fdset_vec;
+	my ($rin, $win, $ein) = $curlm->fdset;
 	my $timeout = $curlm->timeout;
 	if ( $timeout > 0 ) {
 		my ($nfound,$timeleft) = select($rin, $win, $ein, $timeout);
@@ -38,23 +38,23 @@ sub action_wait {
 
     my $curlm = new WWW::Curl::Multi;
     my @fds = $curlm->fdset;
-    ok( @fds == 3 && ref($fds[0]) && ref($fds[1]) && ref($fds[2]), "fdset returns 3 references");
-    ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are empty");
+    ok( @fds == 3 && ref($fds[0]) eq '' && ref($fds[1]) eq '' && ref($fds[2]) eq '', "fdset returns 3 vectors");
+    ok( ! $fds[0] && ! $fds[1] && !$fds[2], "The three returned vectors are empty");
     $curlm->perform;
     @fds = $curlm->fdset;
-    ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are still empty after perform");
+    ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform");
     $curlm->add_handle($curl);
     @fds = $curlm->fdset;
-    ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are still empty after perform and add_handle");
+    ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform and add_handle");
     $curlm->perform;
     @fds = $curlm->fdset;
-    ok( @{$fds[0]} == 1 || @{$fds[1]} == 1, "The read or write fdset contains one fd");
+    ok( unpack( "%b*", $fds[0].$fds[1] ) == 1, "The read or write fdset contains one fd");
     $curlm->add_handle($curl2);
     @fds = $curlm->fdset;
-    ok(@{$fds[0]} == 1 || @{$fds[1]} == 1, "The read or write fdset still only contains one fd");
+    ok( unpack( "%b*", $fds[0].$fds[1] ) == 1, "The read or write fdset still only contains one fd");
     $curlm->perform;
     @fds = $curlm->fdset;
-    ok( @{$fds[0]} + @{$fds[1]} == 2, "The read or write fdset contains two fds");
+    ok( unpack( "%b*", $fds[0].$fds[1] ) == 2, "The read or write fdset contains two fds");
     my $active = 2;
     while ($active != 0) {
 	my $ret = $curlm->perform;
@@ -67,7 +67,7 @@ sub action_wait {
         action_wait($curlm);
     }
     @fds = $curlm->fdset;
-    ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are empty after we have no active transfers");
+    ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned arrayrefs are empty after we have no active transfers");
     ok($header, "Header reply exists from first handle");
     ok($body, "Body reply exists from second handle");
     ok($header2, "Header reply exists from second handle");
