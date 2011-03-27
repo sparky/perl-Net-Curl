@@ -84,15 +84,10 @@ typedef enum {
 } perl_curl_multi_callback_code;
 
 typedef struct {
-#ifdef __CURL_MULTI_H
 	struct CURLM *curlm;
 
 	SV *callback[CALLBACKM_LAST];
 	SV *callback_ctx[CALLBACKM_LAST];
-
-#else
-	struct void *curlm;
-#endif
 } perl_curl_multi;
 
 typedef enum {
@@ -149,10 +144,8 @@ slist_index(int option)
 	switch(option) {
 		case CURLOPT_HTTPHEADER:
 			return SLIST_HTTPHEADER;
-#ifdef CURLOPT_HTTP200ALIASES
 		case CURLOPT_HTTP200ALIASES:
 			return SLIST_HTTP200ALIASES;
-#endif
 #ifdef CURLOPT_MAIL_RCPT
 		case CURLOPT_MAIL_RCPT:
 			return SLIST_MAIL_RCPT;
@@ -161,10 +154,8 @@ slist_index(int option)
 			return SLIST_QUOTE;
 		case CURLOPT_POSTQUOTE:
 			return SLIST_POSTQUOTE;
-#ifdef CURLOPT_PREQUOTE
 		case CURLOPT_PREQUOTE:
 			return SLIST_PREQUOTE;
-#endif
 #ifdef CURLOPT_RESOLVE
 		case CURLOPT_RESOLVE:
 			return SLIST_RESOLVE;
@@ -248,7 +239,6 @@ static void perl_curl_easy_register_callback(perl_curl_easy *self, SV **callback
 	}
 }
 
-#ifdef __CURL_MULTI_H
 static void perl_curl_multi_register_callback(perl_curl_multi *self, SV **callback, SV *function)
 {
 	dTHX;
@@ -266,9 +256,7 @@ static void perl_curl_multi_register_callback(perl_curl_multi *self, SV **callba
 		}
 	}
 }
-#endif
 
-#if (LIBCURL_VERSION_NUM>=0x070a03)
 static void perl_curl_share_register_callback(perl_curl_share *self, SV **callback, SV *function)
 {
 	dTHX;
@@ -286,7 +274,6 @@ static void perl_curl_share_register_callback(perl_curl_share *self, SV **callba
 		}
 	}
 }
-#endif
 
 
 /* start of form functions - very un-finished! */
@@ -312,18 +299,13 @@ static perl_curl_multi * perl_curl_multi_new()
 {
 	perl_curl_multi *self;
 	Newz(1, self, 1, perl_curl_multi);
-#ifdef __CURL_MULTI_H
 	self->curlm=curl_multi_init();
-#else
-	croak("curl version too old to support curl_multi_init()");
-#endif
 	return self;
 }
 
 /* delete the multi */
 static void perl_curl_multi_delete(perl_curl_multi *self)
 {
-#ifdef __CURL_MULTI_H
 	dTHX;
 	perl_curl_multi_callback_code i;
 
@@ -335,8 +317,6 @@ static void perl_curl_multi_delete(perl_curl_multi *self)
 	}
 
 	Safefree(self);
-#endif
-
 }
 
 /* make a new share */
@@ -630,7 +610,6 @@ static int progress_callback_func(void *clientp, double dltotal, double dlnow,
 }
 
 
-#if (LIBCURL_VERSION_NUM>=0x070a03)
 static void lock_callback_func(CURL *easy, curl_lock_data data, curl_lock_access locktype, void *userp )
 {
 	dTHX;
@@ -695,7 +674,6 @@ static void unlock_callback_func(CURL *easy, curl_lock_data data, void *userp )
 	LEAVE;
 	return;
 }
-#endif
 
 static int socket_callback_func(CURL *easy, curl_socket_t s, int what, void *userp, void *socketp )
 {
@@ -1024,17 +1002,13 @@ curl_easy_setopt(self, option, value, push=0)
 
 			/* slist cases */
 			case CURLOPT_HTTPHEADER:
-#ifdef CURLOPT_HTTP200ALIASES
 			case CURLOPT_HTTP200ALIASES:
-#endif
 #ifdef CURLOPT_MAIL_RCPT
 			case CURLOPT_MAIL_RCPT:
 #endif
 			case CURLOPT_QUOTE:
 			case CURLOPT_POSTQUOTE:
-#ifdef CURLOPT_PREQUOTE
 			case CURLOPT_PREQUOTE:
-#endif
 #ifdef CURLOPT_RESOLVE
 			case CURLOPT_RESOLVE:
 #endif
@@ -1095,7 +1069,6 @@ curl_easy_setopt(self, option, value, push=0)
 				break;
 
 			/* Curl share support from Anton Fedorov */
-#if (LIBCURL_VERSION_NUM>=0x070a03)
 			case CURLOPT_SHARE:
 				if (sv_derived_from(value, "WWW::Curl::Share")) {
 					WWW__Curl__Share wrapper;
@@ -1105,7 +1078,6 @@ curl_easy_setopt(self, option, value, push=0)
 				} else
 					croak("value is not of type WWW::Curl::Share");
 				break;
-#endif
 			/* default cases */
 			default:
 				if (option < CURLOPTTYPE_OBJECTPOINT) { /* A long (integer) value */
@@ -1125,7 +1097,6 @@ curl_easy_setopt(self, option, value, push=0)
 					if (self->strings_index < string_index) self->strings_index = string_index;
 					RETVAL = curl_easy_setopt(self->curl, option, SvOK(value) ? pv : NULL);
 				}
-#ifdef CURLOPTTYPE_OFF_T
 				else if (option < CURLOPTTYPE_OFF_T) { /* A function - notreached? */
 					croak("Unknown curl option of type function");
 				}
@@ -1138,9 +1109,7 @@ curl_easy_setopt(self, option, value, push=0)
 					} else {
 						RETVAL = 0;
 					}
-				}
-#endif
-				;
+				};
 				break;
 		};
 	OUTPUT:
@@ -1201,7 +1170,6 @@ curl_easy_getinfo(self, option, ... )
 				RETVAL = newSVnv(vdouble);
 				break;
 			}
-#ifdef CURLINFO_SLIST
 			case CURLINFO_SLIST:
 			{
 				struct curl_slist *vlist, *entry;
@@ -1218,7 +1186,6 @@ curl_easy_getinfo(self, option, ... )
 				RETVAL = newRV(sv_2mortal((SV *) items));
 				break;
 			}
-#endif /* CURLINFO_SLIST */
 			default: {
 				RETVAL = newSViv(CURLE_BAD_FUNCTION_ARGUMENT);
 				break;
@@ -1313,11 +1280,7 @@ curl_easy_strerror(self, errornum)
 	int errornum
 	CODE:
 	{
-#if (LIBCURL_VERSION_NUM>=0x070C00)
 		const char * vchar = curl_easy_strerror(errornum);
-#else
-		const char * vchar = "Unknown because curl_easy_strerror function not available}";
-#endif
 		RETVAL = newSVpv(vchar,0);
 	}
 	OUTPUT:
@@ -1400,18 +1363,14 @@ curl_multi_add_handle(curlm, curl)
 	WWW::Curl::Multi curlm
 	WWW::Curl::Easy curl
 	CODE:
-#ifdef __CURL_MULTI_H
 		curl_multi_add_handle(curlm->curlm, curl->curl);
-#endif
 
 void
 curl_multi_remove_handle(curlm, curl)
 	WWW::Curl::Multi curlm
 	WWW::Curl::Easy curl
 	CODE:
-#ifdef __CURL_MULTI_H
 		curl_multi_remove_handle(curlm->curlm, curl->curl);
-#endif
 
 void
 curl_multi_info_read(self)
@@ -1499,8 +1458,6 @@ curl_multi_setopt(self, option, value)
 	int option
 	SV * value
 	CODE:
-		RETVAL=0;
-#ifdef __CURL_MULTI_H
 		RETVAL=CURLM_OK;
 		switch(option) {
 			case CURLMOPT_SOCKETFUNCTION:
@@ -1531,7 +1488,6 @@ curl_multi_setopt(self, option, value)
 				;
 				break;
 		};
-#endif
 	OUTPUT:
 		RETVAL
 
@@ -1542,11 +1498,9 @@ curl_multi_perform(self)
 	PREINIT:
 		int remaining;
 	CODE:
-#ifdef __CURL_MULTI_H
 		while(CURLM_CALL_MULTI_PERFORM ==
 			curl_multi_perform(self->curlm, &remaining));
 		RETVAL = remaining;
-#endif
 	OUTPUT:
 		RETVAL
 
@@ -1558,11 +1512,9 @@ curl_multi_socket_action(self, sockfd=CURL_SOCKET_BAD, ev_bitmask=0)
 	PREINIT:
 		int remaining;
 	CODE:
-#ifdef __CURL_MULTI_H
 		while(CURLM_CALL_MULTI_PERFORM ==
 			curl_multi_socket_action(self->curlm, (curl_socket_t) sockfd, ev_bitmask, &remaining));
 		RETVAL = remaining;
-#endif
 	OUTPUT:
 		RETVAL
 
@@ -1579,11 +1531,7 @@ curl_multi_strerror(self, errornum)
 	int errornum
 	CODE:
 	{
-#if (LIBCURL_VERSION_NUM>=0x070C00)
 		const char * vchar = curl_multi_strerror(errornum);
-#else
-		const char * vchar = "Unknown because curl_multi_strerror function not available}";
-#endif
 		RETVAL = newSVpv(vchar,0);
 	}
 	OUTPUT:
@@ -1625,7 +1573,6 @@ curl_share_setopt(self, option, value)
 	SV * value
 	CODE:
 		RETVAL=CURLE_OK;
-#if (LIBCURL_VERSION_NUM>=0x070a03)
 		switch(option) {
 			/* slist cases */
 			case CURLSHOPT_LOCKFUNC:
@@ -1650,9 +1597,6 @@ curl_share_setopt(self, option, value)
 				break;
 
 		};
-#else
-		croak("curl_share_setopt not supported in your libcurl version");
-#endif
 	OUTPUT:
 		RETVAL
 
@@ -1662,11 +1606,7 @@ curl_share_strerror(self, errornum)
 	int errornum
 	CODE:
 	{
-#if (LIBCURL_VERSION_NUM>=0x070C00)
 		const char * vchar = curl_share_strerror(errornum);
-#else
-		const char * vchar = "Unknown because curl_share_strerror function not available}";
-#endif
 		RETVAL = newSVpv(vchar,0);
 	}
 	OUTPUT:
