@@ -2,7 +2,11 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::Curl::Easy;
+use WWW::Curl qw(:constants);
+use WWW::Curl::Easy qw(:constants);
+use WWW::Curl::Form qw(:constants);
+use WWW::Curl::Multi qw(:constants);
+use WWW::Curl::Share qw(:constants);
 
 my $ver_num_raw = WWW::Curl::version();
 my ($ver_num) = $ver_num_raw =~ m!libcurl/(\d\.\d+\.\d+)!;
@@ -17,9 +21,6 @@ for my $row (<$fh>) {
 	my ($name, $intro, $dep, $remov) = split(/\s+/, $row);
 	push @consts, [$name, $intro, $dep, $remov];
 }
-
-# In case we can't use cpp to extract symbols, skipping the multi constant tests for now.
-my $skip_multi = 0;
 
 my @checklist;
 for my $row (@consts) {
@@ -47,12 +48,12 @@ for my $row (@consts) {
 		}
 	}
 	if ($check) {
-		next if ($skip_multi && $name =~ m/^CURLM/);
 		push @checklist, [$name, $depr];
 	}
 }
 plan tests => scalar(@checklist);
 for my $row (@checklist) {
-		my $value = WWW::Curl::Easy::constant($row->[0]);
-		ok(!$! && (defined($value) || $row->[1]), "$row->[0] is defined alright - $!");
+	my $value;
+	eval "\$value = $row->[0]();";
+	ok(!$@ && (defined($value) || $row->[1]), "$row->[0] is defined - $@");
 }
