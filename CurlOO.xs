@@ -1,4 +1,4 @@
-/* vim: ts=4:sw=4: */
+/* vim: ts=4:sw=4:fdm=marker: */
 
 /*
  * Perl interface for libcurl. Check out the file README for more info.
@@ -19,8 +19,6 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/multi.h>
-
-#define header_callback_func writeheader_callback_func
 
 /* Do a favor for older perl versions */
 #ifndef Newxz
@@ -516,7 +514,7 @@ write_callback_func( const void *ptr, size_t size, size_t nmemb, void *stream )
 
 /* header callback for calling a perl callback */
 static size_t
-writeheader_callback_func( const void *ptr, size_t size, size_t nmemb,
+header_callback_func( const void *ptr, size_t size, size_t nmemb,
 		void *stream )
 {
 	perl_curl_easy_t *self;
@@ -807,17 +805,17 @@ curl__global_cleanup()
 		curl_global_cleanup();
 
 time_t
-curl_getdate(timedate)
+curl_getdate( timedate )
 	char *timedate
 	CODE:
-		RETVAL=curl_getdate( timedate, NULL );
+		RETVAL = curl_getdate( timedate, NULL );
 	OUTPUT:
 		RETVAL
 
 char *
-curl_version(...)
+curl_version()
 	CODE:
-		RETVAL=curl_version();
+		RETVAL = curl_version();
 	OUTPUT:
 		RETVAL
 
@@ -828,6 +826,7 @@ curl_version_info()
 		const curl_version_info_data *vi;
 		HV *ret;
 	CODE:
+		/* {{{ */
 		vi = curl_version_info( CURLVERSION_NOW );
 		if ( vi == NULL )
 			croak( "curl_version_info() returned NULL\n" );
@@ -889,6 +888,7 @@ curl_version_info()
 #endif
 
 		RETVAL = newRV( (SV *)ret );
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -905,14 +905,13 @@ BOOT:
 PROTOTYPES: ENABLE
 
 void
-curl_easy_init(...)
-	ALIAS:
-		new = 1
+curl_easy_new(...)
 	PREINIT:
 		perl_curl_easy_t *self;
 		char *sclass = "WWW::CurlOO::Easy";
 
 	PPCODE:
+		/* {{{ */
 		if (items>0 && !SvROK(ST(0))) {
 			STRLEN dummy;
 			sclass = SvPV(ST(0),dummy);
@@ -938,6 +937,7 @@ curl_easy_init(...)
 		curl_easy_setopt(self->curl, CURLOPT_ERRORBUFFER, self->errbuf);
 
 		XSRETURN(1);
+		/* }}} */
 
 void
 curl_easy_duphandle(self)
@@ -948,6 +948,7 @@ curl_easy_duphandle(self)
 		perl_curl_easy_callback_code_t i;
 
 	PPCODE:
+		/* {{{ */
 		clone=perl_curl_easy_duphandle(self);
 		clone->y = self->y;
 		(*self->y)++;
@@ -993,6 +994,7 @@ curl_easy_duphandle(self)
 		}
 		clone->strings_index = self->strings_index;
 		XSRETURN(1);
+		/* }}} */
 
 
 int
@@ -1002,6 +1004,7 @@ curl_easy_setopt(self, option, value, push=0)
 	SV *value
 	int push
 	CODE:
+		/* {{{ */
 		RETVAL=CURLE_OK;
 		switch( option ) {
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
@@ -1135,6 +1138,7 @@ curl_easy_setopt(self, option, value, push=0)
 				};
 				break;
 		};
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1156,6 +1160,7 @@ int
 curl_easy_perform(self)
 	WWW::CurlOO::Easy self
 	CODE:
+		/* {{{ */
 		/* perform the actual curl fetch */
 		RETVAL = curl_easy_perform(self->curl);
 
@@ -1165,6 +1170,7 @@ curl_easy_perform(self)
 			SV *sv = perl_get_sv(self->errbufvarname, TRUE | GV_ADDMULTI);
 			sv_setpv(sv, self->errbuf);
 		}
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1174,6 +1180,7 @@ curl_easy_getinfo(self, option, ... )
 	WWW::CurlOO::Easy self
 	int option
 	CODE:
+		/* {{{ */
 		switch( option & CURLINFO_TYPEMASK ) {
 			case CURLINFO_STRING:
 			{
@@ -1219,6 +1226,7 @@ curl_easy_getinfo(self, option, ... )
 		}
 		if (items > 2)
 			sv_setsv(ST(2),RETVAL);
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1235,7 +1243,8 @@ curl_easy_send( self, buffer )
 	WWW::CurlOO::Easy self
 	SV *buffer
 	CODE:
-#if (LIBCURL_VERSION_NUM>=0x071202)
+		/* {{{ */
+#if LIBCURL_VERSION_NUM >= 0x071202
 		CURLcode ret;
 		STRLEN len;
 		const char *pv;
@@ -1254,6 +1263,7 @@ curl_easy_send( self, buffer )
 		croak( "curl_easy_send() not available in curl before 7.18.2\n" );
 		RETVAL = 0;
 #endif
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1263,7 +1273,8 @@ curl_easy_recv( self, buffer, length )
 	SV *buffer
 	size_t length
 	CODE:
-#if (LIBCURL_VERSION_NUM>=0x071202)
+		/* {{{ */
+#if LIBCURL_VERSION_NUM >= 0x071202
 		CURLcode ret;
 		size_t out_len;
 		char *tmpbuf;
@@ -1281,6 +1292,7 @@ curl_easy_recv( self, buffer, length )
 		croak( "curl_easy_recv() not available in curl before 7.18.2\n" );
 		RETVAL = 0;
 #endif
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1296,11 +1308,11 @@ SV *
 curl_easy_strerror(self, errornum)
 	WWW::CurlOO::Easy self
 	int errornum
+	PREINIT:
+		const char *errstr;
 	CODE:
-	{
-		const char * vchar = curl_easy_strerror(errornum);
-		RETVAL = newSVpv(vchar,0);
-	}
+		errstr = curl_easy_strerror( errornum );
+		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
 
@@ -1315,9 +1327,10 @@ curl_form_new(...)
 		perl_curl_form_t *self;
 		char *sclass = "WWW::CurlOO::Form";
 	PPCODE:
+		/* {{{ */
 		if (items>0 && !SvROK(ST(0))) {
-		STRLEN dummy;
-		sclass = SvPV(ST(0),dummy);
+			STRLEN dummy;
+			sclass = SvPV(ST(0),dummy);
 		}
 
 		self=perl_curl_form_new();
@@ -1327,6 +1340,7 @@ curl_form_new(...)
 		SvREADONLY_on(SvRV(ST(0)));
 
 		XSRETURN(1);
+		/* }}} */
 
 void
 curl_form_formadd(self,name,value)
@@ -1368,6 +1382,7 @@ curl_multi_new(...)
 		perl_curl_multi_t *self;
 		char *sclass = "WWW::CurlOO::Multi";
 	PPCODE:
+		/* {{{ */
 		if (items>0 && !SvROK(ST(0))) {
 			STRLEN dummy;
 			sclass = SvPV(ST(0),dummy);
@@ -1380,6 +1395,8 @@ curl_multi_new(...)
 		SvREADONLY_on(SvRV(ST(0)));
 
 		XSRETURN(1);
+		/* }}} */
+
 
 void
 curl_multi_add_handle(curlm, curl)
@@ -1405,6 +1422,7 @@ curl_multi_info_read(self)
 		int queue;
 		CURLMsg *msg;
 	PPCODE:
+		/* {{{ */
 		while ((msg = curl_multi_info_read(self->curlm, &queue))) {
 			if (msg->msg == CURLMSG_DONE) {
 					easy=msg->easy_handle;
@@ -1420,22 +1438,20 @@ curl_multi_info_read(self)
 		} else {
 			XSRETURN_EMPTY;
 		}
+		/* }}} */
 
 
 void
 curl_multi_fdset(self)
 	WWW::CurlOO::Multi self
 	PREINIT:
-		fd_set fdread;
-		fd_set fdwrite;
-		fd_set fdexcep;
-		int maxfd;
-		int i;
-		int vecsize;
+		fd_set fdread, fdwrite, fdexcep;
+		int maxfd, i, vecsize;
 		unsigned char readset[ sizeof( fd_set ) ] = { 0 };
 		unsigned char writeset[ sizeof( fd_set ) ] = { 0 };
 		unsigned char excepset[ sizeof( fd_set ) ] = { 0 };
 	PPCODE:
+		/* {{{ */
 		FD_ZERO(&fdread);
 		FD_ZERO(&fdwrite);
 		FD_ZERO(&fdexcep);
@@ -1459,6 +1475,7 @@ curl_multi_fdset(self)
 		XPUSHs(sv_2mortal(newSVpvn(readset, vecsize)));
 		XPUSHs(sv_2mortal(newSVpvn(writeset, vecsize)));
 		XPUSHs(sv_2mortal(newSVpvn(excepset, vecsize)));
+		/* }}} */
 
 
 long
@@ -1468,7 +1485,7 @@ curl_multi_timeout(self)
 		long timeout;
 		CURLMcode ret;
 	CODE:
-		if ( curl_multi_timeout(self->curlm, &timeout) != CURLM_OK )
+		if ( curl_multi_timeout( self->curlm, &timeout ) != CURLM_OK )
 			croak( "curl_multi_timeout() didn't return CURLM_OK" );
 
 		RETVAL = timeout;
@@ -1479,38 +1496,38 @@ int
 curl_multi_setopt(self, option, value)
 	WWW::CurlOO::Multi self
 	int option
-	SV * value
+	SV *value
 	CODE:
-		RETVAL=CURLM_OK;
+		/* {{{ */
+		RETVAL = CURLM_OK;
 		switch( option ) {
 			case CURLMOPT_SOCKETFUNCTION:
 			case CURLMOPT_SOCKETDATA:
-				curl_multi_setopt(self->curlm, CURLMOPT_SOCKETFUNCTION, SvOK(value) ? socket_callback_func : NULL);
-				curl_multi_setopt(self->curlm, CURLMOPT_SOCKETDATA, SvOK(value) ? self : NULL);
+				curl_multi_setopt( self->curlm, CURLMOPT_SOCKETFUNCTION, SvOK(value) ? socket_callback_func : NULL );
+				curl_multi_setopt( self->curlm, CURLMOPT_SOCKETDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
 					option == CURLMOPT_SOCKETDATA ? &(self->callback_ctx[CALLBACKM_SOCKET]) : &(self->callback[CALLBACKM_SOCKET]),
 					value);
 				break;
 			case CURLMOPT_TIMERFUNCTION:
 			case CURLMOPT_TIMERDATA:
-				curl_multi_setopt(self->curlm, CURLMOPT_TIMERFUNCTION, SvOK(value) ? timer_callback_func : NULL);
-				curl_multi_setopt(self->curlm, CURLMOPT_TIMERDATA, SvOK(value) ? self : NULL);
+				curl_multi_setopt( self->curlm, CURLMOPT_TIMERFUNCTION, SvOK(value) ? timer_callback_func : NULL );
+				curl_multi_setopt( self->curlm, CURLMOPT_TIMERDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
 					option == CURLMOPT_TIMERDATA ? &(self->callback_ctx[CALLBACKM_TIMER]) : &(self->callback[CALLBACKM_TIMER]),
-					value);
+					value );
 				break;
 
 			/* default cases */
 			default:
-				if (option < CURLOPTTYPE_OBJECTPOINT) { /* A long (integer) value */
-					RETVAL = curl_multi_setopt(self->curlm, option, (long)SvIV(value));
+				if ( option < CURLOPTTYPE_OBJECTPOINT ) { /* A long (integer) value */
+					RETVAL = curl_multi_setopt( self->curlm, option, (long)SvIV(value) );
+				} else {
+					croak( "Unknown curl multi option" );
 				}
-				else {
-					croak("Unknown curl multi option");
-				}
-				;
 				break;
 		};
+		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -1530,13 +1547,14 @@ curl_multi_perform(self)
 int
 curl_multi_socket_action(self, sockfd=CURL_SOCKET_BAD, ev_bitmask=0)
 	WWW::CurlOO::Multi self
-	int sockfd;
-	int ev_bitmask;
+	int sockfd
+	int ev_bitmask
 	PREINIT:
 		int remaining;
 	CODE:
-		while(CURLM_CALL_MULTI_PERFORM ==
-			curl_multi_socket_action(self->curlm, (curl_socket_t) sockfd, ev_bitmask, &remaining));
+		while( CURLM_CALL_MULTI_PERFORM == curl_multi_socket_action(
+				self->curlm, (curl_socket_t) sockfd, ev_bitmask, &remaining ) )
+			;
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL
@@ -1549,14 +1567,14 @@ curl_multi_DESTROY(self)
 		perl_curl_multi_delete( aTHX_ self );
 
 SV *
-curl_multi_strerror(self, errornum)
+curl_multi_strerror( self, errornum )
 	WWW::CurlOO::Multi self
 	int errornum
+	PREINIT:
+		const char *errstr;
 	CODE:
-	{
-		const char * vchar = curl_multi_strerror(errornum);
-		RETVAL = newSVpv(vchar,0);
-	}
+		errstr = curl_multi_strerror( errornum );
+		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
 
@@ -1572,6 +1590,7 @@ curl_share_new(...)
 		perl_curl_share_t *self;
 		char *sclass = "WWW::CurlOO::Share";
 	PPCODE:
+		/* {{{ */
 		if (items>0 && !SvROK(ST(0))) {
 			STRLEN dummy;
 			sclass = SvPV(ST(0),dummy);
@@ -1584,6 +1603,7 @@ curl_share_new(...)
 		SvREADONLY_on(SvRV(ST(0)));
 
 		XSRETURN(1);
+		/* }}} */
 
 void
 curl_share_DESTROY(self)
@@ -1597,41 +1617,43 @@ curl_share_setopt(self, option, value)
 	int option
 	SV * value
 	CODE:
+		/* {{{ */
 		RETVAL=CURLE_OK;
 		switch( option ) {
 			case CURLSHOPT_LOCKFUNC:
-				curl_share_setopt(self->curlsh, CURLSHOPT_LOCKFUNC, SvOK(value) ? lock_callback_func : NULL);
-				curl_share_setopt(self->curlsh, CURLSHOPT_USERDATA, SvOK(value) ? self : NULL);
-				perl_curl_share_register_callback( aTHX_ self,&(self->callback[CALLBACKSH_LOCK]), value);
+				RETVAL = curl_share_setopt( self->curlsh, CURLSHOPT_LOCKFUNC, SvOK( value ) ? lock_callback_func : NULL );
+				curl_share_setopt( self->curlsh, CURLSHOPT_USERDATA, SvOK( value ) ? self : NULL );
+				perl_curl_share_register_callback( aTHX_ self, &(self->callback[CALLBACKSH_LOCK]), value );
 				break;
 			case CURLSHOPT_UNLOCKFUNC:
-				curl_share_setopt(self->curlsh, CURLSHOPT_UNLOCKFUNC, SvOK(value) ? unlock_callback_func : NULL);
-				curl_share_setopt(self->curlsh, CURLSHOPT_USERDATA, SvOK(value) ? self : NULL);
-				perl_curl_share_register_callback( aTHX_ self,&(self->callback[CALLBACKSH_UNLOCK]), value);
+				RETVAL = curl_share_setopt( self->curlsh, CURLSHOPT_UNLOCKFUNC, SvOK(value) ? unlock_callback_func : NULL );
+				curl_share_setopt( self->curlsh, CURLSHOPT_USERDATA, SvOK(value) ? self : NULL );
+				perl_curl_share_register_callback( aTHX_ self, &(self->callback[CALLBACKSH_UNLOCK]), value );
 				break;
 			case CURLSHOPT_USERDATA:
-				perl_curl_share_register_callback( aTHX_ self,&(self->callback_ctx[CALLBACKSH_LOCK]), value);
+				perl_curl_share_register_callback( aTHX_ self, &(self->callback_ctx[CALLBACKSH_LOCK]), value );
 				break;
 			case CURLSHOPT_SHARE:
 			case CURLSHOPT_UNSHARE:
-				RETVAL = curl_share_setopt(self->curlsh, option, (long)SvIV(value));
+				RETVAL = curl_share_setopt( self->curlsh, option, (long)SvIV( value ) );
 				break;
 			default:
 				croak("Unknown curl share option");
 				break;
-
 		};
+		/* }}} */
 	OUTPUT:
 		RETVAL
+
 
 SV *
 curl_share_strerror(self, errornum)
 	WWW::CurlOO::Share self
 	int errornum
+	PREINIT:
+		const char *errstr;
 	CODE:
-	{
-		const char * vchar = curl_share_strerror(errornum);
-		RETVAL = newSVpv(vchar,0);
-	}
+		errstr = curl_share_strerror( errornum );
+		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
