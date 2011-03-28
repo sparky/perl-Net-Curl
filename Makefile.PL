@@ -61,11 +61,11 @@ my @constant_types = divide_constants();
 mkdir "lib";
 mkdir "lib/WWW";
 mkdir "lib/WWW/Curl";
-write_from_template( "Curl", [], "lib/WWW" );
-write_from_template( "Easy", $constant_types[ 0 ] );
-write_from_template( "Share", $constant_types[ 1 ] );
+write_from_template( "Curl", $constant_types[ 0 ], "lib/WWW" );
+write_from_template( "Easy", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
 write_from_template( "Multi", $constant_types[ 3 ] );
+write_from_template( "Share", $constant_types[ 4 ] );
 
 WriteMakefile(
 	NAME 		=> 'WWW::Curl',
@@ -238,13 +238,14 @@ sub get_constants
 
 sub divide_constants
 {
-	my @out = ( [], [], [] );
+	my @out = ();
 
 	foreach ( @$constant_names ) {
-		my $list = 0;
-		$list = 1 if /^(CURLSHOPT_|CURL_LOCK_)/;
-		$list = 2 if /^CURLFORM_/;
-		$list = 3 if /^CURL(M_|MSG_|MOPT_|_POLL_|_CSELECT_|_SOCKET_TIMEOUT)/;
+		my $list = 1; # Easy
+		$list = 0 if /^CURL_?VERSION/; # main
+		$list = 2 if /^CURLFORM_/; # Form
+		$list = 3 if /^CURL(M_|MSG_|MOPT_|_POLL_|_CSELECT_|_SOCKET_TIMEOUT)/; # Multi
+		$list = 4 if /^(CURLSHOPT_|CURL_LOCK_)/; # Share
 		push @{ $out[ $list ] }, $_;
 	}
 	return @out;
