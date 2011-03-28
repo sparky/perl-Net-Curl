@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use WWW::Curl::Easy;
 
-my $ver_num_raw = WWW::Curl::Easy::version();
+my $ver_num_raw = WWW::Curl::version();
 my ($ver_num) = $ver_num_raw =~ m!libcurl/(\d\.\d+\.\d+)!;
 my ($major, $minor, $bugfix) = split(/\./, $ver_num);
 

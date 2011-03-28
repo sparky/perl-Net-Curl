@@ -28,7 +28,7 @@ my $url_list=[
 ];
 
 
-my $v = WWW::Curl::Easy::version_info();
+my $v = WWW::Curl::version_info();
 if ( ($v->{features} | CURL_VERSION_SSL) == 0 ) {
 	plan skip_all => 'libcurl was compiled without ssl support, skipping ssl tests';
 } else {
@@ -66,7 +66,7 @@ sub silence { return 0 }
 my $count = 1;
 
 my $sslversion95 = 0;
-$sslversion95++ if (&WWW::Curl::Easy::version() =~ m/SSL 0.9.5/); # 0.9.5 has buggy connect with some ssl sites
+$sslversion95++ if (&WWW::Curl::version() =~ m/SSL 0.9.5/); # 0.9.5 has buggy connect with some ssl sites
 
 my $haveca = 0;
 if (-f "ca-bundle.crt") { $haveca = 1; }

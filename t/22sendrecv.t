@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use WWW::Curl::Easy;
 
-my $vi = WWW::Curl::Easy::version_info();
+my $vi = WWW::Curl::version_info();
 plan skip_all => "curl $vi->{version} does not support send and recv"
 	if $vi->{version_num} < 0x071202;
 plan tests => 7;
