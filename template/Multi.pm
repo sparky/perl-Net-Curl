@@ -1,8 +1,8 @@
-package WWW::Curl::Multi;
+package WWW::CurlOO::Multi;
 use strict;
 use warnings;
 
-use WWW::Curl ();
+use WWW::CurlOO ();
 use Exporter ();
 
 our @ISA = qw(Exporter);

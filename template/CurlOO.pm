@@ -1,4 +1,4 @@
-package WWW::Curl;
+package WWW::CurlOO;
 
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use Exporter ();
 
 our $VERSION;
 BEGIN {
-	$VERSION = '4.19_9905';
+	$VERSION = '0.00_01';
 	XSLoader::load(__PACKAGE__, $VERSION);
 }
 END {
@@ -27,7 +27,7 @@ __END__
 
 =head1 NAME
 
-WWW::Curl - Perl extension interface for libcurl
+WWW::CurlOO - Perl extension interface for libcurl
 
 =head1 SYNOPSIS
 

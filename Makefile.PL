@@ -63,9 +63,9 @@ write_defenums( "const-defenums.h" );
 
 mkdir "lib";
 mkdir "lib/WWW";
-mkdir "lib/WWW/Curl";
+mkdir "lib/WWW/CurlOO";
 
-write_from_template( "Curl", $constant_types[ 0 ], "lib/WWW" );
+write_from_template( "CurlOO", $constant_types[ 0 ], "lib/WWW" );
 write_from_template( "Easy", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
 write_from_template( "Multi", $constant_types[ 3 ] );
@@ -73,7 +73,7 @@ write_from_template( "Share", $constant_types[ 4 ] );
 
 WriteConstants(
 	($] > 5.009002 ? (PROXYSUBS => 1) : ()),
-	NAME => 'WWW::Curl',
+	NAME => 'WWW::CurlOO',
 	NAMES => $constant_types[ 0 ],
 	C_FILE => 'const-c.inc',
 	XS_FILE => 'const-curl-xs.inc',
@@ -83,16 +83,13 @@ WriteConstants(
 
 
 WriteMakefile(
-	NAME 		=> 'WWW::Curl',
-	VERSION_FROM	=> 'lib/WWW/Curl.pm',
-	ABSTRACT_FROM	=> 'lib/WWW/Curl.pm',
-	AUTHOR		=> 'Cris Bailiff <c.bailiff+curl at devsecure.com>',
+	NAME 		=> 'WWW::CurlOO',
+	VERSION_FROM	=> 'lib/WWW/CurlOO.pm',
+	ABSTRACT_FROM	=> 'lib/WWW/CurlOO.pm',
+	AUTHOR		=> 'Przemysław Iskra <sparky at pld-linux.org>',
 	META_MERGE	=> {
-		author	=> [
-			'Balint Szilakszi <szbalint at cpan.org>',
-		],
 		resources => {
-			repository => 'http://github.com/szbalint/WWW--Curl'
+			repository => 'http://github.com/sparky/WWW--Curl'
 		},
 	},
 	CCFLAGS		=> $curl{cflags},
@@ -105,11 +102,11 @@ WriteMakefile(
 	},
 	realclean	=> {
 		FILES => [qw(
-			lib/WWW/Curl.pm
-			lib/WWW/Curl/Easy.pm
-			lib/WWW/Curl/Form.pm
-			lib/WWW/Curl/Multi.pm
-			lib/WWW/Curl/Share.pm)]
+			lib/WWW/CurlOO.pm
+			lib/WWW/CurlOO/Easy.pm
+			lib/WWW/CurlOO/Form.pm
+			lib/WWW/CurlOO/Multi.pm
+			lib/WWW/CurlOO/Share.pm)]
 	},
 );
 
@@ -266,7 +263,7 @@ sub write_from_template
 	my $constants = shift;
 	my $dir = shift;
 	my $havedir = !!$dir;
-	$dir ||= "lib/WWW/Curl";
+	$dir ||= "lib/WWW/CurlOO";
 
 	my $template = "template/$name.pm";
 	my $out = "$dir/$name.pm";
@@ -291,7 +288,7 @@ sub write_from_template
 	my $lname = lc $name;
 	WriteConstants(
 		($] > 5.009002 ? (PROXYSUBS => 1) : ()),
-		NAME => "WWW::Curl::$name",
+		NAME => "WWW::CurlOO::$name",
 		NAMES => $constants,
 		C_FILE => 'const-c.inc',
 		XS_FILE => "const-$lname-xs.inc",

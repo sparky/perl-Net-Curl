@@ -1,8 +1,8 @@
-package WWW::Curl::Share;
+package WWW::CurlOO::Share;
 use strict;
 use warnings;
 
-use WWW::Curl ();
+use WWW::CurlOO ();
 use Exporter ();
 
 our @ISA = qw(Exporter);

@@ -1,5 +1,5 @@
 Changes
-Curl.xs
+CurlOO.xs
 LICENSE
 MANIFEST
 Makefile.PL
@@ -30,7 +30,7 @@ t/23socket-action.t
 t/meta.t
 t/pod-coverage.t
 t/pod.t
-template/Curl.pm
+template/CurlOO.pm
 template/Easy.pm
 template/Form.pm
 template/Multi.pm

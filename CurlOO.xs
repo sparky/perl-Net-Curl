@@ -789,15 +789,15 @@ timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 #include "const-defenums.h"
 #include "const-c.inc"
 
-typedef perl_curl_easy_t *WWW__Curl__Easy;
+typedef perl_curl_easy_t *WWW__CurlOO__Easy;
 
-typedef perl_curl_form_t *WWW__Curl__Form;
+typedef perl_curl_form_t *WWW__CurlOO__Form;
 
-typedef perl_curl_multi_t *WWW__Curl__Multi;
+typedef perl_curl_multi_t *WWW__CurlOO__Multi;
 
-typedef perl_curl_share_t *WWW__Curl__Share;
+typedef perl_curl_share_t *WWW__CurlOO__Share;
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl		PREFIX = curl_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
 
 INCLUDE: const-curl-xs.inc
 
@@ -894,7 +894,7 @@ curl_version_info()
 
 
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl::Easy	PREFIX = curl_easy_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
 
 INCLUDE: const-easy-xs.inc
 
@@ -910,7 +910,7 @@ curl_easy_init(...)
 		new = 1
 	PREINIT:
 		perl_curl_easy_t *self;
-		char *sclass = "WWW::Curl::Easy";
+		char *sclass = "WWW::CurlOO::Easy";
 
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
@@ -941,10 +941,10 @@ curl_easy_init(...)
 
 void
 curl_easy_duphandle(self)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	PREINIT:
 		perl_curl_easy_t *clone;
-		char *sclass = "WWW::Curl::Easy";
+		char *sclass = "WWW::CurlOO::Easy";
 		perl_curl_easy_callback_code_t i;
 
 	PPCODE:
@@ -997,7 +997,7 @@ curl_easy_duphandle(self)
 
 int
 curl_easy_setopt(self, option, value, push=0)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	int option
 	SV *value
 	int push
@@ -1082,24 +1082,24 @@ curl_easy_setopt(self, option, value, push=0)
 
 			/* not working yet... */
 			case CURLOPT_HTTPPOST:
-				if (sv_derived_from(value, "WWW::Curl::Form")) {
-					WWW__Curl__Form wrapper;
+				if (sv_derived_from(value, "WWW::CurlOO::Form")) {
+					WWW__CurlOO__Form wrapper;
 					IV tmp = SvIV((SV*)SvRV(value));
-					wrapper = INT2PTR(WWW__Curl__Form,tmp);
+					wrapper = INT2PTR(WWW__CurlOO__Form,tmp);
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->post);
 				} else
-					croak("value is not of type WWW::Curl::Form");
+					croak("value is not of type WWW::CurlOO::Form");
 				break;
 
 			/* Curl share support from Anton Fedorov */
 			case CURLOPT_SHARE:
-				if (sv_derived_from(value, "WWW::Curl::Share")) {
-					WWW__Curl__Share wrapper;
+				if (sv_derived_from(value, "WWW::CurlOO::Share")) {
+					WWW__CurlOO__Share wrapper;
 					IV tmp = SvIV((SV*)SvRV(value));
-					wrapper = INT2PTR(WWW__Curl__Share,tmp);
+					wrapper = INT2PTR(WWW__CurlOO__Share,tmp);
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
 				} else
-					croak("value is not of type WWW::Curl::Share");
+					croak("value is not of type WWW::CurlOO::Share");
 				break;
 			/* default cases */
 			default:
@@ -1141,7 +1141,7 @@ curl_easy_setopt(self, option, value, push=0)
 
 int
 curl_easy_pushopt(self, option, value)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	int option
 	SV *value
 	CODE:
@@ -1154,7 +1154,7 @@ curl_easy_pushopt(self, option, value)
 
 int
 curl_easy_perform(self)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	CODE:
 		/* perform the actual curl fetch */
 		RETVAL = curl_easy_perform(self->curl);
@@ -1171,7 +1171,7 @@ curl_easy_perform(self)
 
 SV *
 curl_easy_getinfo(self, option, ... )
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	int option
 	CODE:
 		switch( option & CURLINFO_TYPEMASK ) {
@@ -1224,7 +1224,7 @@ curl_easy_getinfo(self, option, ... )
 
 char *
 curl_easy_errbuf(self)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	CODE:
 		RETVAL = self->errbuf;
 	OUTPUT:
@@ -1232,7 +1232,7 @@ curl_easy_errbuf(self)
 
 size_t
 curl_easy_send( self, buffer )
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	SV *buffer
 	CODE:
 #if (LIBCURL_VERSION_NUM>=0x071202)
@@ -1259,7 +1259,7 @@ curl_easy_send( self, buffer )
 
 int
 curl_easy_recv( self, buffer, length )
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	SV *buffer
 	size_t length
 	CODE:
@@ -1287,14 +1287,14 @@ curl_easy_recv( self, buffer, length )
 
 void
 curl_easy_DESTROY(self)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	CODE:
 		perl_curl_easy_delete( aTHX_ self );
 
 
 SV *
 curl_easy_strerror(self, errornum)
-	WWW::Curl::Easy self
+	WWW::CurlOO::Easy self
 	int errornum
 	CODE:
 	{
@@ -1305,7 +1305,7 @@ curl_easy_strerror(self, errornum)
 		RETVAL
 
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl::Form	PREFIX = curl_form_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form	PREFIX = curl_form_
 
 INCLUDE: const-form-xs.inc
 
@@ -1313,7 +1313,7 @@ void
 curl_form_new(...)
 	PREINIT:
 		perl_curl_form_t *self;
-		char *sclass = "WWW::Curl::Form";
+		char *sclass = "WWW::CurlOO::Form";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
 		STRLEN dummy;
@@ -1330,7 +1330,7 @@ curl_form_new(...)
 
 void
 curl_form_formadd(self,name,value)
-	WWW::Curl::Form self
+	WWW::CurlOO::Form self
 	char *name
 	char *value
 	CODE:
@@ -1341,7 +1341,7 @@ curl_form_formadd(self,name,value)
 
 void
 curl_form_formaddfile(self,filename,description,type)
-	WWW::Curl::Form self
+	WWW::CurlOO::Form self
 	char *filename
 	char *description
 	char *type
@@ -1354,11 +1354,11 @@ curl_form_formaddfile(self,filename,description,type)
 
 void
 curl_form_DESTROY(self)
-	WWW::Curl::Form self
+	WWW::CurlOO::Form self
 	CODE:
 		perl_curl_form_delete(self);
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl::Multi	PREFIX = curl_multi_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi	PREFIX = curl_multi_
 
 INCLUDE: const-multi-xs.inc
 
@@ -1366,7 +1366,7 @@ void
 curl_multi_new(...)
 	PREINIT:
 		perl_curl_multi_t *self;
-		char *sclass = "WWW::Curl::Multi";
+		char *sclass = "WWW::CurlOO::Multi";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
 			STRLEN dummy;
@@ -1383,21 +1383,21 @@ curl_multi_new(...)
 
 void
 curl_multi_add_handle(curlm, curl)
-	WWW::Curl::Multi curlm
-	WWW::Curl::Easy curl
+	WWW::CurlOO::Multi curlm
+	WWW::CurlOO::Easy curl
 	CODE:
 		curl_multi_add_handle(curlm->curlm, curl->curl);
 
 void
 curl_multi_remove_handle(curlm, curl)
-	WWW::Curl::Multi curlm
-	WWW::Curl::Easy curl
+	WWW::CurlOO::Multi curlm
+	WWW::CurlOO::Easy curl
 	CODE:
 		curl_multi_remove_handle(curlm->curlm, curl->curl);
 
 void
 curl_multi_info_read(self)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	PREINIT:
 		CURL *easy = NULL;
 		CURLcode res;
@@ -1424,7 +1424,7 @@ curl_multi_info_read(self)
 
 void
 curl_multi_fdset(self)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	PREINIT:
 		fd_set fdread;
 		fd_set fdwrite;
@@ -1463,7 +1463,7 @@ curl_multi_fdset(self)
 
 long
 curl_multi_timeout(self)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	PREINIT:
 		long timeout;
 		CURLMcode ret;
@@ -1477,7 +1477,7 @@ curl_multi_timeout(self)
 
 int
 curl_multi_setopt(self, option, value)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	int option
 	SV * value
 	CODE:
@@ -1517,7 +1517,7 @@ curl_multi_setopt(self, option, value)
 
 int
 curl_multi_perform(self)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	PREINIT:
 		int remaining;
 	CODE:
@@ -1529,7 +1529,7 @@ curl_multi_perform(self)
 
 int
 curl_multi_socket_action(self, sockfd=CURL_SOCKET_BAD, ev_bitmask=0)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	int sockfd;
 	int ev_bitmask;
 	PREINIT:
@@ -1544,13 +1544,13 @@ curl_multi_socket_action(self, sockfd=CURL_SOCKET_BAD, ev_bitmask=0)
 
 void
 curl_multi_DESTROY(self)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	CODE:
 		perl_curl_multi_delete( aTHX_ self );
 
 SV *
 curl_multi_strerror(self, errornum)
-	WWW::Curl::Multi self
+	WWW::CurlOO::Multi self
 	int errornum
 	CODE:
 	{
@@ -1560,7 +1560,7 @@ curl_multi_strerror(self, errornum)
 	OUTPUT:
 		RETVAL
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl::Share	PREFIX = curl_share_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share	PREFIX = curl_share_
 
 INCLUDE: const-share-xs.inc
 
@@ -1570,7 +1570,7 @@ void
 curl_share_new(...)
 	PREINIT:
 		perl_curl_share_t *self;
-		char *sclass = "WWW::Curl::Share";
+		char *sclass = "WWW::CurlOO::Share";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
 			STRLEN dummy;
@@ -1587,13 +1587,13 @@ curl_share_new(...)
 
 void
 curl_share_DESTROY(self)
-	WWW::Curl::Share self
+	WWW::CurlOO::Share self
 	CODE:
 		perl_curl_share_delete( aTHX_ self );
 
 int
 curl_share_setopt(self, option, value)
-	WWW::Curl::Share self
+	WWW::CurlOO::Share self
 	int option
 	SV * value
 	CODE:
@@ -1626,7 +1626,7 @@ curl_share_setopt(self, option, value)
 
 SV *
 curl_share_strerror(self, errornum)
-	WWW::Curl::Share self
+	WWW::CurlOO::Share self
 	int errornum
 	CODE:
 	{
