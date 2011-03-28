@@ -249,7 +249,7 @@ sub divide_constants
 	foreach ( @$constant_names ) {
 		my $list = 1; # Easy
 		$list = 0 if /^CURL_?VERSION/; # main
-		$list = 2 if /^CURLFORM_/; # Form
+		$list = 2 if /^CURL_?FORM/; # Form
 		$list = 3 if /^CURL(M_|MSG_|MOPT_|_POLL_|_CSELECT_|_SOCKET_TIMEOUT)/; # Multi
 		$list = 4 if /^(CURLSHOPT_|CURL_LOCK_)/; # Share
 		push @{ $out[ $list ] }, $_;
