@@ -131,34 +131,75 @@ callback_index( int option )
 	return CALLBACK_LAST;
 }
 
-/* switch from curl slist names to an slist index */
-static perl_curl_easy_slist_code
-slist_index( int option )
+
+int
+perl_curl_easy_setoptslist( pTHX_ perl_curl_easy *self, CURLoption option, SV *value,
+		int clear )
 {
+	perl_curl_easy_slist_code si = 0;
+	AV *array;
+	int array_len;
+	struct curl_slist **slist = NULL;
+	int i;
+
 	switch( option ) {
 		case CURLOPT_HTTPHEADER:
-			return SLIST_HTTPHEADER;
+			si = SLIST_HTTPHEADER;
+			break;
 		case CURLOPT_HTTP200ALIASES:
-			return SLIST_HTTP200ALIASES;
+			si =  SLIST_HTTP200ALIASES;
+			break;
 #ifdef CURLOPT_MAIL_RCPT
 		case CURLOPT_MAIL_RCPT:
-			return SLIST_MAIL_RCPT;
+			si =  SLIST_MAIL_RCPT;
+			break;
 #endif
 		case CURLOPT_QUOTE:
-			return SLIST_QUOTE;
+			si =  SLIST_QUOTE;
+			break;
 		case CURLOPT_POSTQUOTE:
-			return SLIST_POSTQUOTE;
+			si =  SLIST_POSTQUOTE;
+			break;
 		case CURLOPT_PREQUOTE:
-			return SLIST_PREQUOTE;
+			si =  SLIST_PREQUOTE;
+			break;
 #ifdef CURLOPT_RESOLVE
 		case CURLOPT_RESOLVE:
-			return SLIST_RESOLVE;
+			si =  SLIST_RESOLVE;
+			break;
 #endif
 		case CURLOPT_TELNETOPTIONS:
-			return SLIST_TELNETOPTIONS;
+			si =  SLIST_TELNETOPTIONS;
+			break;
+		default:
+			return -1;
 	}
-	croak("Bad slist index requested\n");
-	return SLIST_LAST;
+
+
+	/* This is an option specifying a list, which we put in a curl_slist struct */
+	array = (AV *)SvRV( value );
+	array_len = av_len( array );
+
+	/* We have to find out which list to use... */
+	slist = &( self->slist[ si ] );
+
+	if ( *slist && clear ) {
+		curl_slist_free_all( *slist );
+		*slist = NULL;
+	}
+
+	/* copy perl values into this slist */
+	for ( i = 0; i <= array_len; i++ ) {
+		SV **sv = av_fetch( array, i, 0 );
+		STRLEN len = 0;
+		char *string = SvPV( *sv, len );
+		if ( len == 0 ) /* FIXME: is this correct? */
+			continue;
+		*slist = curl_slist_append( *slist, string );
+	}
+
+	/* pass the list into curl_easy_setopt() */
+	return curl_easy_setopt(self->curl, option, *slist);
 }
 
 static perl_curl_easy *
@@ -1019,33 +1060,9 @@ curl_easy_setopt(self, option, value, push=0)
 			case CURLOPT_RESOLVE:
 #endif
 			case CURLOPT_TELNETOPTIONS:
-			{
-				/* This is an option specifying a list, which we put in a curl_slist struct */
-				AV *array = (AV *)SvRV(value);
-				struct curl_slist **slist = NULL;
-				int last = av_len(array);
-				int i;
-
-				/* We have to find out which list to use... */
-				slist = &(self->slist[slist_index(option)]);
-
-				/* free any previous list */
-				if (*slist && !push) {
-					curl_slist_free_all(*slist);
-					*slist=NULL;
-				}
-				/* copy perl values into this slist */
-				for (i=0;i<=last;i++) {
-					SV **sv = av_fetch(array,i,0);
-					STRLEN len = 0;
-					char *string = SvPV(*sv, len);
-					if (len == 0) /* FIXME: is this correct? */
-						break;
-					*slist = curl_slist_append(*slist, string);
-				}
-				/* pass the list into curl_easy_setopt() */
-				RETVAL = curl_easy_setopt(self->curl, option, *slist);
-			};
+				RETVAL = perl_curl_easy_setoptslist( aTHX_ self, option, value, 1 );
+				if ( RETVAL == -1 )
+					croak( "Specified option does not accept slists" );
 				break;
 
 			/* Pass in variable name for storing error messages. Yuck. */
@@ -1128,49 +1145,9 @@ curl_easy_pushopt(self, option, value)
 	int option
 	SV *value
 	CODE:
-		RETVAL=CURLE_OK;
-		switch( option ) {
-
-			/* slist cases */
-			case CURLOPT_HTTPHEADER:
-			case CURLOPT_HTTP200ALIASES:
-#ifdef CURLOPT_MAIL_RCPT
-			case CURLOPT_MAIL_RCPT:
-#endif
-			case CURLOPT_QUOTE:
-			case CURLOPT_POSTQUOTE:
-			case CURLOPT_PREQUOTE:
-#ifdef CURLOPT_RESOLVE
-			case CURLOPT_RESOLVE:
-#endif
-			case CURLOPT_TELNETOPTIONS:
-			{
-				/* This is an option specifying a list, which we put in a curl_slist struct */
-				AV *array = (AV *)SvRV(value);
-				struct curl_slist **slist = NULL;
-				int last = av_len(array);
-				int i;
-
-				/* We have to find out which list to use... */
-				slist = &(self->slist[slist_index(option)]);
-
-				/* copy perl values into this slist */
-				for (i=0;i<=last;i++) {
-					SV **sv = av_fetch(array,i,0);
-					STRLEN len = 0;
-					char *string = SvPV(*sv, len);
-					if (len == 0) /* FIXME: is this correct? */
-						break;
-					*slist = curl_slist_append(*slist, string);
-				}
-				/* pass the list into curl_easy_setopt() */
-				RETVAL = curl_easy_setopt(self->curl, option, *slist);
-			};
-				break;
-			default:
-				croak( "Specified option does not accept slists" );
-				break;
-		};
+		RETVAL = perl_curl_easy_setoptslist( aTHX_ self, option, value, 0 );
+		if ( RETVAL == -1 )
+			croak( "Specified option does not accept slists" );
 	OUTPUT:
 		RETVAL
 
