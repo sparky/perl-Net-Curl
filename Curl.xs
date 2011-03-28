@@ -756,11 +756,9 @@ typedef perl_curl_multi * WWW__Curl__Multi;
 
 typedef perl_curl_share * WWW__Curl__Share;
 
-MODULE = WWW::Curl	PACKAGE = WWW::Curl
-
-INCLUDE: const-xs.inc
-
 MODULE = WWW::Curl	PACKAGE = WWW::Curl		PREFIX = curl_
+
+INCLUDE: const-curl-xs.inc
 
 void
 curl__global_cleanup()
@@ -856,6 +854,8 @@ curl_version_info()
 
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl::Easy	PREFIX = curl_easy_
+
+INCLUDE: const-easy-xs.inc
 
 BOOT:
 	curl_global_init(CURL_GLOBAL_ALL); /* FIXME: does this need a mutex for ithreads? */
@@ -1287,6 +1287,8 @@ curl_easy_strerror(self, errornum)
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl::Form	PREFIX = curl_form_
 
+INCLUDE: const-form-xs.inc
+
 void
 curl_form_new(...)
 	PREINIT:
@@ -1337,6 +1339,8 @@ curl_form_DESTROY(self)
 		perl_curl_form_delete(self);
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl::Multi	PREFIX = curl_multi_
+
+INCLUDE: const-multi-xs.inc
 
 void
 curl_multi_new(...)
@@ -1537,6 +1541,8 @@ curl_multi_strerror(self, errornum)
 		RETVAL
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl::Share	PREFIX = curl_share_
+
+INCLUDE: const-share-xs.inc
 
 PROTOTYPES: ENABLE
 

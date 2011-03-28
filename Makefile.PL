@@ -58,14 +58,29 @@ if ( $@ ) {
 }
 my @constant_types = divide_constants();
 
+# WriteConstants does not honour enums, so we define those symbols
+write_defenums( "const-defenums.h" );
+
 mkdir "lib";
 mkdir "lib/WWW";
 mkdir "lib/WWW/Curl";
+
 write_from_template( "Curl", $constant_types[ 0 ], "lib/WWW" );
 write_from_template( "Easy", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
 write_from_template( "Multi", $constant_types[ 3 ] );
 write_from_template( "Share", $constant_types[ 4 ] );
+
+WriteConstants(
+	($] > 5.009002 ? (PROXYSUBS => 1) : ()),
+	NAME => 'WWW::Curl',
+	NAMES => $constant_types[ 0 ],
+	C_FILE => 'const-c.inc',
+	XS_FILE => 'const-curl-xs.inc',
+	XS_SUBNAME => 'curl_constant',
+	C_SUBNAME => 'curl_constant',
+);
+
 
 WriteMakefile(
 	NAME 		=> 'WWW::Curl',
@@ -86,22 +101,16 @@ WriteMakefile(
 	LICENSE		=> 'MPL or MIT/X-derivate',	
 	MIN_PERL_VERSION => 5.006001,
 	clean		=> {
-		FILES => 'const-c.inc const-xs.inc const-defenums.h'
+		FILES => 'const-c.inc const-*-xs.inc const-defenums.h'
 	},
 	realclean	=> {
-		FILES => [qw(lib/WWW/Curl/Easy.pm
+		FILES => [qw(
+			lib/WWW/Curl.pm
+			lib/WWW/Curl/Easy.pm
 			lib/WWW/Curl/Form.pm
 			lib/WWW/Curl/Multi.pm
 			lib/WWW/Curl/Share.pm)]
 	},
-);
-
-# WriteConstants does not honour enums, so we define those symbols
-write_defenums( "const-defenums.h" );
-WriteConstants(
-	($] > 5.009002 ? (PROXYSUBS => 1) : ()),
-	NAME => 'WWW::Curl',
-	NAMES => $constant_names,
 );
 
 exit 0;
@@ -255,7 +264,9 @@ sub write_from_template
 {
 	my $name = shift;
 	my $constants = shift;
-	my $dir = shift || "lib/WWW/Curl";
+	my $dir = shift;
+	my $havedir = !!$dir;
+	$dir ||= "lib/WWW/Curl";
 
 	my $template = "template/$name.pm";
 	my $out = "$dir/$name.pm";
@@ -275,6 +286,19 @@ sub write_from_template
 			print $fout $_;
 		}
 	}
+
+	return if $havedir;
+	my $lname = lc $name;
+	WriteConstants(
+		($] > 5.009002 ? (PROXYSUBS => 1) : ()),
+		NAME => "WWW::Curl::$name",
+		NAMES => $constants,
+		C_FILE => 'const-c.inc',
+		XS_FILE => "const-$lname-xs.inc",
+		XS_SUBNAME => "curl_${lname}_constant",
+		C_SUBNAME => 'curl_constant',
+	);
+
 }
 
 sub write_defenums
