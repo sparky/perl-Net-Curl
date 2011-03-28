@@ -268,8 +268,8 @@ sub write_from_template
 
 	local $_;
 	while (<$fin>) {
-		if (m/^\s*\@CURLOPT_INCLUDE\@/) {
-			print $fout join "\n", @$constants, '';
+		if (m/^\s*#\s*\@CURLOPT_INCLUDE\@/) {
+			print $fout join "\n", 'qw(', @$constants, ')';
 		} else {
 			print $fout $_;
 		}

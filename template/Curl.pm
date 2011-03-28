@@ -3,30 +3,23 @@ package WWW::Curl;
 use strict;
 use warnings;
 use XSLoader;
+use Exporter ();
 
 our $VERSION;
 BEGIN {
 	$VERSION = '4.19_9905';
 	XSLoader::load(__PACKAGE__, $VERSION);
 }
-
 END {
     _global_cleanup();
 }
 
-our $AUTOLOAD;
-sub AUTOLOAD {
-    (my $constname = $AUTOLOAD) =~ s/.*:://;
-    die "&WWW::Curl::constant not defined" if $constname eq 'constant';
-    my ($error, $val) = constant($constname);
-    if ($error) {
-        my (undef,$file,$line) = caller;
-        die "$error at $file line $line.\n";
-    }
-    no strict 'refs';
-    *$AUTOLOAD = sub { $val };
-    goto &$AUTOLOAD;
-}
+our @ISA = qw(Exporter);
+our @EXPORT_OK = (
+# @CURLOPT_INCLUDE@
+);
+
+our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 1;
 

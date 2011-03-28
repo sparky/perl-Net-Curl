@@ -1,69 +1,15 @@
 package WWW::Curl::Easy;
-
 use strict;
 use warnings;
 
-our $VERSION = '4.19_9905';
-
 use WWW::Curl ();
-use Exporter  ();
+use Exporter ();
 
 our @ISA = qw(Exporter);
-our @EXPORT;
+our @EXPORT_OK = (
+# @CURLOPT_INCLUDE@
+);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-BEGIN {
-	@EXPORT = qw(
-@CURLOPT_INCLUDE@
-	);
-
-	# link exported constants
-	no strict 'refs';
-	foreach my $name ( @EXPORT ) {
-		*$name = \*{"WWW::Curl::" . $name};
-	}
-}
-
-$WWW::Curl::Easy::headers = "";
-$WWW::Curl::Easy::content = "";
-
-sub const_string {
-	my ($self, $constant) = @_;
-	return constant( $constant );
-}
-
-sub constant {
-	my $constant = shift;
-	my $ret = undef;
-	local $@;
-	eval {
-		no strict 'refs';
-		$ret = &{"WWW::Curl::".$constant};
-	};
-	$! = 0;
-	if ( $@ ) {
-		require POSIX;
-		$! = POSIX::EINVAL();
-	}
-	return $ret;
-}
-
-sub pushopt {
-    my ($self, $option, $value) = @_;
-    $self->setopt($option, $value, 1);
-}
+our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 1;
-
-__END__
-
-Copyright (C) 2000-2005,2008 Daniel Stenberg, Cris Bailiff,
-Sebastian Riedel, et al.
- 
-You may opt to use, copy, modify, merge, publish, distribute and/or sell
-copies of the Software, and permit persons to whom the Software is furnished
-to do so, under the terms of the MPL or the MIT/X-derivate licenses. You may
-pick one of these licenses.

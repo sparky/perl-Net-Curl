@@ -1,26 +1,15 @@
 package WWW::Curl::Multi;
-
 use strict;
 use warnings;
 
 use WWW::Curl ();
-use Exporter  ();
+use Exporter ();
 
 our @ISA = qw(Exporter);
-our @EXPORT;
+our @EXPORT_OK = (
+# @CURLOPT_INCLUDE@
+);
 
-BEGIN {
-	@EXPORT = qw(
-@CURLOPT_INCLUDE@
-	);
-
-	# link exported constants
-	no strict 'refs';
-	foreach my $name ( @EXPORT ) {
-		*$name = \*{"WWW::Curl::" . $name};
-	}
-}
+our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 1;
-__END__
-
