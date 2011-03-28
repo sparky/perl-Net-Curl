@@ -1121,16 +1121,59 @@ curl_easy_setopt(self, option, value, push=0)
 	OUTPUT:
 		RETVAL
 
+
 int
-internal_setopt(self, option, value)
+curl_easy_pushopt(self, option, value)
 	WWW::Curl::Easy self
 	int option
-	int value
+	SV *value
 	CODE:
-		croak("internal_setopt no longer supported - use a callback\n");
-		RETVAL = 0;
+		RETVAL=CURLE_OK;
+		switch( option ) {
+
+			/* slist cases */
+			case CURLOPT_HTTPHEADER:
+			case CURLOPT_HTTP200ALIASES:
+#ifdef CURLOPT_MAIL_RCPT
+			case CURLOPT_MAIL_RCPT:
+#endif
+			case CURLOPT_QUOTE:
+			case CURLOPT_POSTQUOTE:
+			case CURLOPT_PREQUOTE:
+#ifdef CURLOPT_RESOLVE
+			case CURLOPT_RESOLVE:
+#endif
+			case CURLOPT_TELNETOPTIONS:
+			{
+				/* This is an option specifying a list, which we put in a curl_slist struct */
+				AV *array = (AV *)SvRV(value);
+				struct curl_slist **slist = NULL;
+				int last = av_len(array);
+				int i;
+
+				/* We have to find out which list to use... */
+				slist = &(self->slist[slist_index(option)]);
+
+				/* copy perl values into this slist */
+				for (i=0;i<=last;i++) {
+					SV **sv = av_fetch(array,i,0);
+					STRLEN len = 0;
+					char *string = SvPV(*sv, len);
+					if (len == 0) /* FIXME: is this correct? */
+						break;
+					*slist = curl_slist_append(*slist, string);
+				}
+				/* pass the list into curl_easy_setopt() */
+				RETVAL = curl_easy_setopt(self->curl, option, *slist);
+			};
+				break;
+			default:
+				croak( "Specified option does not accept slists" );
+				break;
+		};
 	OUTPUT:
 		RETVAL
+
 
 int
 curl_easy_perform(self)
