@@ -19,9 +19,7 @@ for my $row (<$fh>) {
 }
 
 # In case we can't use cpp to extract symbols, skipping the multi constant tests for now.
-my $skip_multi;
-my $value = WWW::Curl::Easy::constant('CURL_LAST');
-$skip_multi++ if (! $!);
+my $skip_multi = 0;
 
 my @checklist;
 for my $row (@consts) {

@@ -5,6 +5,7 @@ use warnings;
 use Test::More skip_all => "Not performing ftp upload tests";
 
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy qw(:constants);
 
 my $count=1;
 

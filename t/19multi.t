@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More tests => 20;
-use WWW::Curl::Easy;
-use WWW::Curl::Multi;
+use WWW::Curl::Easy qw(:constants);
+use WWW::Curl::Multi qw(:constants);
 use File::Temp qw/tempfile/;
 
 my $header = tempfile();

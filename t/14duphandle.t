@@ -9,6 +9,7 @@ use Test::More tests => 17;
 use File::Temp qw/tempfile/;
 
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 

@@ -5,6 +5,7 @@ use warnings;
 use Test::More tests => 12;
 
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 

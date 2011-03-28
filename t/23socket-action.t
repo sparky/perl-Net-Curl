@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More tests => 18;
-use WWW::Curl::Easy;
-use WWW::Curl::Multi;
+use WWW::Curl::Easy qw(:constants);
+use WWW::Curl::Multi qw(:constants);
 
 my ($head1, $head2, $body1, $body2 );
 open my $_head1, ">", \$head1;

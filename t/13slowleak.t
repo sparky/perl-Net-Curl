@@ -6,6 +6,7 @@ use warnings;
 use Test::More skip_all => "Not performing slow leakage regression test";
 
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 

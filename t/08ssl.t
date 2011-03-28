@@ -4,7 +4,8 @@ use strict;
 use warnings;
 use Test::More;
 use File::Temp qw/tempfile/;
-use WWW::Curl::Easy;
+use WWW::Curl qw(:constants);
+use WWW::Curl::Easy qw(:constants);
 
 # list of tests
 #         site-url, verifypeer(0,1), verifyhost(0,2), result(0=ok, 1=fail), result-openssl0.9.5

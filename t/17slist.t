@@ -7,7 +7,7 @@ use Test::More skip_all => "Not performing printenv cgi tests";
 # Change 1..1 below to 1..last_test_to_print .
 use strict;
 
-use WWW::Curl::Easy;
+use WWW::Curl::Easy qw(:constants);
 
 ######################### End of black magic.
 

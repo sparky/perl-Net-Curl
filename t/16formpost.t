@@ -8,7 +8,7 @@ use Test::More skip_all => "Not performing POST";
 use strict;
 
 END {print "not ok 1\n" unless $::loaded;}
-use WWW::Curl::Easy;
+use WWW::Curl::Easy qw(:constants);
 
 $::loaded = 1;
 

@@ -7,7 +7,7 @@ use lib 'blib/lib';
 use lib 'blib/arch';
 use Test::More tests => 25;
 use File::Temp qw/tempfile/;
-use WWW::Curl::Easy;
+use WWW::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 my $other_handle;

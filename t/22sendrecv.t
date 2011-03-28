@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::Curl::Easy;
+use WWW::Curl::Easy qw(:constants);
 
 my $vi = WWW::Curl::version_info();
 plan skip_all => "curl $vi->{version} does not support send and recv"
