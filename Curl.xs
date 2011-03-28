@@ -34,7 +34,7 @@ typedef enum {
 	CALLBACK_PROGRESS,
 	CALLBACK_DEBUG,
 	CALLBACK_LAST
-} perl_curl_easy_callback_code;
+} perl_curl_easy_callback_code_t;
 
 typedef enum {
 	SLIST_HTTPHEADER = 0,
@@ -46,12 +46,12 @@ typedef enum {
 	SLIST_RESOLVE,
 	SLIST_TELNETOPTIONS,
 	SLIST_LAST
-} perl_curl_easy_slist_code;
+} perl_curl_easy_slist_code_t;
 
 
 typedef struct {
 	/* The main curl handle */
-	struct CURL *curl;
+	CURL *curl;
 	I32 *y;
 	/* Lists that can be set via curl_easy_setopt() */
 	struct curl_slist *slist[SLIST_LAST];
@@ -63,43 +63,43 @@ typedef struct {
 	char *errbufvarname;
 	I32 strings_index;
 	char *strings[ CURLOPT_LASTENTRY % CURLOPTTYPE_OBJECTPOINT ];
-} perl_curl_easy;
+} perl_curl_easy_t;
 
 
 typedef struct {
 	struct curl_httppost *post;
 	struct curl_httppost *last;
-} perl_curl_form;
+} perl_curl_form_t;
 
 typedef enum {
 	CALLBACKM_SOCKET = 0,
 	CALLBACKM_TIMER,
 	CALLBACKM_LAST,
-} perl_curl_multi_callback_code;
+} perl_curl_multi_callback_code_t;
 
 typedef struct {
-	struct CURLM *curlm;
+	CURLM *curlm;
 
 	SV *callback[CALLBACKM_LAST];
 	SV *callback_ctx[CALLBACKM_LAST];
-} perl_curl_multi;
+} perl_curl_multi_t;
 
 typedef enum {
 	CALLBACKSH_LOCK = 0,
 	CALLBACKSH_UNLOCK,
 	CALLBACKSH_LAST,
-} perl_curl_share_callback_code;
+} perl_curl_share_callback_code_t;
 
 typedef struct {
 	CURLSH *curlsh;
 
 	SV *callback[CALLBACKSH_LAST];
 	SV *callback_ctx[CALLBACKSH_LAST];
-} perl_curl_share;
+} perl_curl_share_t;
 
 
 /* switch from curl option codes to the relevant callback index */
-static perl_curl_easy_callback_code
+static perl_curl_easy_callback_code_t
 callback_index( int option )
 {
 	switch( option ) {
@@ -133,10 +133,10 @@ callback_index( int option )
 
 
 int
-perl_curl_easy_setoptslist( pTHX_ perl_curl_easy *self, CURLoption option, SV *value,
+perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV *value,
 		int clear )
 {
-	perl_curl_easy_slist_code si = 0;
+	perl_curl_easy_slist_code_t si = 0;
 	AV *array;
 	int array_len;
 	struct curl_slist **slist = NULL;
@@ -202,29 +202,29 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy *self, CURLoption option, SV *v
 	return curl_easy_setopt(self->curl, option, *slist);
 }
 
-static perl_curl_easy *
+static perl_curl_easy_t *
 perl_curl_easy_new( void )
 {
-	perl_curl_easy *self;
-	Newz(1, self, 1, perl_curl_easy);
+	perl_curl_easy_t *self;
+	Newz(1, self, 1, perl_curl_easy_t);
 	self->curl=curl_easy_init();
 	return self;
 }
 
-static perl_curl_easy *
-perl_curl_easy_duphandle( perl_curl_easy *orig )
+static perl_curl_easy_t *
+perl_curl_easy_duphandle( perl_curl_easy_t *orig )
 {
-	perl_curl_easy *self;
-	Newz(1, self, 1, perl_curl_easy);
+	perl_curl_easy_t *self;
+	Newz(1, self, 1, perl_curl_easy_t);
 	self->curl=curl_easy_duphandle(orig->curl);
 	return self;
 }
 
 static void
-perl_curl_easy_delete( pTHX_ perl_curl_easy *self )
+perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 {
-	perl_curl_easy_slist_code index;
-	perl_curl_easy_callback_code i;
+	perl_curl_easy_slist_code_t index;
+	perl_curl_easy_callback_code_t i;
 
 	if (self->curl)
 		curl_easy_cleanup(self->curl);
@@ -259,7 +259,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy *self )
 /* Register a callback function */
 
 static void
-perl_curl_easy_register_callback( pTHX_ perl_curl_easy *self, SV **callback, SV *function )
+perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, SV *function )
 {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
@@ -277,7 +277,7 @@ perl_curl_easy_register_callback( pTHX_ perl_curl_easy *self, SV **callback, SV 
 }
 
 static void
-perl_curl_multi_register_callback( pTHX_  perl_curl_multi *self, SV **callback, SV *function )
+perl_curl_multi_register_callback( pTHX_  perl_curl_multi_t *self, SV **callback, SV *function )
 {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
@@ -295,7 +295,7 @@ perl_curl_multi_register_callback( pTHX_  perl_curl_multi *self, SV **callback, 
 }
 
 static void
-perl_curl_share_register_callback( pTHX_  perl_curl_share *self, SV **callback, SV *function )
+perl_curl_share_register_callback( pTHX_  perl_curl_share_t *self, SV **callback, SV *function )
 {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
@@ -314,18 +314,18 @@ perl_curl_share_register_callback( pTHX_  perl_curl_share *self, SV **callback, 
 
 
 /* start of form functions - very un-finished! */
-static perl_curl_form *
+static perl_curl_form_t *
 perl_curl_form_new( void )
 {
-	perl_curl_form *self;
-	Newz(1, self, 1, perl_curl_form);
+	perl_curl_form_t *self;
+	Newz(1, self, 1, perl_curl_form_t);
 	self->post=NULL;
 	self->last=NULL;
 	return self;
 }
 
 static void
-perl_curl_form_delete( perl_curl_form *self )
+perl_curl_form_delete( perl_curl_form_t *self )
 {
 	if (self->post) {
 		curl_formfree(self->post);
@@ -334,20 +334,20 @@ perl_curl_form_delete( perl_curl_form *self )
 }
 
 /* make a new multi */
-static perl_curl_multi *
+static perl_curl_multi_t *
 perl_curl_multi_new( void )
 {
-	perl_curl_multi *self;
-	Newz(1, self, 1, perl_curl_multi);
+	perl_curl_multi_t *self;
+	Newz(1, self, 1, perl_curl_multi_t);
 	self->curlm=curl_multi_init();
 	return self;
 }
 
 /* delete the multi */
 static void
-perl_curl_multi_delete( pTHX_ perl_curl_multi *self )
+perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
 {
-	perl_curl_multi_callback_code i;
+	perl_curl_multi_callback_code_t i;
 
 	if (self->curlm)
 		curl_multi_cleanup(self->curlm);
@@ -360,20 +360,20 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi *self )
 }
 
 /* make a new share */
-static perl_curl_share *
+static perl_curl_share_t *
 perl_curl_share_new( void )
 {
-	perl_curl_share *self;
-	Newz(1, self, 1, perl_curl_share);
+	perl_curl_share_t *self;
+	Newz(1, self, 1, perl_curl_share_t);
 	self->curlsh=curl_share_init();
 	return self;
 }
 
 /* delete the share */
 static void
-perl_curl_share_delete( pTHX_ perl_curl_share *self )
+perl_curl_share_delete( pTHX_ perl_curl_share_t *self )
 {
-	perl_curl_share_callback_code i;
+	perl_curl_share_callback_code_t i;
 	if (self->curlsh)
 		curl_share_cleanup(self->curlsh);
 	for(i=0;i<CALLBACKSH_LAST;i++) {
@@ -412,7 +412,7 @@ write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
 /* generic fwrite callback, which decides which callback to call */
 static size_t
 fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
-		perl_curl_easy *self, void *call_function, void *call_ctx)
+		perl_curl_easy_t *self, void *call_function, void *call_ctx)
 {
 	dTHX;
 	if (call_function) { /* We are doing a callback to perl */
@@ -456,7 +456,7 @@ fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
 
 /* debug fwrite callback */
 static size_t
-fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy *self,
+fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 		void *call_function, void *call_ctx, curl_infotype type )
 {
 	dTHX;
@@ -508,8 +508,8 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy *self,
 static size_t
 write_callback_func( const void *ptr, size_t size, size_t nmemb, void *stream )
 {
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)stream;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)stream;
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_WRITE],self->callback_ctx[CALLBACK_WRITE]);
 }
@@ -519,8 +519,8 @@ static size_t
 writeheader_callback_func( const void *ptr, size_t size, size_t nmemb,
 		void *stream )
 {
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)stream;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)stream;
 
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_HEADER],self->callback_ctx[CALLBACK_HEADER]);
@@ -531,8 +531,8 @@ static int
 debug_callback_func( CURL* handle, curl_infotype type, char *ptr, size_t size,
 		void *userptr )
 {
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)userptr;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
 
 	return fwrite_wrapper2(ptr,size,self,
 			self->callback[CALLBACK_DEBUG],self->callback_ctx[CALLBACK_DEBUG],type);
@@ -546,8 +546,8 @@ read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
 	dSP ;
 
 	size_t maxlen;
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)stream;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)stream;
 
 	maxlen = size*nmemb;
 
@@ -613,8 +613,8 @@ progress_callback_func( void *clientp, double dltotal, double dlnow,
 	dSP;
 
 	int count;
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)clientp;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)clientp;
 
 	ENTER;
 	SAVETMPS;
@@ -653,8 +653,8 @@ lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
 	dSP;
 
 	int count;
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)userp;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userp;
 
 	ENTER;
 	SAVETMPS;
@@ -687,8 +687,8 @@ unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
 	dSP;
 
 	int count;
-	perl_curl_easy *self;
-	self=(perl_curl_easy *)userp;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userp;
 
 	ENTER;
 	SAVETMPS;
@@ -721,8 +721,8 @@ socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
 	dSP;
 
 	int count;
-	perl_curl_multi *self;
-	self=(perl_curl_multi *)userp;
+	perl_curl_multi_t *self;
+	self=(perl_curl_multi_t *)userp;
 
 	ENTER;
 	SAVETMPS;
@@ -757,8 +757,8 @@ timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 	dSP;
 
 	int count;
-	perl_curl_multi *self;
-	self=(perl_curl_multi *)userp;
+	perl_curl_multi_t *self;
+	self=(perl_curl_multi_t *)userp;
 
 	ENTER;
 	SAVETMPS;
@@ -789,13 +789,13 @@ timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 #include "const-defenums.h"
 #include "const-c.inc"
 
-typedef perl_curl_easy * WWW__Curl__Easy;
+typedef perl_curl_easy_t *WWW__Curl__Easy;
 
-typedef perl_curl_form * WWW__Curl__Form;
+typedef perl_curl_form_t *WWW__Curl__Form;
 
-typedef perl_curl_multi * WWW__Curl__Multi;
+typedef perl_curl_multi_t *WWW__Curl__Multi;
 
-typedef perl_curl_share * WWW__Curl__Share;
+typedef perl_curl_share_t *WWW__Curl__Share;
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl		PREFIX = curl_
 
@@ -808,7 +808,7 @@ curl__global_cleanup()
 
 time_t
 curl_getdate(timedate)
-	char *timedate;
+	char *timedate
 	CODE:
 		RETVAL=curl_getdate( timedate, NULL );
 	OUTPUT:
@@ -909,7 +909,7 @@ curl_easy_init(...)
 	ALIAS:
 		new = 1
 	PREINIT:
-		perl_curl_easy *self;
+		perl_curl_easy_t *self;
 		char *sclass = "WWW::Curl::Easy";
 
 	PPCODE:
@@ -943,9 +943,9 @@ void
 curl_easy_duphandle(self)
 	WWW::Curl::Easy self
 	PREINIT:
-		perl_curl_easy *clone;
+		perl_curl_easy_t *clone;
 		char *sclass = "WWW::Curl::Easy";
-		perl_curl_easy_callback_code i;
+		perl_curl_easy_callback_code_t i;
 
 	PPCODE:
 		clone=perl_curl_easy_duphandle(self);
@@ -1312,7 +1312,7 @@ INCLUDE: const-form-xs.inc
 void
 curl_form_new(...)
 	PREINIT:
-		perl_curl_form *self;
+		perl_curl_form_t *self;
 		char *sclass = "WWW::Curl::Form";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
@@ -1365,7 +1365,7 @@ INCLUDE: const-multi-xs.inc
 void
 curl_multi_new(...)
 	PREINIT:
-		perl_curl_multi *self;
+		perl_curl_multi_t *self;
 		char *sclass = "WWW::Curl::Multi";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
@@ -1569,7 +1569,7 @@ PROTOTYPES: ENABLE
 void
 curl_share_new(...)
 	PREINIT:
-		perl_curl_share *self;
+		perl_curl_share_t *self;
 		char *sclass = "WWW::Curl::Share";
 	PPCODE:
 		if (items>0 && !SvROK(ST(0))) {
