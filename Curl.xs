@@ -62,13 +62,7 @@ typedef struct {
 	char errbuf[CURL_ERROR_SIZE+1];
 	char *errbufvarname;
 	I32 strings_index;
-	char *strings[
-		CURLOPT_LASTENTRY > CURLOPTTYPE_OFF_T ? CURLOPT_LASTENTRY - CURLOPTTYPE_OFF_T :
-		CURLOPT_LASTENTRY > CURLOPTTYPE_FUNCTIONPOINT ? CURLOPT_LASTENTRY - CURLOPTTYPE_FUNCTIONPOINT :
-		CURLOPT_LASTENTRY > CURLOPTTYPE_OBJECTPOINT ? CURLOPT_LASTENTRY - CURLOPTTYPE_OBJECTPOINT :
-		CURLOPT_LASTENTRY
-	];
-
+	char *strings[ CURLOPT_LASTENTRY % CURLOPTTYPE_OBJECTPOINT ];
 } perl_curl_easy;
 
 
@@ -106,9 +100,9 @@ typedef struct {
 
 /* switch from curl option codes to the relevant callback index */
 static perl_curl_easy_callback_code
-callback_index(int option)
+callback_index( int option )
 {
-	switch(option) {
+	switch( option ) {
 		case CURLOPT_WRITEFUNCTION:
 		case CURLOPT_FILE:
 			return CALLBACK_WRITE;
@@ -139,9 +133,9 @@ callback_index(int option)
 
 /* switch from curl slist names to an slist index */
 static perl_curl_easy_slist_code
-slist_index(int option)
+slist_index( int option )
 {
-	switch(option) {
+	switch( option ) {
 		case CURLOPT_HTTPHEADER:
 			return SLIST_HTTPHEADER;
 		case CURLOPT_HTTP200ALIASES:
@@ -167,7 +161,8 @@ slist_index(int option)
 	return SLIST_LAST;
 }
 
-static perl_curl_easy * perl_curl_easy_new()
+static perl_curl_easy *
+perl_curl_easy_new( void )
 {
 	perl_curl_easy *self;
 	Newz(1, self, 1, perl_curl_easy);
@@ -175,7 +170,8 @@ static perl_curl_easy * perl_curl_easy_new()
 	return self;
 }
 
-static perl_curl_easy * perl_curl_easy_duphandle(perl_curl_easy *orig)
+static perl_curl_easy *
+perl_curl_easy_duphandle( perl_curl_easy *orig )
 {
 	perl_curl_easy *self;
 	Newz(1, self, 1, perl_curl_easy);
@@ -183,7 +179,8 @@ static perl_curl_easy * perl_curl_easy_duphandle(perl_curl_easy *orig)
 	return self;
 }
 
-static void perl_curl_easy_delete(perl_curl_easy *self)
+static void
+perl_curl_easy_delete( perl_curl_easy *self )
 {
 	dTHX;
 	perl_curl_easy_slist_code index;
@@ -221,7 +218,8 @@ static void perl_curl_easy_delete(perl_curl_easy *self)
 
 /* Register a callback function */
 
-static void perl_curl_easy_register_callback(perl_curl_easy *self, SV **callback, SV *function)
+static void
+perl_curl_easy_register_callback( perl_curl_easy *self, SV **callback, SV *function )
 {
 	dTHX;
 	if (function && SvOK(function)) {
@@ -239,7 +237,8 @@ static void perl_curl_easy_register_callback(perl_curl_easy *self, SV **callback
 	}
 }
 
-static void perl_curl_multi_register_callback(perl_curl_multi *self, SV **callback, SV *function)
+static void
+perl_curl_multi_register_callback( perl_curl_multi *self, SV **callback, SV *function )
 {
 	dTHX;
 	if (function && SvOK(function)) {
@@ -257,7 +256,8 @@ static void perl_curl_multi_register_callback(perl_curl_multi *self, SV **callba
 	}
 }
 
-static void perl_curl_share_register_callback(perl_curl_share *self, SV **callback, SV *function)
+static void
+perl_curl_share_register_callback( perl_curl_share *self, SV **callback, SV *function )
 {
 	dTHX;
 	if (function && SvOK(function)) {
@@ -277,7 +277,8 @@ static void perl_curl_share_register_callback(perl_curl_share *self, SV **callba
 
 
 /* start of form functions - very un-finished! */
-static perl_curl_form * perl_curl_form_new()
+static perl_curl_form *
+perl_curl_form_new( void )
 {
 	perl_curl_form *self;
 	Newz(1, self, 1, perl_curl_form);
@@ -286,7 +287,8 @@ static perl_curl_form * perl_curl_form_new()
 	return self;
 }
 
-static void perl_curl_form_delete(perl_curl_form *self)
+static void
+perl_curl_form_delete( perl_curl_form *self )
 {
 	if (self->post) {
 		curl_formfree(self->post);
@@ -295,7 +297,8 @@ static void perl_curl_form_delete(perl_curl_form *self)
 }
 
 /* make a new multi */
-static perl_curl_multi * perl_curl_multi_new()
+static perl_curl_multi *
+perl_curl_multi_new( void )
 {
 	perl_curl_multi *self;
 	Newz(1, self, 1, perl_curl_multi);
@@ -304,7 +307,8 @@ static perl_curl_multi * perl_curl_multi_new()
 }
 
 /* delete the multi */
-static void perl_curl_multi_delete(perl_curl_multi *self)
+static void
+perl_curl_multi_delete( perl_curl_multi *self )
 {
 	dTHX;
 	perl_curl_multi_callback_code i;
@@ -320,7 +324,8 @@ static void perl_curl_multi_delete(perl_curl_multi *self)
 }
 
 /* make a new share */
-static perl_curl_share * perl_curl_share_new()
+static perl_curl_share *
+perl_curl_share_new( void )
 {
 	perl_curl_share *self;
 	Newz(1, self, 1, perl_curl_share);
@@ -329,7 +334,8 @@ static perl_curl_share * perl_curl_share_new()
 }
 
 /* delete the share */
-static void perl_curl_share_delete(perl_curl_share *self)
+static void
+perl_curl_share_delete( perl_curl_share *self )
 {
 	dTHX;
 	perl_curl_share_callback_code i;
@@ -343,7 +349,8 @@ static void perl_curl_share_delete(perl_curl_share *self)
 }
 
 static size_t
-write_to_ctx(pTHX_ SV* const call_ctx, const char* const ptr, size_t const n) {
+write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
+{
 	PerlIO *handle;
 	SV* out_str;
 	if (call_ctx) { /* a GLOB or a SCALAR ref */
@@ -369,13 +376,8 @@ write_to_ctx(pTHX_ SV* const call_ctx, const char* const ptr, size_t const n) {
 
 /* generic fwrite callback, which decides which callback to call */
 static size_t
-fwrite_wrapper (
-	const void *ptr,
-	size_t size,
-	size_t nmemb,
-	perl_curl_easy *self,
-	void *call_function,
-	void *call_ctx)
+fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
+		perl_curl_easy *self, void *call_function, void *call_ctx)
 {
 	dTHX;
 	if (call_function) { /* We are doing a callback to perl */
@@ -419,13 +421,8 @@ fwrite_wrapper (
 
 /* debug fwrite callback */
 static size_t
-fwrite_wrapper2 (
-	const void *ptr,
-	size_t size,
-	perl_curl_easy *self,
-	void *call_function,
-	void *call_ctx,
-	curl_infotype type)
+fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy *self,
+		void *call_function, void *call_ctx, curl_infotype type )
 {
 	dTHX;
 	dSP;
@@ -474,7 +471,7 @@ fwrite_wrapper2 (
 
 /* Write callback for calling a perl callback */
 static size_t
-write_callback_func(const void *ptr, size_t size, size_t nmemb, void *stream)
+write_callback_func( const void *ptr, size_t size, size_t nmemb, void *stream )
 {
 	perl_curl_easy *self;
 	self=(perl_curl_easy *)stream;
@@ -484,7 +481,8 @@ write_callback_func(const void *ptr, size_t size, size_t nmemb, void *stream)
 
 /* header callback for calling a perl callback */
 static size_t
-writeheader_callback_func(const void *ptr, size_t size, size_t nmemb, void *stream)
+writeheader_callback_func( const void *ptr, size_t size, size_t nmemb,
+		void *stream )
 {
 	perl_curl_easy *self;
 	self=(perl_curl_easy *)stream;
@@ -495,7 +493,8 @@ writeheader_callback_func(const void *ptr, size_t size, size_t nmemb, void *stre
 
 /* debug callback for calling a perl callback */
 static int
-debug_callback_func(CURL* handle, curl_infotype type, char *ptr, size_t size, void *userptr)
+debug_callback_func( CURL* handle, curl_infotype type, char *ptr, size_t size,
+		void *userptr )
 {
 	perl_curl_easy *self;
 	self=(perl_curl_easy *)userptr;
@@ -506,7 +505,7 @@ debug_callback_func(CURL* handle, curl_infotype type, char *ptr, size_t size, vo
 
 /* read callback for calling a perl callback */
 static size_t
-read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream)
+read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
 {
 	dTHX;
 	dSP ;
@@ -571,8 +570,9 @@ read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream)
 
 /* Progress callback for calling a perl callback */
 
-static int progress_callback_func(void *clientp, double dltotal, double dlnow,
-	double ultotal, double ulnow)
+static int
+progress_callback_func( void *clientp, double dltotal, double dlnow,
+		double ultotal, double ulnow )
 {
 	dTHX;
 	dSP;
@@ -610,7 +610,9 @@ static int progress_callback_func(void *clientp, double dltotal, double dlnow,
 }
 
 
-static void lock_callback_func(CURL *easy, curl_lock_data data, curl_lock_access locktype, void *userp )
+static void
+lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
+		void *userp )
 {
 	dTHX;
 	dSP;
@@ -643,7 +645,8 @@ static void lock_callback_func(CURL *easy, curl_lock_data data, curl_lock_access
 	return;
 }
 
-static void unlock_callback_func(CURL *easy, curl_lock_data data, void *userp )
+static void
+unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
 {
 	dTHX;
 	dSP;
@@ -675,7 +678,9 @@ static void unlock_callback_func(CURL *easy, curl_lock_data data, void *userp )
 	return;
 }
 
-static int socket_callback_func(CURL *easy, curl_socket_t s, int what, void *userp, void *socketp )
+static int
+socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
+		void *socketp )
 {
 	dTHX;
 	dSP;
@@ -710,7 +715,8 @@ static int socket_callback_func(CURL *easy, curl_socket_t s, int what, void *use
 	return count;
 }
 
-static int timer_callback_func(CURLM *multi, long timeout_ms, void *userp )
+static int
+timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 {
 	dTHX;
 	dSP;
@@ -956,7 +962,7 @@ curl_easy_setopt(self, option, value, push=0)
 	int push
 	CODE:
 		RETVAL=CURLE_OK;
-		switch(option) {
+		switch( option ) {
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
 			case CURLOPT_FILE:
 			case CURLOPT_INFILE:
@@ -1148,7 +1154,7 @@ curl_easy_getinfo(self, option, ... )
 	WWW::Curl::Easy self
 	int option
 	CODE:
-		switch (option & CURLINFO_TYPEMASK) {
+		switch( option & CURLINFO_TYPEMASK ) {
 			case CURLINFO_STRING:
 			{
 				char * vchar;
@@ -1259,20 +1265,12 @@ curl_easy_recv( self, buffer, length )
 		RETVAL
 
 
-int
-curl_easy_cleanup(self)
-	WWW::Curl::Easy self
-	CODE:
-		/* does nothing anymore - cleanup is automatic when a curl handle goes out of scope */
-		RETVAL = 0;
-	OUTPUT:
-		RETVAL
-
 void
 curl_easy_DESTROY(self)
 	WWW::Curl::Easy self
 	CODE:
 		perl_curl_easy_delete(self);
+
 
 SV *
 curl_easy_strerror(self, errornum)
@@ -1285,6 +1283,7 @@ curl_easy_strerror(self, errornum)
 	}
 	OUTPUT:
 		RETVAL
+
 
 MODULE = WWW::Curl	PACKAGE = WWW::Curl::Form	PREFIX = curl_form_
 
@@ -1433,9 +1432,9 @@ curl_multi_fdset(self)
 				}
 			}
 		}
-	XPUSHs(sv_2mortal(newSVpvn(readset, vecsize)));
-	XPUSHs(sv_2mortal(newSVpvn(writeset, vecsize)));
-	XPUSHs(sv_2mortal(newSVpvn(excepset, vecsize)));
+		XPUSHs(sv_2mortal(newSVpvn(readset, vecsize)));
+		XPUSHs(sv_2mortal(newSVpvn(writeset, vecsize)));
+		XPUSHs(sv_2mortal(newSVpvn(excepset, vecsize)));
 
 
 long
@@ -1459,7 +1458,7 @@ curl_multi_setopt(self, option, value)
 	SV * value
 	CODE:
 		RETVAL=CURLM_OK;
-		switch(option) {
+		switch( option ) {
 			case CURLMOPT_SOCKETFUNCTION:
 			case CURLMOPT_SOCKETDATA:
 				curl_multi_setopt(self->curlm, CURLMOPT_SOCKETFUNCTION, SvOK(value) ? socket_callback_func : NULL);
@@ -1573,8 +1572,7 @@ curl_share_setopt(self, option, value)
 	SV * value
 	CODE:
 		RETVAL=CURLE_OK;
-		switch(option) {
-			/* slist cases */
+		switch( option ) {
 			case CURLSHOPT_LOCKFUNC:
 				curl_share_setopt(self->curlsh, CURLSHOPT_LOCKFUNC, SvOK(value) ? lock_callback_func : NULL);
 				curl_share_setopt(self->curlsh, CURLSHOPT_USERDATA, SvOK(value) ? self : NULL);
