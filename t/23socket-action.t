@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More tests => 18;
-use WWW::Curl::Easy qw(:constants);
-use WWW::Curl::Multi qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
+use WWW::CurlOO::Multi qw(:constants);
 
 my ($head1, $head2, $body1, $body2 );
 open my $_head1, ">", \$head1;
@@ -81,19 +81,19 @@ sub on_timer
 	}
 }
 
-my $curl1 = WWW::Curl::Easy->new();
+my $curl1 = WWW::CurlOO::Easy->new();
 $curl1->setopt( CURLOPT_URL, $url );
 $curl1->setopt( CURLOPT_WRITEHEADER, $_head1 );
 $curl1->setopt( CURLOPT_WRITEDATA, $_body1 );
 $curl1->setopt( CURLOPT_PRIVATE, "one" );
 
-my $curl2 = WWW::Curl::Easy->new();
+my $curl2 = WWW::CurlOO::Easy->new();
 $curl2->setopt( CURLOPT_URL, $url );
 $curl2->setopt( CURLOPT_WRITEHEADER, $_head2 );
 $curl2->setopt( CURLOPT_WRITEDATA, $_body2 );
 $curl2->setopt( CURLOPT_PRIVATE, "two" );
 
-my $curlm = WWW::Curl::Multi->new();
+my $curlm = WWW::CurlOO::Multi->new();
 $curlm->setopt( CURLMOPT_SOCKETFUNCTION, \&on_socket );
 $curlm->setopt( CURLMOPT_TIMERFUNCTION, \&on_timer );
 $curlm->add_handle( $curl1 );

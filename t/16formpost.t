@@ -8,7 +8,7 @@ use Test::More skip_all => "Not performing POST";
 use strict;
 
 END {print "not ok 1\n" unless $::loaded;}
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
 $::loaded = 1;
 
@@ -29,7 +29,7 @@ print "1..6\n";
 print "ok ".++$count."\n";
 
 # Init the curl session
-my $curl = WWW::Curl::Easy->new();
+my $curl = WWW::CurlOO::Easy->new();
 if ($curl == 0) {
     print "not ";
 }

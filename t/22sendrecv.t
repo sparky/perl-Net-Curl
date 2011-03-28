@@ -2,9 +2,9 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
-my $vi = WWW::Curl::version_info();
+my $vi = WWW::CurlOO::version_info();
 plan skip_all => "curl $vi->{version} does not support send and recv"
 	if $vi->{version_num} < 0x071202;
 plan tests => 7;
@@ -17,7 +17,7 @@ my $url = $ENV{CURL_TEST_URL} || "http://google.com";
 # make sure nothing blocks
 alarm 5;
 
-my $c = WWW::Curl::Easy->new();
+my $c = WWW::CurlOO::Easy->new();
 $c->setopt( CURLOPT_URL, $url );
 $c->setopt( CURLOPT_CONNECT_ONLY, 1 );
 

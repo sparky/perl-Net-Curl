@@ -7,7 +7,7 @@ use lib 'blib/lib';
 use lib 'blib/arch';
 use Test::More tests => 25;
 use File::Temp qw/tempfile/;
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 my $other_handle;
@@ -17,9 +17,9 @@ my $body_called = 0;
 my $head_called = 0;
 {
 	# Init the curl session
-	my $curl = WWW::Curl::Easy->new();
+	my $curl = WWW::CurlOO::Easy->new();
 	ok($curl, 'Curl session initialize returns something'); #1
-	ok(ref($curl) eq 'WWW::Curl::Easy', 'Curl session looks like an object from the WWW::Curl::Easy module'); #2
+	ok(ref($curl) eq 'WWW::CurlOO::Easy', 'Curl session looks like an object from the WWW::CurlOO::Easy module'); #2
 
 	ok(! $curl->setopt(CURLOPT_NOPROGRESS, 1), "Setting CURLOPT_NOPROGRESS"); #3
 	ok(! $curl->setopt(CURLOPT_FOLLOWLOCATION, 1), "Setting CURLOPT_FOLLOWLOCATION"); #4
@@ -58,7 +58,7 @@ my $head_called = 0;
 	# duplicate the handle
 	$other_handle = $curl->duphandle();
 	ok($other_handle, 'duphandle seems to return something'); #12
-	ok(ref($other_handle) eq 'WWW::Curl::Easy', 'Dup handle looks like an object from the WWW::Curl::Easy module'); #13
+	ok(ref($other_handle) eq 'WWW::CurlOO::Easy', 'Dup handle looks like an object from the WWW::CurlOO::Easy module'); #13
 
 	foreach my $x ($curl,$other_handle) {
 		my $retcode=$x->perform();
@@ -81,7 +81,7 @@ ok( 1, "We survive DESTROY time for the original handle");
 ok( head_callback('1',undef), "We can still access the callbacks");
 my $third = $other_handle->duphandle();
 ok($third, 'duphandle seems to return something again');
-ok(ref($third) eq 'WWW::Curl::Easy', 'Dup handle looks like an object from the WWW::Curl::Easy module');
+ok(ref($third) eq 'WWW::CurlOO::Easy', 'Dup handle looks like an object from the WWW::CurlOO::Easy module');
 
 foreach my $x ($other_handle,$third) {
 	my $retcode=$x->perform();

@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use Test::More;
 use File::Temp qw/tempfile/;
-use WWW::Curl qw(:constants);
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
 # list of tests
 #         site-url, verifypeer(0,1), verifyhost(0,2), result(0=ok, 1=fail), result-openssl0.9.5
@@ -29,7 +29,7 @@ my $url_list=[
 ];
 
 
-my $v = WWW::Curl::version_info();
+my $v = WWW::CurlOO::version_info();
 if ( ($v->{features} | CURL_VERSION_SSL) == 0 ) {
 	plan skip_all => 'libcurl was compiled without ssl support, skipping ssl tests';
 } else {
@@ -37,9 +37,9 @@ if ( ($v->{features} | CURL_VERSION_SSL) == 0 ) {
 }
 
 # Init the curl session
-my $curl = WWW::Curl::Easy->new();
+my $curl = WWW::CurlOO::Easy->new();
 ok($curl, 'Curl session initialize returns something'); #1
-ok(ref($curl) eq 'WWW::Curl::Easy', 'Curl session looks like an object from the WWW::Curl::Easy module'); #2
+ok(ref($curl) eq 'WWW::CurlOO::Easy', 'Curl session looks like an object from the WWW::CurlOO::Easy module'); #2
 
 ok(! $curl->setopt(CURLOPT_NOPROGRESS, 1), "Setting CURLOPT_NOPROGRESS"); #3
 ok(! $curl->setopt(CURLOPT_FOLLOWLOCATION, 1), "Setting CURLOPT_FOLLOWLOCATION"); #4
@@ -52,7 +52,7 @@ my $body = tempfile();
 ok(! $curl->setopt(CURLOPT_FILE, $body), "Setting CURLOPT_FILE"); #7
 
 my @myheaders;
-$myheaders[0] = "User-Agent: Verifying SSL functions in WWW::Curl perl interface for libcURL";
+$myheaders[0] = "User-Agent: Verifying SSL functions in WWW::CurlOO perl interface for libcURL";
 $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders);
 
 $curl->setopt(CURLOPT_FORBID_REUSE, 1);
@@ -67,7 +67,7 @@ sub silence { return 0 }
 my $count = 1;
 
 my $sslversion95 = 0;
-$sslversion95++ if (&WWW::Curl::version() =~ m/SSL 0.9.5/); # 0.9.5 has buggy connect with some ssl sites
+$sslversion95++ if (&WWW::CurlOO::version() =~ m/SSL 0.9.5/); # 0.9.5 has buggy connect with some ssl sites
 
 my $haveca = 0;
 if (-f "ca-bundle.crt") { $haveca = 1; }

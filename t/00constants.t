@@ -2,13 +2,13 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::Curl qw(:constants);
-use WWW::Curl::Easy qw(:constants);
-use WWW::Curl::Form qw(:constants);
-use WWW::Curl::Multi qw(:constants);
-use WWW::Curl::Share qw(:constants);
+use WWW::CurlOO qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
+use WWW::CurlOO::Form qw(:constants);
+use WWW::CurlOO::Multi qw(:constants);
+use WWW::CurlOO::Share qw(:constants);
 
-my $ver_num_raw = WWW::Curl::version();
+my $ver_num_raw = WWW::CurlOO::version();
 my ($ver_num) = $ver_num_raw =~ m!libcurl/(\d\.\d+\.\d+)!;
 my ($major, $minor, $bugfix) = split(/\./, $ver_num);
 

@@ -3,12 +3,12 @@ use strict;
 use warnings;
 use Test::More 'no_plan';
 
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 
 # Init the curl session
-my $curl = WWW::Curl::Easy->new();
+my $curl = WWW::CurlOO::Easy->new();
 
 ok(! $curl->setopt(CURLOPT_NOPROGRESS, 1), "Setting CURLOPT_NOPROGRESS");
 ok(! $curl->setopt(CURLOPT_FOLLOWLOCATION, 1), "Setting CURLOPT_FOLLOWLOCATION");

@@ -7,7 +7,7 @@ use Test::More skip_all => "Not performing printenv cgi tests";
 # Change 1..1 below to 1..last_test_to_print .
 use strict;
 
-use WWW::Curl::Easy qw(:constants);
+use WWW::CurlOO::Easy qw(:constants);
 
 ######################### End of black magic.
 
@@ -38,7 +38,7 @@ print "1..5\n";
 
 
 # Init the curl session
-my $curl = WWW::Curl::Easy->new();
+my $curl = WWW::CurlOO::Easy->new();
 if ($curl == 0) {
     print "not ";
 }

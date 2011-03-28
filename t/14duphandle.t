@@ -8,8 +8,8 @@ use lib 'blib/arch';
 use Test::More tests => 17;
 use File::Temp qw/tempfile/;
 
-BEGIN { use_ok( 'WWW::Curl::Easy' ); }
-use WWW::Curl::Easy qw(:constants);
+BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
+use WWW::CurlOO::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 
@@ -20,9 +20,9 @@ my $body = tempfile();
 
 	{
 		# Init the curl session
-		my $curl = WWW::Curl::Easy->new();
+		my $curl = WWW::CurlOO::Easy->new();
 		ok($curl, 'Curl session initialize returns something');
-		ok(ref($curl) eq 'WWW::Curl::Easy', 'Curl session looks like an object from the WWW::Curl::Easy module');
+		ok(ref($curl) eq 'WWW::CurlOO::Easy', 'Curl session looks like an object from the WWW::CurlOO::Easy module');
 
 		ok(! $curl->setopt(CURLOPT_NOPROGRESS, 1), "Setting CURLOPT_NOPROGRESS");
 		ok(! $curl->setopt(CURLOPT_FOLLOWLOCATION, 1), "Setting CURLOPT_FOLLOWLOCATION");
@@ -41,7 +41,7 @@ my $body = tempfile();
 
 		# duplicate the handle
 		$other_handle = $curl->duphandle();
-		ok ($other_handle && ref($other_handle) eq 'WWW::Curl::Easy', "Duplicated handle seems to be an object in the right namespace");
+		ok ($other_handle && ref($other_handle) eq 'WWW::CurlOO::Easy', "Duplicated handle seems to be an object in the right namespace");
 
 		foreach my $x ($other_handle,$curl) {
 			my $retcode = $x->perform();
