@@ -6,7 +6,6 @@ Makefile.PL
 README
 README.Win32
 inc/symbols-in-versions
-lib/WWW/Curl.pm
 t/00constants.t
 t/01basic.t
 t/02callbacks.t
@@ -31,8 +30,9 @@ t/23socket-action.t
 t/meta.t
 t/pod-coverage.t
 t/pod.t
-template/Easy.pm.tmpl
-template/Form.pm.tmpl
-template/Multi.pm.tmpl
-template/Share.pm.tmpl
+template/Curl.pm
+template/Easy.pm
+template/Form.pm
+template/Multi.pm
+template/Share.pm
 typemap

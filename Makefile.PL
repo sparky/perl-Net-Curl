@@ -58,7 +58,10 @@ if ( $@ ) {
 }
 my @constant_types = divide_constants();
 
+mkdir "lib";
+mkdir "lib/WWW";
 mkdir "lib/WWW/Curl";
+write_from_template( "Curl", [], "lib/WWW" );
 write_from_template( "Easy", $constant_types[ 0 ] );
 write_from_template( "Share", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
@@ -251,13 +254,17 @@ sub write_from_template
 {
 	my $name = shift;
 	my $constants = shift;
+	my $dir = shift || "lib/WWW/Curl";
 
-	print "Writing lib/WWW/Curl/$name.pm from template/$name.pm.tmpl\n";
-	open my $fout, ">", "lib/WWW/Curl/$name.pm"
-		or die "Can't create lib/WWW/Curl/$name.pm\n";
+	my $template = "template/$name.pm";
+	my $out = "$dir/$name.pm";
 
-	open my $fin, "<", "template/$name.pm.tmpl"
-		or die "Can't read template/$name.pm.tmpl\n";
+	print "Writing $out from $template\n";
+	open my $fout, ">", $out
+		or die "Can't create $out\n";
+
+	open my $fin, "<", $template
+		or die "Can't read $template\n";
 
 	local $_;
 	while (<$fin>) {
