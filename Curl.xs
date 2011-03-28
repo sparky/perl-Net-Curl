@@ -786,13 +786,15 @@ curl_version(...)
 SV *
 curl_version_info()
 	PREINIT:
-		curl_version_info_data *vi;
+		const curl_version_info_data *vi;
 		HV *ret;
 	CODE:
 		vi = curl_version_info( CURLVERSION_NOW );
 		if ( vi == NULL )
 			croak( "curl_version_info() returned NULL\n" );
 		ret = newHV();
+		hv_store( ret, "age", 3,
+			newSViv(vi->age), 0 );
 		if ( vi->age >= CURLVERSION_FIRST ) {
 			if ( vi->version )
 				hv_store( ret, "version", 7,
@@ -837,6 +839,7 @@ curl_version_info()
 				hv_store( ret, "libidn", 6,
 					newSVpv(vi->libidn, 0), 0 );
 		}
+#ifdef CURLVERSION_FOURTH
 		if ( vi->age >= CURLVERSION_FOURTH ) {
 			hv_store( ret, "iconv_ver_num", 13,
 				newSViv(vi->iconv_ver_num), 0 );
@@ -844,6 +847,7 @@ curl_version_info()
 				hv_store( ret, "libssh_version", 14,
 					newSVpv(vi->libssh_version, 0), 0 );
 		}
+#endif
 
 		RETVAL = newRV( (SV *)ret );
 	OUTPUT:
