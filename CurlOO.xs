@@ -6,6 +6,7 @@
 
 /*
  * Copyright (C) 2000, 2001, 2002, 2005, 2008 Daniel Stenberg, Cris Bailiff, et al.
+ * Copyright (C) 2011 Przemyslaw Iskra.
  * You may opt to use, copy, modify, merge, publish, distribute and/or
  * sell copies of the Software, and permit persons to whom the
  * Software is furnished to do so, under the terms of the MPL or
@@ -99,7 +100,7 @@ typedef struct {
 /* switch from curl option codes to the relevant callback index */
 static perl_curl_easy_callback_code_t
 callback_index( int option )
-{
+/*{{{*/ {
 	switch( option ) {
 		case CURLOPT_WRITEFUNCTION:
 		case CURLOPT_FILE:
@@ -127,13 +128,13 @@ callback_index( int option )
 	}
 	croak("Bad callback index requested\n");
 	return CALLBACK_LAST;
-}
+} /*}}}*/
 
 
 int
 perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV *value,
 		int clear )
-{
+/*{{{*/ {
 	perl_curl_easy_slist_code_t si = 0;
 	AV *array;
 	int array_len;
@@ -198,29 +199,29 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 
 	/* pass the list into curl_easy_setopt() */
 	return curl_easy_setopt(self->curl, option, *slist);
-}
+} /*}}}*/
 
 static perl_curl_easy_t *
 perl_curl_easy_new( void )
-{
+/*{{{*/ {
 	perl_curl_easy_t *self;
 	Newz(1, self, 1, perl_curl_easy_t);
 	self->curl=curl_easy_init();
 	return self;
-}
+} /*}}}*/
 
 static perl_curl_easy_t *
 perl_curl_easy_duphandle( perl_curl_easy_t *orig )
-{
+/*{{{*/ {
 	perl_curl_easy_t *self;
 	Newz(1, self, 1, perl_curl_easy_t);
 	self->curl=curl_easy_duphandle(orig->curl);
 	return self;
-}
+} /*}}}*/
 
 static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
-{
+/*{{{*/ {
 	perl_curl_easy_slist_code_t index;
 	perl_curl_easy_callback_code_t i;
 
@@ -252,13 +253,13 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 	}
 	Safefree(self);
 
-}
+} /*}}}*/
 
 /* Register a callback function */
 
 static void
 perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, SV *function )
-{
+/*{{{*/ {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
 		if (*callback == NULL) {
@@ -272,11 +273,11 @@ perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, S
 			*callback = NULL;
 		}
 	}
-}
+} /*}}}*/
 
 static void
 perl_curl_multi_register_callback( pTHX_  perl_curl_multi_t *self, SV **callback, SV *function )
-{
+/*{{{*/ {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
 		if (*callback == NULL) {
@@ -290,11 +291,11 @@ perl_curl_multi_register_callback( pTHX_  perl_curl_multi_t *self, SV **callback
 			*callback = NULL;
 		}
 	}
-}
+} /*}}}*/
 
 static void
 perl_curl_share_register_callback( pTHX_  perl_curl_share_t *self, SV **callback, SV *function )
-{
+/*{{{*/ {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
 		if (*callback == NULL) {
@@ -308,43 +309,43 @@ perl_curl_share_register_callback( pTHX_  perl_curl_share_t *self, SV **callback
 			*callback = NULL;
 		}
 	}
-}
+} /*}}}*/
 
 
 /* start of form functions - very un-finished! */
 static perl_curl_form_t *
 perl_curl_form_new( void )
-{
+/*{{{*/ {
 	perl_curl_form_t *self;
 	Newz(1, self, 1, perl_curl_form_t);
 	self->post=NULL;
 	self->last=NULL;
 	return self;
-}
+} /*}}}*/
 
 static void
 perl_curl_form_delete( perl_curl_form_t *self )
-{
+/*{{{*/ {
 	if (self->post) {
 		curl_formfree(self->post);
 	}
 	Safefree(self);
-}
+} /*}}}*/
 
 /* make a new multi */
 static perl_curl_multi_t *
 perl_curl_multi_new( void )
-{
+/*{{{*/ {
 	perl_curl_multi_t *self;
 	Newz(1, self, 1, perl_curl_multi_t);
 	self->curlm=curl_multi_init();
 	return self;
-}
+} /*}}}*/
 
 /* delete the multi */
 static void
 perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
-{
+/*{{{*/ {
 	perl_curl_multi_callback_code_t i;
 
 	if (self->curlm)
@@ -355,22 +356,22 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
 	}
 
 	Safefree(self);
-}
+} /*}}}*/
 
 /* make a new share */
 static perl_curl_share_t *
 perl_curl_share_new( void )
-{
+/*{{{*/ {
 	perl_curl_share_t *self;
 	Newz(1, self, 1, perl_curl_share_t);
 	self->curlsh=curl_share_init();
 	return self;
-}
+} /*}}}*/
 
 /* delete the share */
 static void
 perl_curl_share_delete( pTHX_ perl_curl_share_t *self )
-{
+/*{{{*/ {
 	perl_curl_share_callback_code_t i;
 	if (self->curlsh)
 		curl_share_cleanup(self->curlsh);
@@ -379,11 +380,11 @@ perl_curl_share_delete( pTHX_ perl_curl_share_t *self )
 		sv_2mortal(self->callback_ctx[i]);
 	}
 	Safefree(self);
-}
+} /*}}}*/
 
 static size_t
 write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
-{
+/*{{{*/ {
 	PerlIO *handle;
 	SV* out_str;
 	if (call_ctx) { /* a GLOB or a SCALAR ref */
@@ -405,13 +406,13 @@ write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
 		handle = PerlIO_stdout();
 	}
 	return PerlIO_write(handle, ptr, n);
-}
+} /*}}}*/
 
 /* generic fwrite callback, which decides which callback to call */
 static size_t
 fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
 		perl_curl_easy_t *self, void *call_function, void *call_ctx)
-{
+/*{{{*/ {
 	dTHX;
 	if (call_function) { /* We are doing a callback to perl */
 		dSP;
@@ -450,13 +451,13 @@ fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
 	} else {
 		return write_to_ctx(aTHX_ call_ctx, ptr, size * nmemb);
 	}
-}
+} /*}}}*/
 
 /* debug fwrite callback */
 static size_t
 fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 		void *call_function, void *call_ctx, curl_infotype type )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -500,46 +501,46 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 	} else {
 		return write_to_ctx(aTHX_ call_ctx, ptr, size * sizeof(char));
 	}
-}
+} /*}}}*/
 
 /* Write callback for calling a perl callback */
 static size_t
 write_callback_func( const void *ptr, size_t size, size_t nmemb, void *stream )
-{
+/*{{{*/ {
 	perl_curl_easy_t *self;
 	self=(perl_curl_easy_t *)stream;
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_WRITE],self->callback_ctx[CALLBACK_WRITE]);
-}
+} /*}}}*/
 
 /* header callback for calling a perl callback */
 static size_t
 header_callback_func( const void *ptr, size_t size, size_t nmemb,
 		void *stream )
-{
+/*{{{*/ {
 	perl_curl_easy_t *self;
 	self=(perl_curl_easy_t *)stream;
 
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_HEADER],self->callback_ctx[CALLBACK_HEADER]);
-}
+} /*}}}*/
 
 /* debug callback for calling a perl callback */
 static int
 debug_callback_func( CURL* handle, curl_infotype type, char *ptr, size_t size,
 		void *userptr )
-{
+/*{{{*/ {
 	perl_curl_easy_t *self;
 	self=(perl_curl_easy_t *)userptr;
 
 	return fwrite_wrapper2(ptr,size,self,
 			self->callback[CALLBACK_DEBUG],self->callback_ctx[CALLBACK_DEBUG],type);
-}
+} /*}}}*/
 
 /* read callback for calling a perl callback */
 static size_t
 read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
-{
+/*{{{*/ {
 	dTHX;
 	dSP ;
 
@@ -599,14 +600,14 @@ read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
 		}
 		return PerlIO_read(f,ptr,maxlen);
 	}
-}
+} /*}}}*/
 
 /* Progress callback for calling a perl callback */
 
 static int
 progress_callback_func( void *clientp, double dltotal, double dlnow,
 		double ultotal, double ulnow )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -640,13 +641,13 @@ progress_callback_func( void *clientp, double dltotal, double dlnow,
 	FREETMPS;
 	LEAVE;
 	return count;
-}
+} /*}}}*/
 
 
 static void
 lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
 		void *userp )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -676,11 +677,11 @@ lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
 	FREETMPS;
 	LEAVE;
 	return;
-}
+} /*}}}*/
 
 static void
 unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -709,12 +710,12 @@ unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
 	FREETMPS;
 	LEAVE;
 	return;
-}
+} /*}}}*/
 
 static int
 socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
 		void *socketp )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -746,11 +747,11 @@ socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
 	FREETMPS;
 	LEAVE;
 	return count;
-}
+} /*}}}*/
 
 static int
 timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
-{
+/*{{{*/ {
 	dTHX;
 	dSP;
 
@@ -781,7 +782,7 @@ timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 	FREETMPS;
 	LEAVE;
 	return count;
-}
+} /*}}}*/
 
 
 #include "const-defenums.h"
