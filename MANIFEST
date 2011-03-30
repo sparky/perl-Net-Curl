@@ -1,5 +1,9 @@
 Changes
 CurlOO.xs
+CurlOO_Easy.xs
+CurlOO_Form.xs
+CurlOO_Share.xs
+CurlOO_Multi.xs
 LICENSE
 MANIFEST
 Makefile.PL
