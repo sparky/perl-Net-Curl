@@ -74,25 +74,25 @@ Returns a hashref with the same information as L<curl_version_info(3)>.
 	my $libcurl_ver = WWW::CurlOO::version_info();
 
 	print Dumper( $libcurl_ver );
-	# example for version_info with age 3
-	# {
-	# 	'age' => 3,
-	# 	'version' => '7.21.4',
-	# 	'version_num' => 464132,
-	# 	'host' => 'x86_64-pld-linux-gnu',
-	# 	'features' => 18109,
-	# 	'ssl_version' => 'GnuTLS/2.10.4'
-	# 	'ssl_version_num' => 0,
-	# 	'libz_version' => '1.2.5',
-	# 	'protocols' => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http', 'https',
-	# 		'imap', 'imaps', 'ldap', 'ldaps', 'pop3', 'pop3s', 'rtmp', 'rtsp',
-	# 		'scp', 'sftp', 'smtp', 'smtps', 'telnet', 'tftp' ],
-	# 	'ares' => '1.7.4',
-	# 	'ares_num' => 67332,
-	# 	'libidn' => '1.20',
-	# 	'iconv_ver_num' => 0,
-	# 	'libssh_version' => 'libssh2/1.2.7',
-	# };
+
+Example for version_info with age CURLVERSION_FOURTH:
+
+	'age' => 3,
+	'version' => '7.21.4',
+	'version_num' => 464132,
+	'host' => 'x86_64-pld-linux-gnu',
+	'features' => 18109,
+	'ssl_version' => 'GnuTLS/2.10.4'
+	'ssl_version_num' => 0,
+	'libz_version' => '1.2.5',
+	'protocols' => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http', 'https',
+		'imap', 'imaps', 'ldap', 'ldaps', 'pop3', 'pop3s', 'rtmp', 'rtsp',
+		'scp', 'sftp', 'smtp', 'smtps', 'telnet', 'tftp' ],
+	'ares' => '1.7.4',
+	'ares_num' => 67332,
+	'libidn' => '1.20',
+	'iconv_ver_num' => 0,
+	'libssh_version' => 'libssh2/1.2.7',
 	
 You can import constants if you want to check libcurl features:
 
@@ -110,6 +110,8 @@ Decodes date string returning its numerical value, in seconds.
 	print "$timestr\n";
 	# Sun Nov  6 08:49:37 1994
 
+See L<curl_getdate(3)> for more info on supported input formats.
+
 =item constant
 
 Unused.
@@ -118,7 +120,7 @@ Unused.
 
 =head1 AUTHORS
 
-This package was mostly rewritten by Przemysław Iskra <sparky at pld-linux.org>.
+This package was mostly rewritten by Przemyslaw Iskra <sparky at pld-linux.org>.
 
 It is based on WWW::Curl developed by Cris Bailiff <c.bailiff+curl at devsecure.com>
 and Balint Szilakszi <szbalint at cpan.org>.
@@ -131,7 +133,7 @@ repackaged the module into a more modern form.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2011 Przemysław Iskra.
+Copyright (c) 2011 Przemyslaw Iskra.
 
 Copyright (C) 2000-2005,2008-2010 Daniel Stenberg, Cris Bailiff,
 Sebastian Riedel, Balint Szilakszi et al.
