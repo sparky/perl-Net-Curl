@@ -97,6 +97,9 @@ WriteMakefile(
 	SIGN		=> 1,
 	LICENSE		=> 'MPL or MIT/X-derivate',	
 	MIN_PERL_VERSION => 5.006001,
+	depend		=> {
+		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xs CurlOO_Form.xs CurlOO_Multi.xs CurlOO_Share.xs'
+	},
 	clean		=> {
 		FILES => 'const-c.inc const-*-xs.inc const-defenums.h'
 	},
