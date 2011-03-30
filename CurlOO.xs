@@ -144,29 +144,29 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 			si = SLIST_HTTPHEADER;
 			break;
 		case CURLOPT_HTTP200ALIASES:
-			si =  SLIST_HTTP200ALIASES;
+			si = SLIST_HTTP200ALIASES;
 			break;
 #ifdef CURLOPT_MAIL_RCPT
 		case CURLOPT_MAIL_RCPT:
-			si =  SLIST_MAIL_RCPT;
+			si = SLIST_MAIL_RCPT;
 			break;
 #endif
 		case CURLOPT_QUOTE:
-			si =  SLIST_QUOTE;
+			si = SLIST_QUOTE;
 			break;
 		case CURLOPT_POSTQUOTE:
-			si =  SLIST_POSTQUOTE;
+			si = SLIST_POSTQUOTE;
 			break;
 		case CURLOPT_PREQUOTE:
-			si =  SLIST_PREQUOTE;
+			si = SLIST_PREQUOTE;
 			break;
 #ifdef CURLOPT_RESOLVE
 		case CURLOPT_RESOLVE:
-			si =  SLIST_RESOLVE;
+			si = SLIST_RESOLVE;
 			break;
 #endif
 		case CURLOPT_TELNETOPTIONS:
-			si =  SLIST_TELNETOPTIONS;
+			si = SLIST_TELNETOPTIONS;
 			break;
 		default:
 			return -1;
@@ -274,7 +274,7 @@ perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, S
 } /*}}}*/
 
 static void
-perl_curl_multi_register_callback( pTHX_  perl_curl_multi_t *self, SV **callback, SV *function )
+perl_curl_multi_register_callback( pTHX_ perl_curl_multi_t *self, SV **callback, SV *function )
 /*{{{*/ {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
@@ -292,7 +292,7 @@ perl_curl_multi_register_callback( pTHX_  perl_curl_multi_t *self, SV **callback
 } /*}}}*/
 
 static void
-perl_curl_share_register_callback( pTHX_  perl_curl_share_t *self, SV **callback, SV *function )
+perl_curl_share_register_callback( pTHX_ perl_curl_share_t *self, SV **callback, SV *function )
 /*{{{*/ {
 	if (function && SvOK(function)) {
 		/* FIXME: need to check the ref-counts here */
@@ -782,7 +782,41 @@ cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
 	return count;
 } /*}}}*/
 
+static const MGVTBL perl_curl_vtbl = { NULL };
 
+static void
+perl_curl_setptr( pTHX_ SV *self, void *ptr )
+{
+	MAGIC *mg;
+
+	mg = sv_magicext (SvRV (self), 0, PERL_MAGIC_ext, &perl_curl_vtbl, (const char *)ptr, 0);
+	mg->mg_flags |= MGf_DUP;
+}
+
+static void *
+perl_curl_getptr( pTHX_ SV *self )
+{
+	MAGIC *mg;
+
+	if ( !self )
+		croak( "self is null\n" );
+
+	if ( !SvOK( self ) )
+		croak( "self not OK\n" );
+
+	if ( !SvROK( self ) )
+		croak( "self not ROK\n" );
+
+	if ( !sv_isobject( self ) )
+		croak( "self is not an object" );
+
+	for (mg = SvMAGIC( SvRV( self ) ); mg; mg = mg->mg_moremagic ) {
+		if ( mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &perl_curl_vtbl )
+			return mg->mg_ptr;
+	}
+
+	croak( "object does not have required pointer" );
+}
 
 typedef perl_curl_easy_t *WWW__CurlOO__Easy;
 typedef perl_curl_form_t *WWW__CurlOO__Form;

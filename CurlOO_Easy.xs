@@ -9,57 +9,70 @@ BOOT:
 PROTOTYPES: ENABLE
 
 void
-curl_easy_new(...)
+curl_easy_new( ... )
 	PREINIT:
 		perl_curl_easy_t *self;
-		char *sclass = "WWW::CurlOO::Easy";
-
+		char *sclass = "WWW::CurlOO::Multi";
+		SV *base;
+		HV *stash;
 	PPCODE:
-		/* {{{ */
-		if (items>0 && !SvROK(ST(0))) {
+		if ( items > 0 && !SvROK( ST(0) )) {
 			STRLEN dummy;
-			sclass = SvPV(ST(0),dummy);
+			sclass = SvPV( ST(0), dummy );
 		}
+		if ( items > 1 ) {
+			base = ST(1);
+			if ( ! SvOK( base ) || ! SvROK( base ) )
+				croak( "object base must be a valid reference\n" );
+		} else
+			base = newRV_noinc( (SV *)newHV() );
 
-		self=perl_curl_easy_new(); /* curl handle created by this point */
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), sclass, (void*)self);
-		SvREADONLY_on(SvRV(ST(0)));
+		self = perl_curl_easy_new();
 
-		Newxz(self->y,1,I32);
-		if (!self->y) { croak ("out of memory"); }
+		Newxz( self->y, 1, I32 );
+		if ( !self->y )
+			croak ("out of memory");
 		(*self->y)++;
+
 		/* configure curl to always callback to the XS interface layer */
-		curl_easy_setopt(self->curl, CURLOPT_WRITEFUNCTION, cb_easy_write);
-		curl_easy_setopt(self->curl, CURLOPT_READFUNCTION, cb_easy_read);
+		curl_easy_setopt( self->curl, CURLOPT_WRITEFUNCTION, cb_easy_write );
+		curl_easy_setopt( self->curl, CURLOPT_READFUNCTION, cb_easy_read );
 
 		/* set our own object as the context for all curl callbacks */
-		curl_easy_setopt(self->curl, CURLOPT_FILE, self);
-		curl_easy_setopt(self->curl, CURLOPT_INFILE, self);
+		curl_easy_setopt( self->curl, CURLOPT_FILE, self );
+		curl_easy_setopt( self->curl, CURLOPT_INFILE, self );
 
 		/* we always collect this, in case it's wanted */
-		curl_easy_setopt(self->curl, CURLOPT_ERRORBUFFER, self->errbuf);
+		curl_easy_setopt( self->curl, CURLOPT_ERRORBUFFER, self->errbuf );
+
+		perl_curl_setptr( aTHX_ base, self );
+		stash = gv_stashpv( sclass, 0 );
+		ST(0) = sv_bless( base, stash );
 
 		XSRETURN(1);
-		/* }}} */
+
 
 void
-curl_easy_duphandle(self)
+curl_easy_duphandle( self, ... )
 	WWW::CurlOO::Easy self
 	PREINIT:
 		perl_curl_easy_t *clone;
 		char *sclass = "WWW::CurlOO::Easy";
 		perl_curl_easy_callback_code_t i;
-
+		SV *base;
+		HV *stash;
 	PPCODE:
 		/* {{{ */
+		if ( items > 1 ) {
+			base = ST(1);
+			if ( ! SvOK( base ) || ! SvROK( base ) )
+				croak( "object base must be a valid reference\n" );
+		} else
+			base = newRV_noinc( (SV *)newHV() );
+
 		clone=perl_curl_easy_duphandle(self);
 		clone->y = self->y;
 		(*self->y)++;
-
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), sclass, (void*)clone);
-		SvREADONLY_on(SvRV(ST(0)));
 
 		/* configure curl to always callback to the XS interface layer */
 
@@ -97,6 +110,11 @@ curl_easy_duphandle(self)
 			}
 		}
 		clone->strings_index = self->strings_index;
+
+		perl_curl_setptr( aTHX_ base, clone );
+		stash = gv_stashpv( sclass, 0 );
+		ST(0) = sv_bless( base, stash );
+
 		XSRETURN(1);
 		/* }}} */
 
@@ -191,8 +209,7 @@ curl_easy_setopt(self, option, value, push=0)
 			case CURLOPT_HTTPPOST:
 				if (sv_derived_from(value, "WWW::CurlOO::Form")) {
 					WWW__CurlOO__Form wrapper;
-					IV tmp = SvIV((SV*)SvRV(value));
-					wrapper = INT2PTR(WWW__CurlOO__Form,tmp);
+					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->post);
 				} else
 					croak("value is not of type WWW::CurlOO::Form");
@@ -202,8 +219,7 @@ curl_easy_setopt(self, option, value, push=0)
 			case CURLOPT_SHARE:
 				if (sv_derived_from(value, "WWW::CurlOO::Share")) {
 					WWW__CurlOO__Share wrapper;
-					IV tmp = SvIV((SV*)SvRV(value));
-					wrapper = INT2PTR(WWW__CurlOO__Share,tmp);
+					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
 				} else
 					croak("value is not of type WWW::CurlOO::Share");
