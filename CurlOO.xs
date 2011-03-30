@@ -20,11 +20,9 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/multi.h>
+#include "const-defenums.h"
+#include "const-c.inc"
 
-/* Do a favor for older perl versions */
-#ifndef Newxz
-#	define Newxz(v,n,t)				Newz(0,v,n,t)
-#endif
 
 typedef enum {
 	CALLBACK_WRITE = 0,
@@ -131,7 +129,7 @@ callback_index( int option )
 } /*}}}*/
 
 
-int
+static int
 perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV *value,
 		int clear )
 /*{{{*/ {
@@ -785,15 +783,10 @@ timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
 } /*}}}*/
 
 
-#include "const-defenums.h"
-#include "const-c.inc"
 
 typedef perl_curl_easy_t *WWW__CurlOO__Easy;
-
 typedef perl_curl_form_t *WWW__CurlOO__Form;
-
 typedef perl_curl_multi_t *WWW__CurlOO__Multi;
-
 typedef perl_curl_share_t *WWW__CurlOO__Share;
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
