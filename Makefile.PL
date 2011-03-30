@@ -2,6 +2,7 @@ use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
 use ExtUtils::Constant 0.11 'WriteConstants';
+use File::Path qw(make_path);
 
 # you can set those manually if curl-config is not working for you
 my %curl = (
@@ -61,11 +62,8 @@ my @constant_types = divide_constants();
 # WriteConstants does not honour enums, so we define those symbols
 write_defenums( "const-defenums.h" );
 
-mkdir "lib";
-mkdir "lib/WWW";
-mkdir "lib/WWW/CurlOO";
-
-write_from_template( "CurlOO", $constant_types[ 0 ], "lib/WWW" );
+make_path( "pplib/WWW/CurlOO" );
+write_from_template( "CurlOO", $constant_types[ 0 ], "WWW" );
 write_from_template( "Easy", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
 write_from_template( "Multi", $constant_types[ 3 ] );
@@ -84,12 +82,12 @@ WriteConstants(
 
 WriteMakefile(
 	NAME 		=> 'WWW::CurlOO',
-	VERSION_FROM	=> 'lib/WWW/CurlOO.pm',
-	ABSTRACT_FROM	=> 'lib/WWW/CurlOO.pm',
+	VERSION_FROM	=> 'pplib/WWW/CurlOO.pm',
+	ABSTRACT_FROM	=> 'pplib/WWW/CurlOO.pm',
 	AUTHOR		=> 'Przemysław Iskra <sparky at pld-linux.org>',
 	META_MERGE	=> {
 		resources => {
-			repository => 'http://github.com/sparky/WWW--Curl'
+			repository => 'https://github.com/sparky/perl-WWW-CurlOO'
 		},
 	},
 	CCFLAGS		=> $curl{cflags},
@@ -97,6 +95,8 @@ WriteMakefile(
 	SIGN		=> 1,
 	LICENSE		=> 'MPL or MIT/X-derivate',	
 	MIN_PERL_VERSION => 5.006001,
+	PMLIBDIRS => [ 'pplib' ],
+	PMLIBPARENTDIRS => [ 'pplib' ],
 	depend		=> {
 		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xs CurlOO_Form.xs CurlOO_Multi.xs CurlOO_Share.xs'
 	},
@@ -104,12 +104,7 @@ WriteMakefile(
 		FILES => 'const-c.inc const-*-xs.inc const-defenums.h'
 	},
 	realclean	=> {
-		FILES => [qw(
-			lib/WWW/CurlOO.pm
-			lib/WWW/CurlOO/Easy.pm
-			lib/WWW/CurlOO/Form.pm
-			lib/WWW/CurlOO/Multi.pm
-			lib/WWW/CurlOO/Share.pm)]
+		FILES => 'pplib',
 	},
 );
 
@@ -266,10 +261,10 @@ sub write_from_template
 	my $constants = shift;
 	my $dir = shift;
 	my $havedir = !!$dir;
-	$dir ||= "lib/WWW/CurlOO";
+	$dir ||= "WWW/CurlOO";
 
-	my $template = "template/$name.pm";
-	my $out = "$dir/$name.pm";
+	my $template = "lib/$dir/$name.pm";
+	my $out = "pplib/$dir/$name.pm";
 
 	print "Writing $out from $template\n";
 	open my $fout, ">", $out

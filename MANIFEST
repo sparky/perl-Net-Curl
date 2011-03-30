@@ -9,6 +9,11 @@ MANIFEST
 Makefile.PL
 README
 README.Win32
+lib/WWW/CurlOO.pm
+lib/WWW/CurlOO/Easy.pm
+lib/WWW/CurlOO/Form.pm
+lib/WWW/CurlOO/Multi.pm
+lib/WWW/CurlOO/Share.pm
 inc/symbols-in-versions
 t/00constants.t
 t/01basic.t
@@ -34,9 +39,4 @@ t/23socket-action.t
 t/meta.t
 t/pod-coverage.t
 t/pod.t
-template/CurlOO.pm
-template/Easy.pm
-template/Form.pm
-template/Multi.pm
-template/Share.pm
 typemap
