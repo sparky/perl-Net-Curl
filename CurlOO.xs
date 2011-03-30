@@ -503,21 +503,21 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 
 /* Write callback for calling a perl callback */
 static size_t
-write_callback_func( const void *ptr, size_t size, size_t nmemb, void *stream )
+cb_easy_write( const void *ptr, size_t size, size_t nmemb, void *userptr )
 /*{{{*/ {
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)stream;
+	self=(perl_curl_easy_t *)userptr;
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_WRITE],self->callback_ctx[CALLBACK_WRITE]);
 } /*}}}*/
 
 /* header callback for calling a perl callback */
 static size_t
-header_callback_func( const void *ptr, size_t size, size_t nmemb,
-		void *stream )
+cb_easy_header( const void *ptr, size_t size, size_t nmemb,
+		void *userptr )
 /*{{{*/ {
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)stream;
+	self=(perl_curl_easy_t *)userptr;
 
 	return fwrite_wrapper(ptr,size,nmemb,self,
 			self->callback[CALLBACK_HEADER],self->callback_ctx[CALLBACK_HEADER]);
@@ -525,7 +525,7 @@ header_callback_func( const void *ptr, size_t size, size_t nmemb,
 
 /* debug callback for calling a perl callback */
 static int
-debug_callback_func( CURL* handle, curl_infotype type, char *ptr, size_t size,
+cb_easy_debug( CURL* handle, curl_infotype type, char *ptr, size_t size,
 		void *userptr )
 /*{{{*/ {
 	perl_curl_easy_t *self;
@@ -537,14 +537,14 @@ debug_callback_func( CURL* handle, curl_infotype type, char *ptr, size_t size,
 
 /* read callback for calling a perl callback */
 static size_t
-read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
+cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 /*{{{*/ {
 	dTHX;
 	dSP ;
 
 	size_t maxlen;
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)stream;
+	self=(perl_curl_easy_t *)userptr;
 
 	maxlen = size*nmemb;
 
@@ -603,7 +603,7 @@ read_callback_func( void *ptr, size_t size, size_t nmemb, void *stream )
 /* Progress callback for calling a perl callback */
 
 static int
-progress_callback_func( void *clientp, double dltotal, double dlnow,
+cb_easy_progress( void *userptr, double dltotal, double dlnow,
 		double ultotal, double ulnow )
 /*{{{*/ {
 	dTHX;
@@ -611,7 +611,7 @@ progress_callback_func( void *clientp, double dltotal, double dlnow,
 
 	int count;
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)clientp;
+	self=(perl_curl_easy_t *)userptr;
 
 	ENTER;
 	SAVETMPS;
@@ -643,15 +643,15 @@ progress_callback_func( void *clientp, double dltotal, double dlnow,
 
 
 static void
-lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
-		void *userp )
+cb_share_lock( CURL *easy, curl_lock_data data, curl_lock_access locktype,
+		void *userptr )
 /*{{{*/ {
 	dTHX;
 	dSP;
 
 	int count;
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)userp;
+	self=(perl_curl_easy_t *)userptr;
 
 	ENTER;
 	SAVETMPS;
@@ -678,14 +678,14 @@ lock_callback_func( CURL *easy, curl_lock_data data, curl_lock_access locktype,
 } /*}}}*/
 
 static void
-unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
+cb_share_unlock( CURL *easy, curl_lock_data data, void *userptr )
 /*{{{*/ {
 	dTHX;
 	dSP;
 
 	int count;
 	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)userp;
+	self=(perl_curl_easy_t *)userptr;
 
 	ENTER;
 	SAVETMPS;
@@ -711,7 +711,7 @@ unlock_callback_func( CURL *easy, curl_lock_data data, void *userp )
 } /*}}}*/
 
 static int
-socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
+cb_multi_socket( CURL *easy, curl_socket_t s, int what, void *userptr,
 		void *socketp )
 /*{{{*/ {
 	dTHX;
@@ -719,7 +719,7 @@ socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
 
 	int count;
 	perl_curl_multi_t *self;
-	self=(perl_curl_multi_t *)userp;
+	self=(perl_curl_multi_t *)userptr;
 
 	ENTER;
 	SAVETMPS;
@@ -748,14 +748,14 @@ socket_callback_func( CURL *easy, curl_socket_t s, int what, void *userp,
 } /*}}}*/
 
 static int
-timer_callback_func( CURLM *multi, long timeout_ms, void *userp )
+cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
 /*{{{*/ {
 	dTHX;
 	dSP;
 
 	int count;
 	perl_curl_multi_t *self;
-	self=(perl_curl_multi_t *)userp;
+	self=(perl_curl_multi_t *)userptr;
 
 	ENTER;
 	SAVETMPS;
