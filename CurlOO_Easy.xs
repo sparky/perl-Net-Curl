@@ -78,17 +78,17 @@ curl_easy_duphandle( self, ... )
 
 		curl_easy_setopt(clone->curl, CURLOPT_WRITEFUNCTION, cb_easy_write);
 		curl_easy_setopt(clone->curl, CURLOPT_READFUNCTION, cb_easy_read);
-		if (self->callback[callback_index(CURLOPT_HEADERFUNCTION)] || self->callback_ctx[callback_index(CURLOPT_WRITEHEADER)]) {
+		if (self->cb[callback_index(CURLOPT_HEADERFUNCTION)].func || self->cb[callback_index(CURLOPT_WRITEHEADER)].data) {
 			curl_easy_setopt(clone->curl, CURLOPT_HEADERFUNCTION, cb_easy_header);
 			curl_easy_setopt(clone->curl, CURLOPT_WRITEHEADER, clone);
 		}
 
-		if (self->callback[callback_index(CURLOPT_PROGRESSFUNCTION)] || self->callback_ctx[callback_index(CURLOPT_PROGRESSDATA)]) {
+		if (self->cb[callback_index(CURLOPT_PROGRESSFUNCTION)].func || self->cb[callback_index(CURLOPT_PROGRESSDATA)].data) {
 			curl_easy_setopt(clone->curl, CURLOPT_PROGRESSFUNCTION, cb_easy_progress);
 			curl_easy_setopt(clone->curl, CURLOPT_PROGRESSDATA, clone);
 		}
 
-		if (self->callback[callback_index(CURLOPT_DEBUGFUNCTION)] || self->callback_ctx[callback_index(CURLOPT_DEBUGDATA)]) {
+		if (self->cb[callback_index(CURLOPT_DEBUGFUNCTION)].func || self->cb[callback_index(CURLOPT_DEBUGDATA)].data) {
 			curl_easy_setopt(clone->curl, CURLOPT_DEBUGFUNCTION, cb_easy_debug);
 			curl_easy_setopt(clone->curl, CURLOPT_DEBUGDATA, clone);
 		}
@@ -99,8 +99,8 @@ curl_easy_duphandle( self, ... )
 		curl_easy_setopt(clone->curl, CURLOPT_ERRORBUFFER, clone->errbuf);
 
 		for(i=0;i<CALLBACK_LAST;i++) {
-			perl_curl_easy_register_callback( aTHX_ clone,&(clone->callback[i]), self->callback[i]);
-			perl_curl_easy_register_callback( aTHX_ clone,&(clone->callback_ctx[i]), self->callback_ctx[i]);
+			perl_curl_easy_register_callback( aTHX_ clone,&(clone->cb[i].func), self->cb[i].func);
+			perl_curl_easy_register_callback( aTHX_ clone,&(clone->cb[i].data), self->cb[i].data);
 		};
 
 		for (i=0;i<=self->strings_index;i++) {
@@ -133,43 +133,43 @@ curl_easy_setopt(self, option, value, push=0)
 			case CURLOPT_FILE:
 			case CURLOPT_INFILE:
 				perl_curl_easy_register_callback( aTHX_ self,
-						&(self->callback_ctx[callback_index(option)]), value);
+						&(self->cb[callback_index(option)].data), value);
 				break;
 			case CURLOPT_WRITEHEADER:
 				curl_easy_setopt(self->curl, CURLOPT_HEADERFUNCTION, SvOK(value) ? cb_easy_header : NULL);
 				curl_easy_setopt(self->curl, option, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback_ctx[callback_index(option)]),value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].data),value);
 				break;
 			case CURLOPT_PROGRESSDATA:
 				curl_easy_setopt(self->curl, CURLOPT_PROGRESSFUNCTION, SvOK(value) ? cb_easy_progress : NULL);
 				curl_easy_setopt(self->curl, option, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback_ctx[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].data), value);
 				break;
 			case CURLOPT_DEBUGDATA:
 				curl_easy_setopt(self->curl, CURLOPT_DEBUGFUNCTION, SvOK(value) ? cb_easy_debug : NULL);
 				curl_easy_setopt(self->curl, option, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback_ctx[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].data), value);
 				break;
 
 			/* SV * to a subroutine ref */
 			case CURLOPT_WRITEFUNCTION:
 			case CURLOPT_READFUNCTION:
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].func), value);
 				break;
 			case CURLOPT_HEADERFUNCTION:
 				curl_easy_setopt(self->curl, option, SvOK(value) ? cb_easy_header : NULL);
 				curl_easy_setopt(self->curl, CURLOPT_WRITEHEADER, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].func), value);
 				break;
 			case CURLOPT_PROGRESSFUNCTION:
 				curl_easy_setopt(self->curl, option, SvOK(value) ? cb_easy_progress : NULL);
 				curl_easy_setopt(self->curl, CURLOPT_PROGRESSDATA, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].func), value);
 				break;
 			case CURLOPT_DEBUGFUNCTION:
 				curl_easy_setopt(self->curl, option, SvOK(value) ? cb_easy_debug : NULL);
 				curl_easy_setopt(self->curl, CURLOPT_DEBUGDATA, SvOK(value) ? self : NULL);
-				perl_curl_easy_register_callback( aTHX_ self,&(self->callback[callback_index(option)]), value);
+				perl_curl_easy_register_callback( aTHX_ self,&(self->cb[callback_index(option)].func), value);
 				break;
 
 			/* slist cases */

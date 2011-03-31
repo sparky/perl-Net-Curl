@@ -138,7 +138,9 @@ curl_multi_setopt(self, option, value)
 				curl_multi_setopt( self->curlm, CURLMOPT_SOCKETFUNCTION, SvOK(value) ? cb_multi_socket : NULL );
 				curl_multi_setopt( self->curlm, CURLMOPT_SOCKETDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
-					option == CURLMOPT_SOCKETDATA ? &(self->callback_ctx[CALLBACKM_SOCKET]) : &(self->callback[CALLBACKM_SOCKET]),
+					option == CURLMOPT_SOCKETDATA ?
+						&(self->cb[CALLBACKM_SOCKET].data) :
+						&(self->cb[CALLBACKM_SOCKET].func),
 					value);
 				break;
 			case CURLMOPT_TIMERFUNCTION:
@@ -146,7 +148,9 @@ curl_multi_setopt(self, option, value)
 				curl_multi_setopt( self->curlm, CURLMOPT_TIMERFUNCTION, SvOK(value) ? cb_multi_timer : NULL );
 				curl_multi_setopt( self->curlm, CURLMOPT_TIMERDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
-					option == CURLMOPT_TIMERDATA ? &(self->callback_ctx[CALLBACKM_TIMER]) : &(self->callback[CALLBACKM_TIMER]),
+					option == CURLMOPT_TIMERDATA ?
+						&(self->cb[CALLBACKM_TIMER].data) :
+						&(self->cb[CALLBACKM_TIMER].func),
 					value );
 				break;
 

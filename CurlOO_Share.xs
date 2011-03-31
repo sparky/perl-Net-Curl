@@ -49,17 +49,24 @@ curl_share_setopt(self, option, value)
 		RETVAL=CURLE_OK;
 		switch( option ) {
 			case CURLSHOPT_LOCKFUNC:
-				RETVAL = curl_share_setopt( self->curlsh, CURLSHOPT_LOCKFUNC, SvOK( value ) ? cb_share_lock : NULL );
-				curl_share_setopt( self->curlsh, CURLSHOPT_USERDATA, SvOK( value ) ? self : NULL );
-				perl_curl_share_register_callback( aTHX_ self, &(self->callback[CALLBACKSH_LOCK]), value );
+				RETVAL = curl_share_setopt( self->curlsh,
+					CURLSHOPT_LOCKFUNC, SvOK( value ) ? cb_share_lock : NULL );
+				curl_share_setopt( self->curlsh,
+					CURLSHOPT_USERDATA, SvOK( value ) ? self : NULL );
+				perl_curl_share_register_callback( aTHX_ self,
+					&(self->cb[CALLBACKSH_LOCK].func), value );
 				break;
 			case CURLSHOPT_UNLOCKFUNC:
-				RETVAL = curl_share_setopt( self->curlsh, CURLSHOPT_UNLOCKFUNC, SvOK(value) ? cb_share_unlock : NULL );
-				curl_share_setopt( self->curlsh, CURLSHOPT_USERDATA, SvOK(value) ? self : NULL );
-				perl_curl_share_register_callback( aTHX_ self, &(self->callback[CALLBACKSH_UNLOCK]), value );
+				RETVAL = curl_share_setopt( self->curlsh,
+					CURLSHOPT_UNLOCKFUNC, SvOK(value) ? cb_share_unlock : NULL );
+				curl_share_setopt( self->curlsh,
+					CURLSHOPT_USERDATA, SvOK(value) ? self : NULL );
+				perl_curl_share_register_callback( aTHX_ self,
+					&(self->cb[CALLBACKSH_UNLOCK].func), value );
 				break;
 			case CURLSHOPT_USERDATA:
-				perl_curl_share_register_callback( aTHX_ self, &(self->callback_ctx[CALLBACKSH_LOCK]), value );
+				perl_curl_share_register_callback( aTHX_ self,
+					&(self->cb[CALLBACKSH_LOCK].data), value );
 				break;
 			case CURLSHOPT_SHARE:
 			case CURLSHOPT_UNSHARE:
