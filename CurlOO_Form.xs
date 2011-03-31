@@ -5,11 +5,18 @@
  * and subsequent fixes by other contributors.
  */
 
+enum {
+	CB_FORM_GET,
+	CB_FORM_LAST
+};
+
 struct perl_curl_form_s {
 	/* last seen version of this object, used in callbacks */
 	SV *perl_self;
 
 	struct curl_httppost *post, *last;
+
+	callback_t cb[ CB_FORM_LAST ];
 };
 
 static perl_curl_form_t *
@@ -31,13 +38,59 @@ perl_curl_form_delete( perl_curl_form_t *self )
 	Safefree( self );
 }
 
+/* callback: append to a scalar */
 static size_t
-cb_form_httppost_sv( void *arg, const char *buf, size_t len )
+cb_form_get_sv( void *arg, const char *buf, size_t len )
 {
 	dTHX;
 	sv_catpvn( (SV *)arg, buf, len );
 	return len;
 }
+
+/* callback: print to perl io */
+static size_t
+cb_form_get_io( void *arg, const char *buf, size_t len )
+{
+	dTHX;
+	return PerlIO_write( (PerlIO *)arg, buf, len );
+}
+
+/* callback: execute a callback */
+static size_t
+cb_form_get_code( void *arg, const char *buf, size_t len )
+{
+	dTHX;
+	dSP;
+	int count, status;
+	perl_curl_form_t *self = arg;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+
+	/* $form, $buffer, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSVpvn( buf, len ) ) );
+
+	if ( self->cb[ CB_FORM_GET ].data )
+	    XPUSHs( sv_2mortal( newSVsv( self->cb[ CB_FORM_GET ].data ) ) );
+
+	PUTBACK;
+	count = perl_call_sv( self->cb[ CB_FORM_GET ].func, G_SCALAR );
+	SPAGAIN;
+
+	if (count != 1)
+	    croak( "callback for formget() didn't return a status\n" );
+
+	status = POPi;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+	return status;
+}
+
 
 #ifdef XS_SECTION
 
@@ -94,17 +147,42 @@ curl_form_add( self, ... )
 		Safefree( farray );
 
 
-SV *
-curl_form_get( self )
+void
+curl_form_get( self, ... )
 	WWW::CurlOO::Form self
+	PROTOTYPE: $;$&
 	PREINIT:
 		SV *output;
-	CODE:
-		output = newSVpv( "", 0 );
-		curl_formget( self->post, output, cb_form_httppost_sv );
-		RETVAL = output;
-	OUTPUT:
-		RETVAL
+	PPCODE:
+		if ( items < 2 ) {
+			output = sv_2mortal( newSVpv( "", 0 ) );
+			curl_formget( self->post, output, cb_form_get_sv );
+			ST(0) = output;
+			XSRETURN(1);
+
+		} else if ( items < 3 ) {
+			output = ST(1);
+
+			if ( SvROK( output ) )
+				output = SvRV( output );
+
+			if ( SvTYPE( output ) == SVt_PVGV ) {
+				PerlIO *handle = IoOFP( sv_2io( output ) );
+				curl_formget( self->post, handle, cb_form_get_io );
+			} else if ( !SvREADONLY( output ) ) {
+				curl_formget( self->post, output, cb_form_get_sv );
+			} else {
+				croak( "output buffer is invalid" );
+			}
+			XSRETURN(0);
+
+		} else {
+			self->perl_self = ST(0);
+			self->cb[ CB_FORM_GET ].data = ST(1);
+			self->cb[ CB_FORM_GET ].func = ST(2);
+			curl_formget( self->post, self, cb_form_get_code );
+			XSRETURN(0);
+		}
 
 
 void
