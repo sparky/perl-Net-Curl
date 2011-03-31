@@ -174,6 +174,7 @@ curl_easy_setopt( self, option, value )
 				break;
 
 			/* Pass in variable name for storing error messages. Yuck. */
+			/* XXX: fix this */
 			case CURLOPT_ERRORBUFFER:
 			{
 				STRLEN dummy;
@@ -204,9 +205,16 @@ curl_easy_setopt( self, option, value )
 					WWW__CurlOO__Share wrapper;
 					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
+					if ( RETVAL = CURLE_OK )
+						self->share = wrapper;
 				} else
 					croak("value is not of type WWW::CurlOO::Share");
 				break;
+
+			case CURLOPT_PRIVATE:
+				croak( "CURLOPT_PRIVATE is off limits" );
+				break;
+
 			/* default cases */
 			default:
 				if (option < CURLOPTTYPE_OBJECTPOINT) { /* A long (integer) value */
@@ -221,9 +229,10 @@ curl_easy_setopt( self, option, value )
 					I32 len = (I32)dummy;
 					pv = savepvn(pv, len);
 					if (self->strings[string_index] != NULL)
-							Safefree(self->strings[string_index]);
+						Safefree(self->strings[string_index]);
 					self->strings[string_index] = pv;
-					if (self->strings_index < string_index) self->strings_index = string_index;
+					if (self->strings_index < string_index)
+						self->strings_index = string_index;
 					RETVAL = curl_easy_setopt(self->curl, option, SvOK(value) ? pv : NULL);
 				}
 				else if (option < CURLOPTTYPE_OFF_T) { /* A function - notreached? */
@@ -264,6 +273,7 @@ curl_easy_perform(self)
 	WWW::CurlOO::Easy self
 	CODE:
 		/* {{{ */
+		perl_curl_easy_update( self, ST(0) );
 		/* perform the actual curl fetch */
 		RETVAL = curl_easy_perform(self->curl);
 

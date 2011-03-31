@@ -53,6 +53,9 @@ typedef struct {
 	SV *data;
 } callback_t;
 
+typedef struct perl_curl_multi_s perl_curl_multi_t;
+typedef struct perl_curl_share_s perl_curl_share_t;
+
 typedef struct {
 	/* last seen version of this object */
 	SV *perl_self;
@@ -73,6 +76,12 @@ typedef struct {
 
 	I32 strings_index;
 	char *strings[ CURLOPT_LASTENTRY % CURLOPTTYPE_OBJECTPOINT ];
+
+	/* parent, if easy is attached to any multi object */
+	perl_curl_multi_t *multi;
+
+	/* if easy is attached to any share object */
+	perl_curl_share_t *share;
 } perl_curl_easy_t;
 
 
@@ -90,7 +99,7 @@ typedef enum {
 	CALLBACKM_LAST,
 } perl_curl_multi_callback_code_t;
 
-typedef struct {
+struct perl_curl_multi_s {
 	/* last seen version of this object */
 	SV *perl_self;
 
@@ -99,7 +108,7 @@ typedef struct {
 
 	/* list of callbacks */
 	callback_t cb[ CALLBACKM_LAST ];
-} perl_curl_multi_t;
+};
 
 typedef enum {
 	CALLBACKSH_LOCK = 0,
@@ -107,7 +116,7 @@ typedef enum {
 	CALLBACKSH_LAST,
 } perl_curl_share_callback_code_t;
 
-typedef struct {
+struct perl_curl_share_s {
 	/* last seen version of this object */
 	SV *perl_self;
 
@@ -116,7 +125,7 @@ typedef struct {
 
 	/* list of callbacks */
 	callback_t cb[ CALLBACKSH_LAST ];
-} perl_curl_share_t;
+};
 
 
 /* switch from curl option codes to the relevant callback index */
@@ -242,33 +251,40 @@ perl_curl_easy_duphandle( perl_curl_easy_t *orig )
 } /*}}}*/
 
 static void
+perl_curl_easy_update( perl_curl_easy_t *self, SV *perl_self )
+/*{{{*/{
+	self->perl_self = perl_self;
+	curl_easy_setopt( self->curl, CURLOPT_PRIVATE, (void *)self );
+}/*}}}*/
+
+static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 /*{{{*/ {
 	perl_curl_easy_slist_code_t index;
 	perl_curl_easy_callback_code_t i;
 
-	if (self->curl)
-		curl_easy_cleanup(self->curl);
+	if ( self->curl )
+		curl_easy_cleanup( self->curl );
 
 	*self->y = *self->y - 1;
 	if (*self->y <= 0) {
-		for (index=0;index<SLIST_LAST;index++) {
-			if (self->slist[index]) curl_slist_free_all(self->slist[index]);
-		};
+		for ( index = 0; index < SLIST_LAST; index++ ) {
+			if (self->slist[index])
+				curl_slist_free_all( self->slist[index] );
+		}
 		Safefree(self->y);
 	}
-	for(i=0;i<CALLBACK_LAST;i++) {
-		sv_2mortal(self->cb[i].func);
-	}
-	for(i=0;i<CALLBACK_LAST;i++) {
-		sv_2mortal(self->cb[i].data);
+
+	for ( i = 0; i < CALLBACK_LAST; i++ ) {
+		sv_2mortal( self->cb[i].func );
+		sv_2mortal( self->cb[i].data );
 	}
 
+	if ( self->errbufvarname )
+		free( self->errbufvarname );
 
-	if (self->errbufvarname)
-		free(self->errbufvarname);
-	for (i=0;i<=self->strings_index;i++) {
-		if (self->strings[i] != NULL) {
+	for ( i = 0; i <= self->strings_index; i++ ) {
+		if ( self->strings[ i ] != NULL ) {
 			char* ptr = self->strings[i];
 			Safefree(ptr);
 		}
@@ -351,6 +367,7 @@ perl_curl_form_delete( perl_curl_form_t *self )
 	if (self->post) {
 		curl_formfree(self->post);
 	}
+
 	Safefree(self);
 } /*}}}*/
 
@@ -372,6 +389,7 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
 
 	if (self->curlm)
 		curl_multi_cleanup(self->curlm);
+
 	for(i=0;i<CALLBACKM_LAST;i++) {
 		sv_2mortal(self->cb[i].func);
 		sv_2mortal(self->cb[i].data);
@@ -397,6 +415,7 @@ perl_curl_share_delete( pTHX_ perl_curl_share_t *self )
 	perl_curl_share_callback_code_t i;
 	if (self->curlsh)
 		curl_share_cleanup(self->curlsh);
+
 	for(i=0;i<CALLBACKSH_LAST;i++) {
 		sv_2mortal(self->cb[i].func);
 		sv_2mortal(self->cb[i].data);
@@ -445,6 +464,9 @@ fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
 
 		PUSHMARK(SP);
 
+		/* $easy, $buffer, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+
 		if (ptr) {
 			XPUSHs(sv_2mortal(newSVpvn((char *)ptr, (STRLEN)(size * nmemb))));
 		} else { /* just in case */
@@ -492,6 +514,11 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 
 		PUSHMARK(SP);
 
+		/* $easy, $type, $buffer, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+
+		XPUSHs( sv_2mortal( newSViv( type ) ) );
+
 		if (ptr) {
 			XPUSHs(sv_2mortal(newSVpvn((char *)ptr, (STRLEN)(size * sizeof(char)))));
 		} else { /* just in case */
@@ -503,8 +530,6 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 		} else { /* should be a stdio glob ? */
 			XPUSHs(&PL_sv_undef);
 		}
-
-		XPUSHs(sv_2mortal(newSViv(type)));
 
 		PUTBACK;
 		count = perl_call_sv(call_function, G_SCALAR);
@@ -589,8 +614,10 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 			sv = &PL_sv_undef;
 		}
 
-		XPUSHs(sv_2mortal(newSViv(maxlen)));
-		XPUSHs(sv_2mortal(newSVsv(sv)));
+		/* $easy, $maxsize, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+		XPUSHs( sv_2mortal( newSViv( maxlen ) ) );
+		XPUSHs( sv_2mortal( newSVsv( sv ) ) );
 
 		PUTBACK ;
 		count = perl_call_sv( self->cb[CALLBACK_READ].func, G_SCALAR );
@@ -605,7 +632,7 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 		/* only allowed to return the number of bytes asked for */
 		len = (len<maxlen ? len : maxlen);
 		/* memcpy(ptr,data,(size_t)len); */
-		Copy(data,ptr,len,char);
+		Copy( data, ptr, len, char );
 
 		PUTBACK ;
 		FREETMPS ;
@@ -640,15 +667,18 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
-	if (self->cb[CALLBACK_PROGRESS].data) {
-		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACK_PROGRESS].data)));
+
+	/* $easy, $dltotal, $dlnow, $ultotal, $ulnow, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSVnv( dltotal ) ) );
+	XPUSHs( sv_2mortal( newSVnv( dlnow ) ) );
+	XPUSHs( sv_2mortal( newSVnv( ultotal ) ) );
+	XPUSHs( sv_2mortal( newSVnv( ulnow ) ) );
+	if ( self->cb[CALLBACK_PROGRESS].data ) {
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACK_PROGRESS].data ) ) );
 	} else {
-		XPUSHs(&PL_sv_undef);
+		XPUSHs( &PL_sv_undef );
 	}
-	XPUSHs(sv_2mortal(newSVnv(dltotal)));
-	XPUSHs(sv_2mortal(newSVnv(dlnow)));
-	XPUSHs(sv_2mortal(newSVnv(ultotal)));
-	XPUSHs(sv_2mortal(newSVnv(ulnow)));
 
 	PUTBACK;
 	count = perl_call_sv(self->cb[CALLBACK_PROGRESS].func, G_SCALAR);
@@ -674,19 +704,25 @@ cb_share_lock( CURL *easy, curl_lock_data data, curl_lock_access locktype,
 	dSP;
 
 	int count;
-	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)userptr;
+	perl_curl_share_t *self;
+	perl_curl_easy_t *peasy;
+
+	self=(perl_curl_share_t *)userptr;
+	(void) curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy);
 
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
+
+	/* $easy, $data, $locktype, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSViv( data ) ) );
+	XPUSHs( sv_2mortal( newSViv( locktype ) ) );
 	if (self->cb[CALLBACKSH_LOCK].data) {
 		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKSH_LOCK].data)));
 	} else {
 		XPUSHs(&PL_sv_undef);
 	}
-	XPUSHs(sv_2mortal(newSViv( data )));
-	XPUSHs(sv_2mortal(newSViv( locktype )));
 
 	PUTBACK;
 	count = perl_call_sv( self->cb[CALLBACKSH_LOCK].func, G_SCALAR );
@@ -708,18 +744,24 @@ cb_share_unlock( CURL *easy, curl_lock_data data, void *userptr )
 	dSP;
 
 	int count;
-	perl_curl_easy_t *self;
-	self=(perl_curl_easy_t *)userptr;
+	perl_curl_share_t *self;
+	perl_curl_easy_t *peasy;
+
+	self=(perl_curl_share_t *)userptr;
+	(void) curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy);
 
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
+
+	/* $easy, $data, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSViv( data ) ) );
 	if (self->cb[CALLBACKSH_LOCK].data) {
 		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKSH_LOCK].data)));
 	} else {
 		XPUSHs(&PL_sv_undef);
 	}
-	XPUSHs(sv_2mortal(newSViv( data )));
 
 	PUTBACK;
 	count = perl_call_sv( self->cb[CALLBACKSH_LOCK].func, G_SCALAR );
@@ -743,18 +785,25 @@ cb_multi_socket( CURL *easy, curl_socket_t s, int what, void *userptr,
 
 	int count;
 	perl_curl_multi_t *self;
+	perl_curl_easy_t *peasy;
+
 	self=(perl_curl_multi_t *)userptr;
+	(void) curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy);
 
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
+
+	/* $easy, $socket, $what, $userdata */
+	/* XXX: add $socketdata */
+	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
+	XPUSHs(sv_2mortal(newSVuv( s )));
+	XPUSHs(sv_2mortal(newSViv( what )));
 	if (self->cb[CALLBACKM_SOCKET].data) {
 		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKM_SOCKET].data)));
 	} else {
 		XPUSHs(&PL_sv_undef);
 	}
-	XPUSHs(sv_2mortal(newSVuv( s )));
-	XPUSHs(sv_2mortal(newSViv( what )));
 
 	PUTBACK;
 	count = perl_call_sv(self->cb[CALLBACKM_SOCKET].func, G_SCALAR);
@@ -784,12 +833,12 @@ cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
-	if (self->cb[CALLBACKM_TIMER].data) {
-		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKM_TIMER].data)));
-	} else {
-		XPUSHs(&PL_sv_undef);
-	}
-	XPUSHs(sv_2mortal(newSViv(timeout_ms)));
+
+	/* $multi, $timeout, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSViv( timeout_ms ) ) );
+	if ( self->cb[CALLBACKM_TIMER].data )
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACKM_TIMER].data ) ) );
 
 	PUTBACK;
 	count = perl_call_sv( self->cb[CALLBACKM_TIMER].func, G_SCALAR );
