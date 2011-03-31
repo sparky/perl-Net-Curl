@@ -104,11 +104,10 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 
 
 int
-curl_easy_setopt(self, option, value, push=0)
+curl_easy_setopt( self, option, value )
 	WWW::CurlOO::Easy self
 	int option
 	SV *value
-	int push
 	CODE:
 		/* {{{ */
 		RETVAL=CURLE_OK;
@@ -280,7 +279,7 @@ curl_easy_perform(self)
 
 
 SV *
-curl_easy_getinfo(self, option, ... )
+curl_easy_getinfo( self, option )
 	WWW::CurlOO::Easy self
 	int option
 	CODE:
@@ -324,12 +323,10 @@ curl_easy_getinfo(self, option, ... )
 				break;
 			}
 			default: {
-				RETVAL = newSViv(CURLE_BAD_FUNCTION_ARGUMENT);
+				croak( "invalid getinfo option" );
 				break;
 			}
 		}
-		if (items > 2)
-			sv_setsv(ST(2),RETVAL);
 		/* }}} */
 	OUTPUT:
 		RETVAL
