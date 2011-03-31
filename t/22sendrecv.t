@@ -45,9 +45,10 @@ ok( $cnt, "ready to read" );
 
 my ($buffer, $code);
 
-$code = $c->recv( $buffer, 10240 );
+$code = $c->recv( $buffer, 102400 );
 ok( $code == CURLE_OK, "received data" );
 
-$code = $c->recv( $buffer, 10240 );
-ok( $code == CURLE_AGAIN, "no more data to read" );
+$code = $c->recv( $buffer, 102400 );
+ok( $code == CURLE_AGAIN || $code == CURLE_UNSUPPORTED_PROTOCOL,
+	"no more data to read" );
 
