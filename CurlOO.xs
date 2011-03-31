@@ -897,7 +897,7 @@ typedef perl_curl_multi_t *WWW__CurlOO__Multi;
 typedef perl_curl_share_t *WWW__CurlOO__Share;
 
 /* default base object */
-#define HASHREF_BY_DEFAULT		newRV_noinc( (SV *)newHV() )
+#define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *)newHV() ) )
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
 
