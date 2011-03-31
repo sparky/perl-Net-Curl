@@ -94,7 +94,7 @@ WriteMakefile(
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
 	LICENSE		=> 'MPL or MIT/X-derivate',	
-	MIN_PERL_VERSION => 5.006001,
+	MIN_PERL_VERSION => 5.008001,
 	PMLIBDIRS => [ 'pplib' ],
 	PMLIBPARENTDIRS => [ 'pplib' ],
 	depend		=> {
