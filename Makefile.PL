@@ -70,7 +70,7 @@ write_from_template( "Multi", $constant_types[ 3 ] );
 write_from_template( "Share", $constant_types[ 4 ] );
 
 WriteConstants(
-	($] > 5.009002 ? (PROXYSUBS => 1) : ()),
+	PROXYSUBS => 1,
 	NAME => 'WWW::CurlOO',
 	NAMES => $constant_types[ 0 ],
 	C_FILE => 'const-c.inc',
@@ -285,7 +285,7 @@ sub write_from_template
 	return if $havedir;
 	my $lname = lc $name;
 	WriteConstants(
-		($] > 5.009002 ? (PROXYSUBS => 1) : ()),
+		PROXYSUBS => 1,
 		NAME => "WWW::CurlOO::$name",
 		NAMES => $constants,
 		C_FILE => 'const-c.inc',
