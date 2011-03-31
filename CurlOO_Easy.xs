@@ -2,30 +2,18 @@ MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
 
 INCLUDE: const-easy-xs.inc
 
-BOOT:
-	curl_global_init(CURL_GLOBAL_ALL); /* FIXME: does this need a mutex for ithreads? */
-
-
 PROTOTYPES: ENABLE
 
 void
-curl_easy_new( ... )
+curl_easy_new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
+	const char *sclass
+	SV *base
 	PREINIT:
 		perl_curl_easy_t *self;
-		char *sclass = "WWW::CurlOO::Multi";
-		SV *base;
 		HV *stash;
 	PPCODE:
-		if ( items > 0 && !SvROK( ST(0) )) {
-			STRLEN dummy;
-			sclass = SvPV( ST(0), dummy );
-		}
-		if ( items > 1 ) {
-			base = ST(1);
-			if ( ! SvOK( base ) || ! SvROK( base ) )
-				croak( "object base must be a valid reference\n" );
-		} else
-			base = newRV_noinc( (SV *)newHV() );
+		if ( ! SvOK( base ) || ! SvROK( base ) )
+			croak( "object base must be a valid reference\n" );
 
 		self = perl_curl_easy_new();
 
@@ -53,22 +41,18 @@ curl_easy_new( ... )
 
 
 void
-curl_easy_duphandle( self, ... )
+curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 	WWW::CurlOO::Easy self
+	SV *base
 	PREINIT:
 		perl_curl_easy_t *clone;
 		char *sclass = "WWW::CurlOO::Easy";
 		perl_curl_easy_callback_code_t i;
-		SV *base;
 		HV *stash;
 	PPCODE:
 		/* {{{ */
-		if ( items > 1 ) {
-			base = ST(1);
-			if ( ! SvOK( base ) || ! SvROK( base ) )
-				croak( "object base must be a valid reference\n" );
-		} else
-			base = newRV_noinc( (SV *)newHV() );
+		if ( ! SvOK( base ) || ! SvROK( base ) )
+			croak( "object base must be a valid reference\n" );
 
 		clone=perl_curl_easy_duphandle(self);
 		clone->y = self->y;

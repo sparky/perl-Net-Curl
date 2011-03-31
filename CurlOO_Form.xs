@@ -2,25 +2,18 @@ MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form	PREFIX = curl_form_
 
 INCLUDE: const-form-xs.inc
 
+PROTOTYPES: ENABLE
 
 void
-curl_form_new( ... )
+curl_form_new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
+	const char *sclass
+	SV *base
 	PREINIT:
 		perl_curl_form_t *self;
-		char *sclass = "WWW::CurlOO::Form";
-		SV *base;
 		HV *stash;
 	PPCODE:
-		if ( items > 0 && !SvROK( ST(0) )) {
-			STRLEN dummy;
-			sclass = SvPV( ST(0), dummy );
-		}
-		if ( items > 1 ) {
-			base = ST(1);
-			if ( ! SvOK( base ) || ! SvROK( base ) )
-				croak( "object base must be a valid reference\n" );
-		} else
-			base = newRV_noinc( (SV *)newHV() );
+		if ( ! SvOK( base ) || ! SvROK( base ) )
+			croak( "object base must be a valid reference\n" );
 
 		self = perl_curl_form_new();
 		perl_curl_setptr( aTHX_ base, self );

@@ -2,24 +2,18 @@ MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi	PREFIX = curl_multi_
 
 INCLUDE: const-multi-xs.inc
 
+PROTOTYPES: ENABLE
+
 void
-curl_multi_new( ... )
+curl_multi_new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
+	const char *sclass
+	SV *base
 	PREINIT:
 		perl_curl_multi_t *self;
-		char *sclass = "WWW::CurlOO::Multi";
-		SV *base;
 		HV *stash;
 	PPCODE:
-		if ( items > 0 && !SvROK( ST(0) )) {
-			STRLEN dummy;
-			sclass = SvPV( ST(0), dummy );
-		}
-		if ( items > 1 ) {
-			base = ST(1);
-			if ( ! SvOK( base ) || ! SvROK( base ) )
-				croak( "object base must be a valid reference\n" );
-		} else
-			base = newRV_noinc( (SV *)newHV() );
+		if ( ! SvOK( base ) || ! SvROK( base ) )
+			croak( "object base must be a valid reference\n" );
 
 		self = perl_curl_multi_new();
 		perl_curl_setptr( aTHX_ base, self );

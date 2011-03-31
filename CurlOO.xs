@@ -847,7 +847,15 @@ typedef perl_curl_form_t *WWW__CurlOO__Form;
 typedef perl_curl_multi_t *WWW__CurlOO__Multi;
 typedef perl_curl_share_t *WWW__CurlOO__Share;
 
+/* default base object */
+#define HASHREF_BY_DEFAULT		newRV_noinc( (SV *)newHV() )
+
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
+
+BOOT:
+	curl_global_init(CURL_GLOBAL_ALL); /* FIXME: does this need a mutex for ithreads? */
+
+PROTOTYPES: ENABLE
 
 INCLUDE: const-curl-xs.inc
 
