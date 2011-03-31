@@ -10,11 +10,11 @@ use WWW::CurlOO::Easy qw(:constants);
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
 
 my $header_called = 0;
-sub header_callback { $header_called++; return length($_[0]) };
+sub header_callback { $header_called++; return length($_[1]) };
 
 my $body_called = 0;
 sub body_callback {
-	my ($chunk,$handle)=@_;
+	my ($self, $chunk,$handle)=@_;
 	$body_called++;
 	return length($chunk); # OK
 }

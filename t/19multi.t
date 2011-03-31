@@ -28,13 +28,13 @@ sub action_wait {
     $curl->setopt( CURLOPT_URL, $url);
     ok(! $curl->setopt(CURLOPT_WRITEHEADER, $header), "Setting CURLOPT_WRITEHEADER");
     ok(! $curl->setopt(CURLOPT_WRITEDATA,$body), "Setting CURLOPT_WRITEDATA");
-    ok(! $curl->setopt(CURLOPT_PRIVATE,"foo"), "Setting CURLOPT_PRIVATE");
+    ok( $curl->{private} = "foo" , "Setting private data");
 
     my $curl2 = new WWW::CurlOO::Easy;
     $curl2->setopt( CURLOPT_URL, $url);
     ok(! $curl2->setopt(CURLOPT_WRITEHEADER, $header2), "Setting CURLOPT_WRITEHEADER");
     ok(! $curl2->setopt(CURLOPT_WRITEDATA,$body2), "Setting CURLOPT_WRITEDATA");
-    ok(! $curl2->setopt(CURLOPT_PRIVATE,42), "Setting CURLOPT_PRIVATE");
+    ok( $curl2->{private} = 42, "Setting private data");
 
     my $curlm = new WWW::CurlOO::Multi;
     my @fds = $curlm->fdset;
@@ -59,8 +59,8 @@ sub action_wait {
     while ($active != 0) {
 	my $ret = $curlm->perform;
 	if ($ret != $active) {
-		while (my ($id,$value) = $curlm->info_read) {
-			ok($id eq "foo" || $id == 42, "The stored private value matches what we set");
+		while (my ($curl,$value) = $curlm->info_read) {
+			ok( $curl && ( $curl->{private} eq "foo" || $curl->{private}  == 42 ), "The stored private value matches what we set ($curl->{private})");
 		}
 		$active = $ret;
 	}

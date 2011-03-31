@@ -28,9 +28,17 @@ $curl->setopt(CURLOPT_FILE,$body);
 $curl->setopt(CURLOPT_URL, $url);
 
 my $header_called = 0;
-sub header_callback { $header_called = 1; return length($_[0]) };
+sub header_callback {
+	$header_called = 1;
+	$_[0]->{head} = 1;
+	return length($_[1])
+};
 my $body_called = 0;
-sub body_callback { $body_called++;return length($_[0]) };
+sub body_callback {
+	$body_called++;
+	$_[0]->{body}++;
+	return length($_[1])
+};
 
 
 
@@ -38,5 +46,5 @@ ok (! $curl->setopt(CURLOPT_HEADERFUNCTION, \&header_callback), "CURLOPT_HEADERF
 ok (! $curl->setopt(CURLOPT_WRITEFUNCTION, \&body_callback), "CURLOPT_WRITEFUNCTION set");
 
 $curl->perform();
-ok($header_called, "CURLOPT_HEADERFUNCTION callback was used");
-ok($body_called, "CURLOPT_WRITEFUNCTION callback was used");
+ok($curl->{head}, "CURLOPT_HEADERFUNCTION callback was used");
+ok($curl->{body}, "CURLOPT_WRITEFUNCTION callback was used");

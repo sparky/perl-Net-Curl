@@ -38,13 +38,13 @@ my $head_called = 0;
 
 
 	sub body_callback {
-    		my ($chunk,$handle)=@_;
+		my ($self, $chunk,$handle)=@_;
     		$body_called++;
     		return length($chunk); # OK
 	}
 
 	sub head_callback {
-		my ($chunk,$handle)=@_;
+		my ($self, $chunk,$handle)=@_;
 		$head_called++;
 		return length($chunk); # OK
 	}
@@ -78,7 +78,7 @@ ok(! $other_handle->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL"); #18
 my $retcode=$other_handle->perform();
 ok(!$retcode, "Handle return code check");
 ok( 1, "We survive DESTROY time for the original handle");
-ok( head_callback('1',undef), "We can still access the callbacks");
+ok( head_callback(undef, '1',undef), "We can still access the callbacks");
 my $third = $other_handle->duphandle();
 ok($third, 'duphandle seems to return something again');
 ok(ref($third) eq 'WWW::CurlOO::Easy', 'Dup handle looks like an object from the WWW::CurlOO::Easy module');

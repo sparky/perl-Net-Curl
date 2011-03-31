@@ -30,7 +30,7 @@ my $timeout = undef;
 
 sub on_socket
 {
-	my ( $user_data, $socket, $what ) = @_;
+	my ( $easy, $socket, $what ) = @_;
 	#warn "on_socket( $socket, $what )\n";
 
 	$sock_change = 0;
@@ -85,13 +85,13 @@ my $curl1 = WWW::CurlOO::Easy->new();
 $curl1->setopt( CURLOPT_URL, $url );
 $curl1->setopt( CURLOPT_WRITEHEADER, $_head1 );
 $curl1->setopt( CURLOPT_WRITEDATA, $_body1 );
-$curl1->setopt( CURLOPT_PRIVATE, "one" );
+$curl1->{name} = "one";
 
 my $curl2 = WWW::CurlOO::Easy->new();
 $curl2->setopt( CURLOPT_URL, $url );
 $curl2->setopt( CURLOPT_WRITEHEADER, $_head2 );
 $curl2->setopt( CURLOPT_WRITEDATA, $_body2 );
-$curl2->setopt( CURLOPT_PRIVATE, "two" );
+$curl2->{name} = "two";
 
 my $curlm = WWW::CurlOO::Multi->new();
 $curlm->setopt( CURLMOPT_SOCKETFUNCTION, \&on_socket );
@@ -137,9 +137,9 @@ do {
 	}
 
 	if ( $active_now != $active ) {
-		while (my ($id,$value) = $curlm->info_read) {
+		while (my ($easy,$value) = $curlm->info_read) {
 			#warn "Reaped child: $id, $value\n";
-			ok( $value == 0, "child $id exited correctly" );
+			ok( $value == 0, "child $easy->{name} exited correctly" );
 		}
 		$active = $active_now;
 	}
