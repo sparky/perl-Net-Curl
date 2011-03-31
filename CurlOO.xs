@@ -55,6 +55,7 @@ typedef struct {
 
 typedef struct perl_curl_multi_s perl_curl_multi_t;
 typedef struct perl_curl_share_s perl_curl_share_t;
+typedef struct perl_curl_form_s perl_curl_form_t;
 
 typedef struct {
 	/* last seen version of this object */
@@ -84,14 +85,6 @@ typedef struct {
 	perl_curl_share_t *share;
 } perl_curl_easy_t;
 
-
-typedef struct {
-	/* last seen version of this object */
-	SV *perl_self;
-
-	struct curl_httppost *post;
-	struct curl_httppost *last;
-} perl_curl_form_t;
 
 typedef enum {
 	CALLBACKM_SOCKET = 0,
@@ -349,27 +342,6 @@ perl_curl_share_register_callback( pTHX_ perl_curl_share_t *self, SV **callback,
 	}
 } /*}}}*/
 
-
-/* start of form functions - very un-finished! */
-static perl_curl_form_t *
-perl_curl_form_new( void )
-/*{{{*/ {
-	perl_curl_form_t *self;
-	Newz(1, self, 1, perl_curl_form_t);
-	self->post=NULL;
-	self->last=NULL;
-	return self;
-} /*}}}*/
-
-static void
-perl_curl_form_delete( perl_curl_form_t *self )
-/*{{{*/ {
-	if (self->post) {
-		curl_formfree(self->post);
-	}
-
-	Safefree(self);
-} /*}}}*/
 
 /* make a new multi */
 static perl_curl_multi_t *
@@ -899,6 +871,9 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 /* default base object */
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *)newHV() ) )
 
+#include "CurlOO_Form.xs"
+#define XS_SECTION
+
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
 
 BOOT:
@@ -940,6 +915,7 @@ curl_version_info()
 		if ( vi == NULL )
 			croak( "curl_version_info() returned NULL\n" );
 		ret = newHV();
+		/* XXX: use hv_stores */
 		hv_store( ret, "age", 3,
 			newSViv(vi->age), 0 );
 		if ( vi->age >= CURLVERSION_FIRST ) {
@@ -1003,6 +979,6 @@ curl_version_info()
 
 
 INCLUDE: CurlOO_Easy.xs
-INCLUDE: CurlOO_Form.xs
+INCLUDE: grep XS_SECTION -A10000 CurlOO_Form.xs |
 INCLUDE: CurlOO_Multi.xs
 INCLUDE: CurlOO_Share.xs
