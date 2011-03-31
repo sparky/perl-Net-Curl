@@ -7,7 +7,7 @@ use Exporter ();
 
 our $VERSION;
 BEGIN {
-	$VERSION = '0.00_01';
+	$VERSION = '0.01';
 	XSLoader::load(__PACKAGE__, $VERSION);
 }
 END {
@@ -28,6 +28,10 @@ __END__
 =head1 NAME
 
 WWW::CurlOO - Perl interface for libcurl
+
+=head1 WARNING
+
+THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.
 
 =head1 SYNOPSIS
 
