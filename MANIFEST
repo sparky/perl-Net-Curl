@@ -34,6 +34,7 @@ t/20undefined_subs.t
 t/21write-to-scalar.t
 t/22sendrecv.t
 t/23socket-action.t
+t/24-multi-refcount.t
 t/meta.t
 t/pod-coverage.t
 t/pod.t
