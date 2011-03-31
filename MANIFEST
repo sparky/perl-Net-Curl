@@ -1,4 +1,3 @@
-Changes
 CurlOO.xs
 CurlOO_Easy.xs
 CurlOO_Form.xs
@@ -7,8 +6,6 @@ CurlOO_Multi.xs
 LICENSE
 MANIFEST
 Makefile.PL
-README
-README.Win32
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm
