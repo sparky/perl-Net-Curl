@@ -80,11 +80,13 @@ WriteConstants(
 );
 
 
+# older perl seems to choke on it, maybe utf8::upgrade would work ?
+my $l_ = $] >= 5.010 ? "ł" : "l";
 WriteMakefile(
 	NAME 		=> 'WWW::CurlOO',
 	VERSION_FROM	=> 'pplib/WWW/CurlOO.pm',
 	ABSTRACT_FROM	=> 'pplib/WWW/CurlOO.pm',
-	AUTHOR		=> 'Przemysław Iskra <sparky at pld-linux.org>',
+	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
 	META_MERGE	=> {
 		resources => {
 			repository => 'https://github.com/sparky/perl-WWW-CurlOO'
