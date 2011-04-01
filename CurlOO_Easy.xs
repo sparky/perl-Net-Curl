@@ -1,3 +1,524 @@
+/* vim: ts=4:sw=4:fdm=marker: */
+/*
+ * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
+ *
+ * Loosely based on code by Cris Bailiff <c.bailiff+curl at devsecure.com>,
+ * and subsequent fixes by other contributors.
+ */
+
+
+typedef enum {
+	CALLBACK_WRITE = 0,
+	CALLBACK_READ,
+	CALLBACK_HEADER,
+	CALLBACK_PROGRESS,
+	CALLBACK_DEBUG,
+	CALLBACK_LAST
+} perl_curl_easy_callback_code_t;
+
+typedef enum {
+	SLIST_HTTPHEADER = 0,
+	SLIST_HTTP200ALIASES,
+	SLIST_MAIL_RCPT,
+	SLIST_QUOTE,
+	SLIST_POSTQUOTE,
+	SLIST_PREQUOTE,
+	SLIST_RESOLVE,
+	SLIST_TELNETOPTIONS,
+	SLIST_LAST
+} perl_curl_easy_slist_code_t;
+
+struct perl_curl_easy_s {
+	/* last seen version of this object */
+	SV *perl_self;
+
+	/* The main curl handle */
+	CURL *curl;
+
+	/* Lists that can be set via curl_easy_setopt() */
+	I32 *y;
+	struct curl_slist *slist[ SLIST_LAST ];
+
+	/* list of callbacks */
+	callback_t cb[ CALLBACK_LAST ];
+
+	/* copy of error buffer var for caller*/
+	char errbuf[CURL_ERROR_SIZE+1];
+	char *errbufvarname;
+
+	I32 strings_index;
+	char *strings[ CURLOPT_LASTENTRY % CURLOPTTYPE_OBJECTPOINT ];
+
+	/* parent, if easy is attached to any multi object */
+	perl_curl_multi_t *multi;
+
+	/* if easy is attached to any share object */
+	perl_curl_share_t *share;
+};
+
+
+
+/* switch from curl option codes to the relevant callback index */
+static perl_curl_easy_callback_code_t
+callback_index( int option )
+/*{{{*/ {
+	switch( option ) {
+		case CURLOPT_WRITEFUNCTION:
+		case CURLOPT_FILE:
+			return CALLBACK_WRITE;
+			break;
+
+		case CURLOPT_READFUNCTION:
+		case CURLOPT_INFILE:
+			return CALLBACK_READ;
+			break;
+
+		case CURLOPT_HEADERFUNCTION:
+		case CURLOPT_WRITEHEADER:
+			return CALLBACK_HEADER;
+			break;
+
+		case CURLOPT_PROGRESSFUNCTION:
+		case CURLOPT_PROGRESSDATA:
+			return CALLBACK_PROGRESS;
+			break;
+		case CURLOPT_DEBUGFUNCTION:
+		case CURLOPT_DEBUGDATA:
+			return CALLBACK_DEBUG;
+			break;
+	}
+	croak("Bad callback index requested\n");
+	return CALLBACK_LAST;
+} /*}}}*/
+
+
+static int
+perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV *value,
+		int clear )
+/*{{{*/ {
+	perl_curl_easy_slist_code_t si = 0;
+	AV *array;
+	int array_len;
+	struct curl_slist **slist = NULL;
+	int i;
+
+	switch( option ) {
+		case CURLOPT_HTTPHEADER:
+			si = SLIST_HTTPHEADER;
+			break;
+		case CURLOPT_HTTP200ALIASES:
+			si = SLIST_HTTP200ALIASES;
+			break;
+#ifdef CURLOPT_MAIL_RCPT
+		case CURLOPT_MAIL_RCPT:
+			si = SLIST_MAIL_RCPT;
+			break;
+#endif
+		case CURLOPT_QUOTE:
+			si = SLIST_QUOTE;
+			break;
+		case CURLOPT_POSTQUOTE:
+			si = SLIST_POSTQUOTE;
+			break;
+		case CURLOPT_PREQUOTE:
+			si = SLIST_PREQUOTE;
+			break;
+#ifdef CURLOPT_RESOLVE
+		case CURLOPT_RESOLVE:
+			si = SLIST_RESOLVE;
+			break;
+#endif
+		case CURLOPT_TELNETOPTIONS:
+			si = SLIST_TELNETOPTIONS;
+			break;
+		default:
+			return -1;
+	}
+
+
+	/* This is an option specifying a list, which we put in a curl_slist struct */
+	array = (AV *)SvRV( value );
+	array_len = av_len( array );
+
+	/* We have to find out which list to use... */
+	slist = &( self->slist[ si ] );
+
+	if ( *slist && clear ) {
+		curl_slist_free_all( *slist );
+		*slist = NULL;
+	}
+
+	/* copy perl values into this slist */
+	for ( i = 0; i <= array_len; i++ ) {
+		SV **sv = av_fetch( array, i, 0 );
+		STRLEN len = 0;
+		char *string = SvPV( *sv, len );
+		if ( len == 0 ) /* FIXME: is this correct? */
+			continue;
+		*slist = curl_slist_append( *slist, string );
+	}
+
+	/* pass the list into curl_easy_setopt() */
+	return curl_easy_setopt(self->curl, option, *slist);
+} /*}}}*/
+
+static perl_curl_easy_t *
+perl_curl_easy_new( void )
+/*{{{*/ {
+	perl_curl_easy_t *self;
+	Newxz( self, 1, perl_curl_easy_t );
+	self->curl=curl_easy_init();
+	return self;
+} /*}}}*/
+
+static perl_curl_easy_t *
+perl_curl_easy_duphandle( perl_curl_easy_t *orig )
+/*{{{*/ {
+	perl_curl_easy_t *self;
+	Newxz( self, 1, perl_curl_easy_t );
+	self->curl=curl_easy_duphandle(orig->curl);
+	return self;
+} /*}}}*/
+
+static void
+perl_curl_easy_update( perl_curl_easy_t *self, SV *perl_self )
+/*{{{*/{
+	self->perl_self = perl_self;
+	curl_easy_setopt( self->curl, CURLOPT_PRIVATE, (void *)self );
+}/*}}}*/
+
+static void
+perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
+/*{{{*/ {
+	perl_curl_easy_slist_code_t index;
+	perl_curl_easy_callback_code_t i;
+
+	if ( self->curl )
+		curl_easy_cleanup( self->curl );
+
+	*self->y = *self->y - 1;
+	if (*self->y <= 0) {
+		for ( index = 0; index < SLIST_LAST; index++ ) {
+			if (self->slist[index])
+				curl_slist_free_all( self->slist[index] );
+		}
+		Safefree(self->y);
+	}
+
+	for ( i = 0; i < CALLBACK_LAST; i++ ) {
+		sv_2mortal( self->cb[i].func );
+		sv_2mortal( self->cb[i].data );
+	}
+
+	if ( self->errbufvarname )
+		free( self->errbufvarname );
+
+	for ( i = 0; i <= self->strings_index; i++ ) {
+		if ( self->strings[ i ] != NULL ) {
+			char* ptr = self->strings[i];
+			Safefree(ptr);
+		}
+	}
+	Safefree(self);
+
+} /*}}}*/
+
+/* Register a callback function */
+
+static void
+perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, SV *function )
+/*{{{*/ {
+	if (function && SvOK(function)) {
+		/* FIXME: need to check the ref-counts here */
+		if (*callback == NULL) {
+			*callback = newSVsv(function);
+		} else {
+			SvSetSV(*callback, function);
+		}
+	} else {
+		if (*callback != NULL) {
+			sv_2mortal(*callback);
+			*callback = NULL;
+		}
+	}
+} /*}}}*/
+
+static size_t
+write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
+/*{{{*/ {
+	PerlIO *handle;
+	SV* out_str;
+	if (call_ctx) { /* a GLOB or a SCALAR ref */
+		if(SvROK(call_ctx) && SvTYPE(SvRV(call_ctx)) <= SVt_PVMG) {
+			/* write to a scalar ref */
+			out_str = SvRV(call_ctx);
+			if (SvOK(out_str)) {
+				sv_catpvn(out_str, ptr, n);
+			} else {
+				sv_setpvn(out_str, ptr, n);
+			}
+			return n;
+		}
+		else {
+			/* write to a filehandle */
+			handle = IoOFP(sv_2io(call_ctx));
+		}
+	} else { /* punt to stdout */
+		handle = PerlIO_stdout();
+	}
+	return PerlIO_write(handle, ptr, n);
+} /*}}}*/
+
+/* generic fwrite callback, which decides which callback to call */
+static size_t
+fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
+		perl_curl_easy_t *self, SV *call_function, SV *call_ctx)
+/*{{{*/ {
+	dTHX;
+	if (call_function) { /* We are doing a callback to perl */
+		dSP;
+		int count, status;
+
+		ENTER;
+		SAVETMPS;
+
+		PUSHMARK(SP);
+
+		/* $easy, $buffer, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+
+		if (ptr) {
+			XPUSHs(sv_2mortal(newSVpvn((char *)ptr, (STRLEN)(size * nmemb))));
+		} else { /* just in case */
+			XPUSHs(&PL_sv_undef);
+		}
+		if (call_ctx) {
+			XPUSHs(sv_2mortal(newSVsv(call_ctx)));
+		} else { /* should be a stdio glob ? */
+			XPUSHs(&PL_sv_undef);
+		}
+
+		PUTBACK;
+		count = perl_call_sv( call_function, G_SCALAR );
+		SPAGAIN;
+
+		if (count != 1)
+			croak("callback for CURLOPT_WRITEFUNCTION didn't return a status\n");
+
+		status = POPi;
+
+		PUTBACK;
+		FREETMPS;
+		LEAVE;
+		return status;
+
+	} else {
+		return write_to_ctx(aTHX_ call_ctx, ptr, size * nmemb);
+	}
+} /*}}}*/
+
+/* debug fwrite callback */
+static size_t
+fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
+		SV *call_function, SV *call_ctx, curl_infotype type )
+/*{{{*/ {
+	dTHX;
+	dSP;
+
+	if (call_function) { /* We are doing a callback to perl */
+		int count, status;
+
+		ENTER;
+		SAVETMPS;
+
+		PUSHMARK(SP);
+
+		/* $easy, $type, $buffer, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+
+		XPUSHs( sv_2mortal( newSViv( type ) ) );
+
+		if (ptr) {
+			XPUSHs(sv_2mortal(newSVpvn((char *)ptr, (STRLEN)(size * sizeof(char)))));
+		} else { /* just in case */
+			XPUSHs(&PL_sv_undef);
+		}
+
+		if (call_ctx) {
+			XPUSHs(sv_2mortal(newSVsv(call_ctx)));
+		} else { /* should be a stdio glob ? */
+			XPUSHs(&PL_sv_undef);
+		}
+
+		PUTBACK;
+		count = perl_call_sv(call_function, G_SCALAR);
+		SPAGAIN;
+
+		if (count != 1)
+			croak("callback for CURLOPT_*FUNCTION didn't return a status\n");
+
+		status = POPi;
+
+		PUTBACK;
+		FREETMPS;
+		LEAVE;
+		return status;
+
+	} else {
+		return write_to_ctx(aTHX_ call_ctx, ptr, size * sizeof(char));
+	}
+} /*}}}*/
+
+/* Write callback for calling a perl callback */
+static size_t
+cb_easy_write( const void *ptr, size_t size, size_t nmemb, void *userptr )
+/*{{{*/ {
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
+	return fwrite_wrapper( ptr, size, nmemb, self,
+			self->cb[CALLBACK_WRITE].func, self->cb[CALLBACK_WRITE].data );
+} /*}}}*/
+
+/* header callback for calling a perl callback */
+static size_t
+cb_easy_header( const void *ptr, size_t size, size_t nmemb,
+		void *userptr )
+/*{{{*/ {
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
+
+	return fwrite_wrapper( ptr, size, nmemb, self,
+			self->cb[CALLBACK_HEADER].func, self->cb[CALLBACK_HEADER].data );
+} /*}}}*/
+
+/* debug callback for calling a perl callback */
+static int
+cb_easy_debug( CURL* handle, curl_infotype type, char *ptr, size_t size,
+		void *userptr )
+/*{{{*/ {
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
+
+	return fwrite_wrapper2( ptr, size, self,
+			self->cb[CALLBACK_DEBUG].func, self->cb[CALLBACK_DEBUG].data, type);
+} /*}}}*/
+
+/* read callback for calling a perl callback */
+static size_t
+cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
+/*{{{*/ {
+	dTHX;
+	dSP ;
+
+	size_t maxlen;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
+
+	maxlen = size*nmemb;
+
+	if (self->cb[CALLBACK_READ].func) { /* We are doing a callback to perl */
+		char *data;
+		int count;
+		SV *sv;
+		STRLEN len;
+
+		ENTER ;
+		SAVETMPS ;
+
+		PUSHMARK(SP) ;
+
+		if (self->cb[CALLBACK_READ].data) {
+			sv = self->cb[CALLBACK_READ].data;
+		} else {
+			sv = &PL_sv_undef;
+		}
+
+		/* $easy, $maxsize, $userdata */
+		XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+		XPUSHs( sv_2mortal( newSViv( maxlen ) ) );
+		XPUSHs( sv_2mortal( newSVsv( sv ) ) );
+
+		PUTBACK ;
+		count = perl_call_sv( self->cb[CALLBACK_READ].func, G_SCALAR );
+		SPAGAIN;
+
+		if (count != 1)
+			croak("callback for CURLOPT_READFUNCTION didn't return any data\n");
+
+		sv = POPs;
+		data = SvPV(sv,len);
+
+		/* only allowed to return the number of bytes asked for */
+		len = (len<maxlen ? len : maxlen);
+		/* memcpy(ptr,data,(size_t)len); */
+		Copy( data, ptr, len, char );
+
+		PUTBACK ;
+		FREETMPS ;
+		LEAVE ;
+		return (size_t) (len/size);
+
+	} else {
+		/* read input directly */
+		PerlIO *f;
+		if (self->cb[CALLBACK_READ].data) { /* hope its a GLOB! */
+			f = IoIFP(sv_2io(self->cb[CALLBACK_READ].data));
+		} else { /* punt to stdin */
+			f = PerlIO_stdin();
+		}
+		return PerlIO_read(f,ptr,maxlen);
+	}
+} /*}}}*/
+
+/* Progress callback for calling a perl callback */
+
+static int
+cb_easy_progress( void *userptr, double dltotal, double dlnow,
+		double ultotal, double ulnow )
+/*{{{*/ {
+	dTHX;
+	dSP;
+
+	int count;
+	perl_curl_easy_t *self;
+	self=(perl_curl_easy_t *)userptr;
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK(sp);
+
+	/* $easy, $dltotal, $dlnow, $ultotal, $ulnow, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSVnv( dltotal ) ) );
+	XPUSHs( sv_2mortal( newSVnv( dlnow ) ) );
+	XPUSHs( sv_2mortal( newSVnv( ultotal ) ) );
+	XPUSHs( sv_2mortal( newSVnv( ulnow ) ) );
+	if ( self->cb[CALLBACK_PROGRESS].data ) {
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACK_PROGRESS].data ) ) );
+	} else {
+		XPUSHs( &PL_sv_undef );
+	}
+
+	PUTBACK;
+	count = perl_call_sv(self->cb[CALLBACK_PROGRESS].func, G_SCALAR);
+	SPAGAIN;
+
+	if (count != 1)
+		croak("callback for CURLOPT_PROGRESSFUNCTION didn't return 1\n");
+
+	count = POPi;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+	return count;
+} /*}}}*/
+
+
+
+/* XS_SECTION */
+#ifdef XS_SECTION
+
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
 
 INCLUDE: const-easy-xs.inc
@@ -428,3 +949,4 @@ curl_easy_strerror(self, errornum)
 	OUTPUT:
 		RETVAL
 
+#endif
