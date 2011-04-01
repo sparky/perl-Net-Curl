@@ -8,9 +8,9 @@
 
 
 typedef enum {
-	CALLBACKM_SOCKET = 0,
-	CALLBACKM_TIMER,
-	CALLBACKM_LAST,
+	CB_MULTI_SOCKET = 0,
+	CB_MULTI_TIMER,
+	CB_MULTI_LAST,
 } perl_curl_multi_callback_code_t;
 
 struct perl_curl_multi_s {
@@ -21,7 +21,7 @@ struct perl_curl_multi_s {
 	CURLM *curlm;
 
 	/* list of callbacks */
-	callback_t cb[ CALLBACKM_LAST ];
+	callback_t cb[ CB_MULTI_LAST ];
 };
 
 static void
@@ -61,7 +61,7 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
 	if (self->curlm)
 		curl_multi_cleanup(self->curlm);
 
-	for(i=0;i<CALLBACKM_LAST;i++) {
+	for(i=0;i<CB_MULTI_LAST;i++) {
 		sv_2mortal(self->cb[i].func);
 		sv_2mortal(self->cb[i].data);
 	}
@@ -92,14 +92,14 @@ cb_multi_socket( CURL *easy, curl_socket_t s, int what, void *userptr,
 	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
 	XPUSHs(sv_2mortal(newSVuv( s )));
 	XPUSHs(sv_2mortal(newSViv( what )));
-	if (self->cb[CALLBACKM_SOCKET].data) {
-		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKM_SOCKET].data)));
+	if (self->cb[CB_MULTI_SOCKET].data) {
+		XPUSHs(sv_2mortal(newSVsv(self->cb[CB_MULTI_SOCKET].data)));
 	} else {
 		XPUSHs(&PL_sv_undef);
 	}
 
 	PUTBACK;
-	count = perl_call_sv(self->cb[CALLBACKM_SOCKET].func, G_SCALAR);
+	count = perl_call_sv(self->cb[CB_MULTI_SOCKET].func, G_SCALAR);
 	SPAGAIN;
 
 	if (count != 1)
@@ -130,11 +130,11 @@ cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
 	/* $multi, $timeout, $userdata */
 	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
 	XPUSHs( sv_2mortal( newSViv( timeout_ms ) ) );
-	if ( self->cb[CALLBACKM_TIMER].data )
-		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACKM_TIMER].data ) ) );
+	if ( self->cb[CB_MULTI_TIMER].data )
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CB_MULTI_TIMER].data ) ) );
 
 	PUTBACK;
-	count = perl_call_sv( self->cb[CALLBACKM_TIMER].func, G_SCALAR );
+	count = perl_call_sv( self->cb[CB_MULTI_TIMER].func, G_SCALAR );
 	SPAGAIN;
 
 	if (count != 1)
@@ -299,8 +299,8 @@ curl_multi_setopt(self, option, value)
 				curl_multi_setopt( self->curlm, CURLMOPT_SOCKETDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
 					option == CURLMOPT_SOCKETDATA ?
-						&(self->cb[CALLBACKM_SOCKET].data) :
-						&(self->cb[CALLBACKM_SOCKET].func),
+						&(self->cb[CB_MULTI_SOCKET].data) :
+						&(self->cb[CB_MULTI_SOCKET].func),
 					value);
 				break;
 			case CURLMOPT_TIMERFUNCTION:
@@ -309,8 +309,8 @@ curl_multi_setopt(self, option, value)
 				curl_multi_setopt( self->curlm, CURLMOPT_TIMERDATA, SvOK(value) ? self : NULL );
 				perl_curl_multi_register_callback( aTHX_ self,
 					option == CURLMOPT_TIMERDATA ?
-						&(self->cb[CALLBACKM_TIMER].data) :
-						&(self->cb[CALLBACKM_TIMER].func),
+						&(self->cb[CB_MULTI_TIMER].data) :
+						&(self->cb[CB_MULTI_TIMER].func),
 					value );
 				break;
 
