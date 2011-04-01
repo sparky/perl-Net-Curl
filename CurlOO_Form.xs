@@ -23,7 +23,7 @@ static perl_curl_form_t *
 perl_curl_form_new( void )
 {
 	perl_curl_form_t *self;
-	Newz( 1, self, 1, perl_curl_form_t );
+	Newxz( self, 1, perl_curl_form_t );
 	self->post = NULL;
 	self->last = NULL;
 	return self;

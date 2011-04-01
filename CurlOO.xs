@@ -23,6 +23,11 @@
 #include "const-defenums.h"
 #include "const-c.inc"
 
+#ifndef Newx
+#define Newx(v,n,t)    New(0,v,n,t)
+#define Newxc(v,n,t,c) Newc(0,v,n,t,c)
+#define Newxz(v,n,t)   Newz(0,v,n,t)
+#endif
 
 typedef enum {
 	CALLBACK_WRITE = 0,
@@ -229,7 +234,7 @@ static perl_curl_easy_t *
 perl_curl_easy_new( void )
 /*{{{*/ {
 	perl_curl_easy_t *self;
-	Newz(1, self, 1, perl_curl_easy_t);
+	Newxz( self, 1, perl_curl_easy_t );
 	self->curl=curl_easy_init();
 	return self;
 } /*}}}*/
@@ -238,7 +243,7 @@ static perl_curl_easy_t *
 perl_curl_easy_duphandle( perl_curl_easy_t *orig )
 /*{{{*/ {
 	perl_curl_easy_t *self;
-	Newz(1, self, 1, perl_curl_easy_t);
+	Newxz( self, 1, perl_curl_easy_t );
 	self->curl=curl_easy_duphandle(orig->curl);
 	return self;
 } /*}}}*/
@@ -348,7 +353,7 @@ static perl_curl_multi_t *
 perl_curl_multi_new( void )
 /*{{{*/ {
 	perl_curl_multi_t *self;
-	Newz(1, self, 1, perl_curl_multi_t);
+	Newxz( self, 1, perl_curl_multi_t );
 	self->curlm=curl_multi_init();
 	return self;
 } /*}}}*/
@@ -375,7 +380,7 @@ static perl_curl_share_t *
 perl_curl_share_new( void )
 /*{{{*/ {
 	perl_curl_share_t *self;
-	Newz(1, self, 1, perl_curl_share_t);
+	Newxz( self, 1, perl_curl_share_t );
 	self->curlsh=curl_share_init();
 	return self;
 } /*}}}*/
