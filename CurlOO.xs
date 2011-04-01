@@ -91,10 +91,10 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 /* default base object */
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *)newHV() ) )
 
-#include "CurlOO_Easy.xs"
-#include "CurlOO_Form.xs"
-#include "CurlOO_Multi.xs"
-#include "CurlOO_Share.xs"
+#include "CurlOO_Easy.xsh"
+#include "CurlOO_Form.xsh"
+#include "CurlOO_Multi.xsh"
+#include "CurlOO_Share.xsh"
 #define XS_SECTION
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
@@ -187,7 +187,7 @@ curl_version_info()
 		RETVAL
 
 
-INCLUDE: perl -p getxs CurlOO_Easy.xs |
-INCLUDE: perl -p getxs CurlOO_Form.xs |
-INCLUDE: perl -p getxs CurlOO_Multi.xs |
-INCLUDE: perl -p getxs CurlOO_Share.xs |
+INCLUDE: perl -p getxs CurlOO_Easy.xsh |
+INCLUDE: perl -p getxs CurlOO_Form.xsh |
+INCLUDE: perl -p getxs CurlOO_Multi.xsh |
+INCLUDE: perl -p getxs CurlOO_Share.xsh |

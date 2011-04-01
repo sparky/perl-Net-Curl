@@ -1,8 +1,8 @@
 CurlOO.xs
-CurlOO_Easy.xs
-CurlOO_Form.xs
-CurlOO_Share.xs
-CurlOO_Multi.xs
+CurlOO_Easy.xsh
+CurlOO_Form.xsh
+CurlOO_Share.xsh
+CurlOO_Multi.xsh
 LICENSE
 MANIFEST
 Makefile.PL

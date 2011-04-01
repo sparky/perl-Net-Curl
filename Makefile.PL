@@ -100,7 +100,7 @@ WriteMakefile(
 	PMLIBDIRS => [ 'pplib' ],
 	PMLIBPARENTDIRS => [ 'pplib' ],
 	depend		=> {
-		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xs CurlOO_Form.xs CurlOO_Multi.xs CurlOO_Share.xs'
+		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
 		FILES => 'const-c.inc const-*-xs.inc const-defenums.h'
