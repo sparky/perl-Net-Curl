@@ -1,36 +1,50 @@
 #!perl
 use strict;
 use warnings;
-use Data::Dumper;
 use Test::More tests => 2;
 use WWW::CurlOO;
-$Data::Dumper::Quotekeys = 0;
 
 warn "libcurl\n";
 warn "version():\n\t" . WWW::CurlOO::version() . "\n";
 my $vi = WWW::CurlOO::version_info();
-warn "version_info():\n" . Data::Dumper->Dump( [$vi], ["vi"] );
-warn "{version_num} = " . sprintf "0x%06x\n", $vi->{version_num};
-warn "{ares_num} = " . sprintf "0x%06x\n", $vi->{ares_num};
 
+warn "version_info():\n";
+foreach my $key ( sort keys %$vi ) {
+	my $value = $vi->{$key};
+	if ( $key eq 'features' ) {
+		print_features( $value );
+		next;
+	} elsif ( ref $value and ref $value eq 'ARRAY' ) {
+		$value = join ', ', sort @$value;
+	} elsif ( $value =~ m/^\d+$/ ) {
+		$value = sprintf "0x%06x", $value
+			if $value > 15;
+	} else {
+		$value = "'$value'";
+	}
+	warn "\t{$key} = $value;\n";
+}
+
+sub print_features
 {
-	my @found;
-	my @missing;
+	my $features = shift;
+	my @found = ('');
+	my @missing = ('');
 	foreach my $f ( sort { WWW::CurlOO->$a() <=> WWW::CurlOO->$b() }
 			grep /^CURL_VERSION_/, keys %{WWW::CurlOO::} )
 	{
 		my $val = WWW::CurlOO->$f();
 		my $bit = log ( $val ) / log 2;
-		if ( $vi->{features} & $val ) {
+		if ( $features & $val ) {
 			push @found, "$f (1<<$bit)"
 		} else {
 			push @missing, "$f (1<<$bit)"
 		}
 	}
 
-	local $" = "\n\t| ";
-	warn "{features} = @found;\n";
-	warn "missing features = @missing;\n";
+	local $" = "\n\t\t| ";
+	warn "\t{features} = @found;\n";
+	warn "\tmissing features = @missing;\n";
 }
 
 # older than this are not supported
