@@ -73,6 +73,9 @@ CURLFORM_FILE, CURLFORM_CONTENTTYPE, CURLFORM_FILENAME.
 Unlike in libcurl function, there is no need to add CURLFORM_END as the last
 argument.
 
+On error this method dies with message: "curl_formadd() failed: $CURLFORMcode\n",
+where $CURLFORMcode is a decimal number.
+
 Options CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS automatibally set
 appropriate their length values (CURLFORM_NAMELENGTH and CURLFORM_CONTENTSLENGTH
 respectively) so there is no need to set length even if there is a NUL
