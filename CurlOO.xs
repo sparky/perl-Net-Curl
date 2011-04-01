@@ -71,6 +71,62 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 	return slist;
 }
 
+typedef struct stringll_s stringll_t;
+struct stringll_s {
+	/* next in the linked list */
+	stringll_t *next;
+
+	/* curl option it belongs to */
+	int option;
+
+	/* the actual string */
+	char *string;
+};
+
+static char *
+perl_curl_stringll_set( pTHX_ stringll_t **start, int option, SV *value )
+{
+	stringll_t **now = start;
+	stringll_t *tmp = NULL;
+
+	while ( *now ) {
+		if ( (*now)->option == option ) {
+			Safefree( (*now)->string );
+			tmp = *now;
+			*now = (*now)->next;
+			Safefree( tmp );
+			break;
+		} else if ( (*now)->option > option ) {
+			break;
+		}
+		now = &( (*now)->next );
+	}
+
+	if ( value == NULL || !SvOK( value ) )
+		return NULL;
+
+	tmp = *now;
+	Newx( *now, 1, stringll_t );
+	(*now)->next = tmp;
+	(*now)->option = option;
+	(*now)->string = savesvpv( value );
+
+	return (*now)->string;
+}
+
+static void
+perl_curl_stringll_free( pTHX_ stringll_t *start )
+{
+	stringll_t *now = start, *tmp;
+
+	while ( now ) {
+		Safefree( now->string );
+		tmp = now;
+		now = now->next;
+		Safefree( tmp );
+	}
+}
+
 
 static const MGVTBL perl_curl_vtbl = { NULL };
 

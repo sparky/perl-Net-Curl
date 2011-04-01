@@ -46,8 +46,7 @@ struct perl_curl_easy_s {
 	char errbuf[CURL_ERROR_SIZE+1];
 	char *errbufvarname;
 
-	I32 strings_index;
-	char *strings[ CURLOPT_LASTENTRY % CURLOPTTYPE_OBJECTPOINT ];
+	stringll_t *strings;
 
 	/* parent, if easy is attached to any multi object */
 	perl_curl_multi_t *multi;
@@ -206,13 +205,9 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 	if ( self->errbufvarname )
 		free( self->errbufvarname );
 
-	for ( i = 0; i <= self->strings_index; i++ ) {
-		if ( self->strings[ i ] != NULL ) {
-			char* ptr = self->strings[i];
-			Safefree(ptr);
-		}
-	}
-	Safefree(self);
+	perl_curl_stringll_free( aTHX_ self->strings );
+
+	Safefree( self );
 
 } /*}}}*/
 
@@ -601,13 +596,22 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 			perl_curl_easy_register_callback( aTHX_ clone,&(clone->cb[i].data), self->cb[i].data);
 		};
 
-		for (i=0;i<=self->strings_index;i++) {
-			if (self->strings[i] != NULL) {
-				clone->strings[i] = savepv(self->strings[i]);
-				curl_easy_setopt(clone->curl, CURLOPTTYPE_OBJECTPOINT + i, clone->strings[i]);
+		/* clone strings and set */
+		{
+			stringll_t *in, **out;
+			in = self->strings;
+			out = &clone->strings;
+			while ( in ) {
+				Newx( *out, 1, stringll_t );
+				(*out)->next = NULL;
+				(*out)->option = in->option;
+				(*out)->string = savepv( in->string );
+
+				curl_easy_setopt( clone->curl, in->option, (*out)->string );
+				out = &(*out)->next;
+				in = in->next;
 			}
 		}
-		clone->strings_index = self->strings_index;
 
 		perl_curl_setptr( aTHX_ base, clone );
 		stash = gv_stashpv( sclass, 0 );
@@ -731,23 +735,15 @@ curl_easy_setopt( self, option, value )
 
 			/* default cases */
 			default:
-				if (option < CURLOPTTYPE_OBJECTPOINT) { /* A long (integer) value */
+				if (option < CURLOPTTYPE_OBJECTPOINT) {
+					/* A long (integer) value */
 					RETVAL = curl_easy_setopt(self->curl, option, (long)SvIV(value));
 				}
-				else if (option < CURLOPTTYPE_FUNCTIONPOINT) { /* An objectpoint - string */
-					int string_index = option - CURLOPTTYPE_OBJECTPOINT;
-					/* FIXME: Does curl really want NULL for empty strings? */
-					STRLEN dummy = 0;
-					/* Pre 7.17.0, the strings aren't copied by libcurl.*/
-					char* pv = SvOK(value) ? SvPV(value, dummy) : "";
-					I32 len = (I32)dummy;
-					pv = savepvn(pv, len);
-					if (self->strings[string_index] != NULL)
-						Safefree(self->strings[string_index]);
-					self->strings[string_index] = pv;
-					if (self->strings_index < string_index)
-						self->strings_index = string_index;
-					RETVAL = curl_easy_setopt(self->curl, option, SvOK(value) ? pv : NULL);
+				else if (option < CURLOPTTYPE_FUNCTIONPOINT) {
+					/* An objectpoint - string */
+					char *pv = perl_curl_stringll_set( aTHX_ &self->strings,
+						option, value );
+					RETVAL = curl_easy_setopt( self->curl, option, pv );
 				}
 				else if (option < CURLOPTTYPE_OFF_T) { /* A function - notreached? */
 					croak("Unknown curl option of type function");
