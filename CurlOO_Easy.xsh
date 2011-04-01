@@ -51,7 +51,7 @@ struct perl_curl_easy_s {
 	char errbuf[CURL_ERROR_SIZE+1];
 	char *errbufvarname;
 
-	stringll_t *strings;
+	optionll_t *strings;
 
 	/* parent, if easy is attached to any multi object */
 	perl_curl_multi_t *multi;
@@ -183,7 +183,15 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 	if ( self->errbufvarname )
 		free( self->errbufvarname );
 
-	perl_curl_stringll_free( aTHX_ self->strings );
+	if ( self->strings ) {
+		optionll_t *next, *now = self->strings;
+		while ( now ) {
+			next = now->next;
+			Safefree( now->data );
+			Safefree( now );
+			now = next;
+		}
+	}
 
 	Safefree( self );
 
@@ -576,16 +584,16 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 
 		/* clone strings and set */
 		{
-			stringll_t *in, **out;
+			optionll_t *in, **out;
 			in = self->strings;
 			out = &clone->strings;
 			while ( in ) {
-				Newx( *out, 1, stringll_t );
+				Newx( *out, 1, optionll_t );
 				(*out)->next = NULL;
 				(*out)->option = in->option;
-				(*out)->string = savepv( in->string );
+				(*out)->data = savepv( in->data );
 
-				curl_easy_setopt( clone->curl, in->option, (*out)->string );
+				curl_easy_setopt( clone->curl, in->option, (*out)->data );
 				out = &(*out)->next;
 				in = in->next;
 			}
@@ -719,8 +727,19 @@ curl_easy_setopt( self, option, value )
 				}
 				else if (option < CURLOPTTYPE_FUNCTIONPOINT) {
 					/* An objectpoint - string */
-					char *pv = perl_curl_stringll_set( aTHX_ &self->strings,
-						option, value );
+					char *pv;
+					if ( SvOK( value ) ) {
+						char **ppv;
+						ppv = perl_curl_optionll_add( aTHX_ &self->strings, option );
+						if ( ppv )
+							Safefree( *ppv );
+						pv = *ppv = savesvpv( value );
+					} else {
+						pv = perl_curl_optionll_del( aTHX_ &self->strings, option );
+						if ( pv )
+							Safefree( pv );
+						pv = NULL;
+					}
 					RETVAL = curl_easy_setopt( self->curl, option, pv );
 				}
 				else if (option < CURLOPTTYPE_OFF_T) { /* A function - notreached? */

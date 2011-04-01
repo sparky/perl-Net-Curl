@@ -72,60 +72,81 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 	return slist;
 }
 
-typedef struct stringll_s stringll_t;
-struct stringll_s {
+typedef struct optionll_s optionll_t;
+struct optionll_s {
 	/* next in the linked list */
-	stringll_t *next;
+	optionll_t *next;
 
 	/* curl option it belongs to */
 	int option;
 
-	/* the actual string */
-	char *string;
+	/* the actual data */
+	void *data;
 };
 
-static char *
-perl_curl_stringll_set( pTHX_ stringll_t **start, int option, SV *value )
+#if 0
+static void **
+perl_curl_optionll_get( pTHX_ optionll_t *start, int option )
 {
-	stringll_t **now = start;
-	stringll_t *tmp = NULL;
+	optionll_t *now = start;
+
+	if ( now == NULL )
+		return NULL;
+
+	while ( now ) {
+		if ( now->option == option )
+			return &(now->data);
+		if ( now->option > option )
+			return NULL;
+		now = now->next;
+	}
+
+	return NULL;
+}
+#endif
+
+
+static void *
+perl_curl_optionll_add( pTHX_ optionll_t **start, int option )
+{
+	optionll_t **now = start;
+	optionll_t *tmp = NULL;
 
 	while ( *now ) {
-		if ( (*now)->option == option ) {
-			Safefree( (*now)->string );
-			tmp = *now;
-			*now = (*now)->next;
-			Safefree( tmp );
+		if ( (*now)->option == option )
+			return &((*now)->data);
+		if ( (*now)->option > option )
 			break;
-		} else if ( (*now)->option > option ) {
-			break;
-		}
 		now = &( (*now)->next );
 	}
 
-	if ( value == NULL || !SvOK( value ) )
-		return NULL;
-
 	tmp = *now;
-	Newx( *now, 1, stringll_t );
+	Newx( *now, 1, optionll_t );
 	(*now)->next = tmp;
 	(*now)->option = option;
-	(*now)->string = savesvpv( value );
+	(*now)->data = NULL;
 
-	return (*now)->string;
+	return &((*now)->data);
 }
 
-static void
-perl_curl_stringll_free( pTHX_ stringll_t *start )
+static void *
+perl_curl_optionll_del( pTHX_ optionll_t **start, int option )
 {
-	stringll_t *now = start, *tmp;
+	optionll_t **now = start;
 
-	while ( now ) {
-		Safefree( now->string );
-		tmp = now;
-		now = now->next;
-		Safefree( tmp );
+	while ( *now ) {
+		if ( (*now)->option == option ) {
+			void *ret = (*now)->data;
+			optionll_t *tmp = *now;
+			*now = (*now)->next;
+			Safefree( tmp );
+			return ret;
+		}
+		if ( (*now)->option > option )
+			return NULL;
+		now = &( (*now)->next );
 	}
+	return NULL;
 }
 
 
