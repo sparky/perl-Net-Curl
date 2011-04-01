@@ -56,6 +56,7 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 		croak( "not an array" );
 
 	array = (AV *)SvRV( arrayref );
+	array_len = av_len( array );
 
 	for ( i = 0; i <= array_len; i++ ) {
 		SV **sv;
