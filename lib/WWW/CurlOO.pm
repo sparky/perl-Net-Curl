@@ -11,7 +11,7 @@ BEGIN {
 	XSLoader::load(__PACKAGE__, $VERSION);
 }
 END {
-    _global_cleanup();
+	_global_cleanup();
 }
 
 our @ISA = qw(Exporter);
@@ -35,8 +35,8 @@ B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
 
 =head1 SYNOPSIS
 
-    use WWW::CurlOO;
-    print $WWW::CurlOO::VERSION;
+ use WWW::CurlOO;
+ print $WWW::CurlOO::VERSION;
 
 
 =head1 DESCRIPTION
@@ -56,7 +56,7 @@ This package contains some static functions and version-releated constants.
 It does not export by default anything, but constants can be exported upon
 request.
 
-	use WWW::CurlOO qw(:constants);
+ use WWW::CurlOO qw(:constants);
 
 =head2 FUNCTIONS
 
@@ -66,59 +66,54 @@ request.
 
 Returns libcurl version string. See L<curl_version(3)> for more info.
 
-	my $libcurl_verstr = WWW::CurlOO::version();
-	# prints something like:
-	# libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 libidn/1.20 libssh2/1.2.7 librtmp/2.3
-	print $libcurl_verstr;
+ my $libcurl_verstr = WWW::CurlOO::version();
+ # prints something like:
+ # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 libidn/1.20 libssh2/1.2.7 librtmp/2.3
+ print $libcurl_verstr;
 
 =item version_info
 
 Returns a hashref with the same information as L<curl_version_info(3)>.
-	
-	my $libcurl_ver = WWW::CurlOO::version_info();
 
-	print Dumper( $libcurl_ver );
+ my $libcurl_ver = WWW::CurlOO::version_info();
+ print Dumper( $libcurl_ver );
 
 Example for version_info with age CURLVERSION_FOURTH:
 
-	'age' => 3,
-	'version' => '7.21.4',
-	'version_num' => 464132,
-	'host' => 'x86_64-pld-linux-gnu',
-	'features' => 18109,
-	'ssl_version' => 'GnuTLS/2.10.4'
-	'ssl_version_num' => 0,
-	'libz_version' => '1.2.5',
-	'protocols' => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http', 'https',
-		'imap', 'imaps', 'ldap', 'ldaps', 'pop3', 'pop3s', 'rtmp', 'rtsp',
-		'scp', 'sftp', 'smtp', 'smtps', 'telnet', 'tftp' ],
-	'ares' => '1.7.4',
-	'ares_num' => 67332,
-	'libidn' => '1.20',
-	'iconv_ver_num' => 0,
-	'libssh_version' => 'libssh2/1.2.7',
-	
+ age => 3,
+ version => '7.21.4',
+ version_num => 464132,
+ host => 'x86_64-pld-linux-gnu',
+ features => 18109,
+ ssl_version => 'GnuTLS/2.10.4'
+ ssl_version_num => 0,
+ libz_version => '1.2.5',
+ protocols => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http', 'https',
+                'imap', 'imaps', 'ldap', 'ldaps', 'pop3', 'pop3s', 'rtmp', 'rtsp',
+                'scp', 'sftp', 'smtp', 'smtps', 'telnet', 'tftp' ],
+ ares => '1.7.4',
+ ares_num => 67332,
+ libidn => '1.20',
+ iconv_ver_num => 0,
+ libssh_version => 'libssh2/1.2.7',
+
 You can import constants if you want to check libcurl features:
 
-	use WWW::CurlOO qw(:constants);
-	unless ( WWW::CurlOO::version_info()->{features} & CURL_VERSION_SSL ) {
-		die "SSL support is required
-	}
+ use WWW::CurlOO qw(:constants);
+ unless ( WWW::CurlOO::version_info()->{features} & CURL_VERSION_SSL ) {
+     die "SSL support is required\n";
+ }
 
 =item getdate
 
 Decodes date string returning its numerical value, in seconds.
 
-	my $time = WWW::CurlOO::getdate( "GMT 08:49:37 06-Nov-94 Sunday" );
-	my $timestr = gmtime $time;
-	print "$timestr\n";
-	# Sun Nov  6 08:49:37 1994
+ my $time = WWW::CurlOO::getdate( "GMT 08:49:37 06-Nov-94 Sunday" );
+ my $timestr = gmtime $time;
+ print "$timestr\n";
+ # Sun Nov  6 08:49:37 1994
 
 See L<curl_getdate(3)> for more info on supported input formats.
-
-=item constant
-
-Unused.
 
 =back
 

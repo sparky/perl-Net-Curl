@@ -26,24 +26,24 @@ THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.
 
 =head1 SYNOPSIS
 
-	use WWW::CurlOO::Form qw(:constants);
+ use WWW::CurlOO::Form qw(:constants);
 
-	my $form = WWW::CurlOO::Form->new();
-	$form->add(
-		CURLFORM_COPYNAME() => $name,
-		CURLFORM_COPYCONTENTS() => $data
-	);
-	$form->add(
-		CURLFORM_COPYNAME() => $filename,
-		CURLFORM_FILE() => $filename
-	);
+ my $form = WWW::CurlOO::Form->new();
+ $form->add(
+     CURLFORM_COPYNAME() => $name,
+     CURLFORM_COPYCONTENTS() => $data
+ );
+ $form->add(
+     CURLFORM_COPYNAME() => $filename,
+     CURLFORM_FILE() => $filename
+ );
 
 
-	# most likely use:
-	$easy->setopt( CURLOPT_HTTPPOST() => $form );
+ # most likely use:
+ $easy->setopt( CURLOPT_HTTPPOST() => $form );
 
-	# serialize
-	my $serial = $form->get();
+ # serialize
+ my $serial = $form->get();
 
 =head1 DESCRIPTION
 
@@ -83,39 +83,39 @@ character in the data. If you want to shorten the buffer CURLFORM_*LENGTH
 options must be set inmediatelly after their CURLFORM_COPY* options, otherwise
 an CURL_FORMADD_OPTION_TWICE exception will occur.
 
-	$form->add(
-		CURLFORM_COPYNAME() => "name",
-		CURLFORM_COPYCONTENTS() => "content\0binary"
-	);
-	$form->add(
-		CURLFORM_COPYNAME() => "name",
-		CURLFORM_NAMELENGTH() => 2,
-		CURLFORM_COPYCONTENTS() => "content",
-		CURLFORM_CONTENTSLENGTH() => 4,
-	);
-	$form->add(
-		CURLFORM_COPYNAME, "htmlcode",
-		CURLFORM_COPYCONTENTS, "<HTML></HTML>",
-		CURLFORM_CONTENTTYPE, "text/html"
-	);
-	$form->add(
-		CURLFORM_COPYNAME, "picture",
-		CURLFORM_FILE, "my-face.jpg"
-	);
-	$form->add(
-		CURLFORM_COPYNAME, "picture",
-		CURLFORM_FILE, "my-face.jpg",
-		CURLFORM_CONTENTTYPE, "image/jpeg"
-	);
-	$form->add(
-		CURLFORM_COPYNAME, "picture",
-		CURLFORM_FILE, "my-face.jpg",
-		CURLFORM_FILE, "your-face.jpg",
-	);
-	$form->add(
-		CURLFORM_COPYNAME, "filecontent",
-		CURLFORM_FILECONTENT, ".bashrc"
-	);
+ $form->add(
+     CURLFORM_COPYNAME() => "name",
+     CURLFORM_COPYCONTENTS() => "content\0binary"
+ );
+ $form->add(
+     CURLFORM_COPYNAME() => "name",
+     CURLFORM_NAMELENGTH() => 2,
+     CURLFORM_COPYCONTENTS() => "content",
+     CURLFORM_CONTENTSLENGTH() => 4,
+ );
+ $form->add(
+     CURLFORM_COPYNAME, "htmlcode",
+     CURLFORM_COPYCONTENTS, "<HTML></HTML>",
+     CURLFORM_CONTENTTYPE, "text/html"
+ );
+ $form->add(
+     CURLFORM_COPYNAME, "picture",
+     CURLFORM_FILE, "my-face.jpg"
+ );
+ $form->add(
+     CURLFORM_COPYNAME, "picture",
+     CURLFORM_FILE, "my-face.jpg",
+     CURLFORM_CONTENTTYPE, "image/jpeg"
+ );
+ $form->add(
+     CURLFORM_COPYNAME, "picture",
+     CURLFORM_FILE, "my-face.jpg",
+     CURLFORM_FILE, "your-face.jpg",
+ );
+ $form->add(
+     CURLFORM_COPYNAME, "filecontent",
+     CURLFORM_FILECONTENT, ".bashrc"
+ );
 
 
 =item OBJECT->get( [BUFFER / FH / USERDATA], [CALLBACK] )
@@ -131,26 +131,26 @@ There are multiple ways to perform serialization:
 
 With no arguments a scalar is returned.
 
-	my $serial = $form->get();
+ my $serial = $form->get();
 
 =item write to file handle
 
 If there is only one argument and it is a GLOB or a GLOB reference,
 serialized contents will be written to that file handle.
 
-	open my $file, ">", "post.txt";
-	$form->get( $file );
+ open my $file, ">", "post.txt";
+ $form->get( $file );
 
 =item write to buffer
 
 If there is only one argument and it is writable, serialized contents
 will be concatenated to it.
 
-	my $serial;
-	$form->get( $serial );
+ my $serial;
+ $form->get( $serial );
 
-	# same as above
-	$form->get( \$serial );
+ # same as above
+ $form->get( \$serial );
 
 =item use a callback
 
@@ -162,15 +162,15 @@ The callback will receive three arguments: form object, data buffer and
 user data. It must return the length of the data buffer, otherwise
 serialization will be aborted.
 
-	sub cb_serial
-	{
-		my ( $form, $data, $userdata ) = @_;
+ sub cb_serial
+ {
+     my ( $form, $data, $userdata ) = @_;
 
-		# do anything you want
+     # do anything you want
 
-		return length $data;
-	}
-	$form->get( "userdata", \&cb_serial );
+     return length $data;
+ }
+ $form->get( "userdata", \&cb_serial );
 
 =back
 
