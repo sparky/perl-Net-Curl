@@ -6,6 +6,7 @@ CurlOO_Multi.xs
 LICENSE
 MANIFEST
 Makefile.PL
+getxs
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm
