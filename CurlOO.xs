@@ -24,9 +24,13 @@
 #include "const-c.inc"
 
 #ifndef Newx
-#define Newx(v,n,t)    New(0,v,n,t)
-#define Newxc(v,n,t,c) Newc(0,v,n,t,c)
-#define Newxz(v,n,t)   Newz(0,v,n,t)
+# define Newx(v,n,t)    New(0,v,n,t)
+# define Newxc(v,n,t,c) Newc(0,v,n,t,c)
+# define Newxz(v,n,t)   Newz(0,v,n,t)
+#endif
+
+#ifndef hv_stores
+# define hv_stores(hv,key,val) hv_store( hv, key, sizeof( key ) - 1, val, 0 )
 #endif
 
 typedef enum {
@@ -920,28 +924,20 @@ curl_version_info()
 		if ( vi == NULL )
 			croak( "curl_version_info() returned NULL\n" );
 		ret = newHV();
-		/* XXX: use hv_stores */
-		hv_store( ret, "age", 3,
-			newSViv(vi->age), 0 );
+
+		hv_stores( ret, "age", newSViv(vi->age) );
 		if ( vi->age >= CURLVERSION_FIRST ) {
 			if ( vi->version )
-				hv_store( ret, "version", 7,
-					newSVpv(vi->version, 0), 0 );
-			hv_store( ret, "version_num", 11,
-				newSVuv(vi->version_num), 0 );
+				hv_stores( ret, "version", newSVpv(vi->version, 0) );
+			hv_stores( ret, "version_num", newSVuv(vi->version_num) );
 			if ( vi->host )
-				hv_store( ret, "host", 4,
-					newSVpv(vi->host, 0), 0 );
-			hv_store( ret, "features", 8,
-				newSViv(vi->features), 0 );
+				hv_stores( ret, "host", newSVpv(vi->host, 0) );
+			hv_stores( ret, "features", newSViv(vi->features) );
 			if ( vi->ssl_version )
-				hv_store( ret, "ssl_version", 11,
-					newSVpv(vi->ssl_version, 0), 0 );
-			hv_store( ret, "ssl_version_num", 15,
-				newSViv(vi->ssl_version_num), 0 );
+				hv_stores( ret, "ssl_version", newSVpv(vi->ssl_version, 0) );
+			hv_stores( ret, "ssl_version_num", newSViv(vi->ssl_version_num) );
 			if ( vi->libz_version )
-				hv_store( ret, "libz_version", 12,
-					newSVpv(vi->libz_version, 0), 0 );
+				hv_stores( ret, "libz_version", newSVpv(vi->libz_version, 0) );
 			if ( vi->protocols ) {
 				const char * const *p = vi->protocols;
 				AV *prot;
@@ -951,29 +947,23 @@ curl_version_info()
 					p++;
 				}
 
-				hv_store( ret, "protocols", 9,
-					newRV((SV*)prot), 0 );
+				hv_stores( ret, "protocols", newRV((SV*)prot) );
 			}
 		}
 		if ( vi->age >= CURLVERSION_SECOND ) {
 			if ( vi->ares )
-				hv_store( ret, "ares", 4,
-					newSVpv(vi->ares, 0), 0 );
-			hv_store( ret, "ares_num", 8,
-				newSViv(vi->ares_num), 0 );
+				hv_stores( ret, "ares", newSVpv(vi->ares, 0) );
+			hv_stores( ret, "ares_num", newSViv(vi->ares_num) );
 		}
 		if ( vi->age >= CURLVERSION_THIRD ) {
 			if ( vi->libidn )
-				hv_store( ret, "libidn", 6,
-					newSVpv(vi->libidn, 0), 0 );
+				hv_stores( ret, "libidn", newSVpv(vi->libidn, 0) );
 		}
 #ifdef CURLVERSION_FOURTH
 		if ( vi->age >= CURLVERSION_FOURTH ) {
-			hv_store( ret, "iconv_ver_num", 13,
-				newSViv(vi->iconv_ver_num), 0 );
+			hv_stores( ret, "iconv_ver_num", newSViv(vi->iconv_ver_num) );
 			if ( vi->libssh_version )
-				hv_store( ret, "libssh_version", 14,
-					newSVpv(vi->libssh_version, 0), 0 );
+				hv_stores( ret, "libssh_version", newSVpv(vi->libssh_version, 0) );
 		}
 #endif
 
