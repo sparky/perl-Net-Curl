@@ -126,25 +126,89 @@ curl_form_add( self, ... )
 	PROTOTYPE: $%
 	PREINIT:
 		struct curl_forms *farray;
-		int i;
+		int i_in, i_out;
+		CURLFORMcode ret;
 	CODE:
 		if ( !(items & 1) && (
 				!SvOK( ST( items - 1 ) ) ||
 				sv_iv( ST( items - 1 ) ) != CURLFORM_END ) )
 			croak( "Expected even number of arguments" );
 
-		Newx( farray, (items / 2 + 1), struct curl_forms );
+		/* items is about twice as much as we'll normally use */
+		Newx( farray, items, struct curl_forms );
 
-		for ( i = 0; i < (items - 1 ) / 2; i++ ) {
-			farray[ i ].option = sv_iv( ST( i*2+1 ) );
-			farray[ i ].value = SvPV_nolen( ST( i*2 + 2 ) );
+		for ( i_in = 1, i_out = 0; i_in < items - 1; i_in += 2 ) {
+			int option = sv_iv( ST( i_in ) );
+			int option_len;
+			STRLEN len;
+			switch ( option ) {
+				/* set string and its length */
+				case CURLFORM_COPYNAME:
+					option_len = CURLFORM_NAMELENGTH;
+					goto case_datawithzero;
+				case CURLFORM_COPYCONTENTS:
+					option_len = CURLFORM_CONTENTSLENGTH;
+				/*	TODO: must make a copy of the buffer
+					goto case_datawithzero;
+				case CURLFORM_BUFFERPTR:
+					option_len = CURLFORM_BUFFERLENGTH;*/
+case_datawithzero:
+					farray[ i_out ].option = option;
+					farray[ i_out ].value = SvPV( ST( i_in + 1 ), len );
+					i_out++;
+					farray[ i_out ].option = option_len;
+					farray[ i_out ].value = (void *)len;
+					i_out++;
+					break;
+
+				case CURLFORM_NAMELENGTH:
+				case CURLFORM_CONTENTSLENGTH:
+				/*case CURLFORM_BUFFERLENGTH:*/
+					if ( i_out > 0 && farray[ i_out - 1 ].option == option )
+						i_out--;
+					farray[ i_out ].option = option;
+					farray[ i_out ].value = (void *) sv_iv( ST( i_in + 1 ) );
+					i_out++;
+					break;
+
+				case CURLFORM_FILECONTENT:
+				case CURLFORM_FILE:
+				case CURLFORM_CONTENTTYPE:
+				case CURLFORM_FILENAME:
+				/*case CURLFORM_BUFFER:*/
+					farray[ i_out ].option = option;
+					farray[ i_out ].value = SvPV_nolen( ST( i_in + 1 ) );
+					i_out++;
+					break;
+
+				/*case CURLFORM_CONTENTHEADER:
+					* This may be a problem:
+					*
+					* When you’ve passed the HttpPost pointer to curl_easy_setopt
+					* (using the CURLOPT_HTTPPOST option), you must not free the
+					* list until after you’ve called curl_easy_cleanup( for the
+					* curl handle.
+
+					farray[ i_out ].option = option;
+					farray[ i_out ].value = SvPV_nolen( ST( i_in + 1 ) );
+					i_out++;
+					break;
+					*/
+
+				default:
+					croak( "curl_formadd option %d is not supported", option );
+					break;
+			}
 		}
-		farray[ i ].option = CURLFORM_END;
+		farray[ i_out ].option = CURLFORM_END;
 
-		curl_formadd( &self->post, &self->last,
+		ret = curl_formadd( &self->post, &self->last,
 			CURLFORM_ARRAY, farray, CURLFORM_END );
 
 		Safefree( farray );
+
+		if ( ret != CURL_FORMADD_OK )
+			croak( "curl_formadd() failed: %d\n", ret );
 
 
 void
