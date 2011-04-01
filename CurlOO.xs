@@ -46,6 +46,31 @@ typedef struct perl_curl_form_s perl_curl_form_t;
 typedef struct perl_curl_share_s perl_curl_share_t;
 typedef struct perl_curl_multi_s perl_curl_multi_t;
 
+static struct curl_slist *
+perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
+{
+	AV *array;
+	int array_len, i;
+
+	if ( !SvOK( arrayref ) || !SvROK( arrayref ) )
+		croak( "not an array" );
+
+	array = (AV *)SvRV( arrayref );
+
+	for ( i = 0; i <= array_len; i++ ) {
+		SV **sv;
+		char *string;
+
+		sv = av_fetch( array, i, 0 );
+		if ( !SvOK( *sv ) )
+			continue;
+		string = SvPV_nolen( *sv );
+		slist = curl_slist_append( slist, string );
+	}
+
+	return slist;
+}
+
 
 static const MGVTBL perl_curl_vtbl = { NULL };
 

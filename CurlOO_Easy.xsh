@@ -99,7 +99,7 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 	perl_curl_easy_slist_code_t si = 0;
 	AV *array;
 	int array_len;
-	struct curl_slist **slist = NULL;
+	struct curl_slist *slist = NULL;
 	int i;
 
 	switch( option ) {
@@ -141,25 +141,18 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 	array_len = av_len( array );
 
 	/* We have to find out which list to use... */
-	slist = &( self->slist[ si ] );
+	slist = self->slist[ si ];
 
-	if ( *slist && clear ) {
-		curl_slist_free_all( *slist );
-		*slist = NULL;
+	if ( slist && clear ) {
+		curl_slist_free_all( slist );
+		slist = NULL;
 	}
 
 	/* copy perl values into this slist */
-	for ( i = 0; i <= array_len; i++ ) {
-		SV **sv = av_fetch( array, i, 0 );
-		STRLEN len = 0;
-		char *string = SvPV( *sv, len );
-		if ( len == 0 ) /* FIXME: is this correct? */
-			continue;
-		*slist = curl_slist_append( *slist, string );
-	}
+	self->slist[ si ] = slist = perl_curl_array2slist( aTHX_ slist, value );
 
 	/* pass the list into curl_easy_setopt() */
-	return curl_easy_setopt(self->curl, option, *slist);
+	return curl_easy_setopt(self->curl, option, slist);
 } /*}}}*/
 
 static perl_curl_easy_t *
