@@ -1,4 +1,4 @@
-/* vim: ts=4:sw=4:fdm=marker: */
+/* vim: ts=4:sw=4:ft=xs:fdm=marker: */
 /*
  * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
  *
@@ -8,12 +8,12 @@
 
 
 typedef enum {
-	CALLBACK_WRITE = 0,
-	CALLBACK_READ,
-	CALLBACK_HEADER,
-	CALLBACK_PROGRESS,
-	CALLBACK_DEBUG,
-	CALLBACK_LAST
+	CB_EASY_WRITE = 0,
+	CB_EASY_READ,
+	CB_EASY_HEADER,
+	CB_EASY_PROGRESS,
+	CB_EASY_DEBUG,
+	CB_EASY_LAST
 } perl_curl_easy_callback_code_t;
 
 typedef enum {
@@ -40,7 +40,7 @@ struct perl_curl_easy_s {
 	struct curl_slist *slist[ SLIST_LAST ];
 
 	/* list of callbacks */
-	callback_t cb[ CALLBACK_LAST ];
+	callback_t cb[ CB_EASY_LAST ];
 
 	/* copy of error buffer var for caller*/
 	char errbuf[CURL_ERROR_SIZE+1];
@@ -65,30 +65,30 @@ callback_index( int option )
 	switch( option ) {
 		case CURLOPT_WRITEFUNCTION:
 		case CURLOPT_FILE:
-			return CALLBACK_WRITE;
+			return CB_EASY_WRITE;
 			break;
 
 		case CURLOPT_READFUNCTION:
 		case CURLOPT_INFILE:
-			return CALLBACK_READ;
+			return CB_EASY_READ;
 			break;
 
 		case CURLOPT_HEADERFUNCTION:
 		case CURLOPT_WRITEHEADER:
-			return CALLBACK_HEADER;
+			return CB_EASY_HEADER;
 			break;
 
 		case CURLOPT_PROGRESSFUNCTION:
 		case CURLOPT_PROGRESSDATA:
-			return CALLBACK_PROGRESS;
+			return CB_EASY_PROGRESS;
 			break;
 		case CURLOPT_DEBUGFUNCTION:
 		case CURLOPT_DEBUGDATA:
-			return CALLBACK_DEBUG;
+			return CB_EASY_DEBUG;
 			break;
 	}
 	croak("Bad callback index requested\n");
-	return CALLBACK_LAST;
+	return CB_EASY_LAST;
 } /*}}}*/
 
 
@@ -205,7 +205,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 		Safefree(self->y);
 	}
 
-	for ( i = 0; i < CALLBACK_LAST; i++ ) {
+	for ( i = 0; i < CB_EASY_LAST; i++ ) {
 		sv_2mortal( self->cb[i].func );
 		sv_2mortal( self->cb[i].data );
 	}
@@ -376,7 +376,7 @@ cb_easy_write( const void *ptr, size_t size, size_t nmemb, void *userptr )
 	perl_curl_easy_t *self;
 	self=(perl_curl_easy_t *)userptr;
 	return fwrite_wrapper( ptr, size, nmemb, self,
-			self->cb[CALLBACK_WRITE].func, self->cb[CALLBACK_WRITE].data );
+			self->cb[CB_EASY_WRITE].func, self->cb[CB_EASY_WRITE].data );
 } /*}}}*/
 
 /* header callback for calling a perl callback */
@@ -388,7 +388,7 @@ cb_easy_header( const void *ptr, size_t size, size_t nmemb,
 	self=(perl_curl_easy_t *)userptr;
 
 	return fwrite_wrapper( ptr, size, nmemb, self,
-			self->cb[CALLBACK_HEADER].func, self->cb[CALLBACK_HEADER].data );
+			self->cb[CB_EASY_HEADER].func, self->cb[CB_EASY_HEADER].data );
 } /*}}}*/
 
 /* debug callback for calling a perl callback */
@@ -400,7 +400,7 @@ cb_easy_debug( CURL* handle, curl_infotype type, char *ptr, size_t size,
 	self=(perl_curl_easy_t *)userptr;
 
 	return fwrite_wrapper2( ptr, size, self,
-			self->cb[CALLBACK_DEBUG].func, self->cb[CALLBACK_DEBUG].data, type);
+			self->cb[CB_EASY_DEBUG].func, self->cb[CB_EASY_DEBUG].data, type);
 } /*}}}*/
 
 /* read callback for calling a perl callback */
@@ -416,7 +416,7 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 
 	maxlen = size*nmemb;
 
-	if (self->cb[CALLBACK_READ].func) { /* We are doing a callback to perl */
+	if (self->cb[CB_EASY_READ].func) { /* We are doing a callback to perl */
 		char *data;
 		int count;
 		SV *sv;
@@ -427,8 +427,8 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 
 		PUSHMARK(SP) ;
 
-		if (self->cb[CALLBACK_READ].data) {
-			sv = self->cb[CALLBACK_READ].data;
+		if (self->cb[CB_EASY_READ].data) {
+			sv = self->cb[CB_EASY_READ].data;
 		} else {
 			sv = &PL_sv_undef;
 		}
@@ -439,7 +439,7 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 		XPUSHs( sv_2mortal( newSVsv( sv ) ) );
 
 		PUTBACK ;
-		count = perl_call_sv( self->cb[CALLBACK_READ].func, G_SCALAR );
+		count = perl_call_sv( self->cb[CB_EASY_READ].func, G_SCALAR );
 		SPAGAIN;
 
 		if (count != 1)
@@ -461,8 +461,8 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 	} else {
 		/* read input directly */
 		PerlIO *f;
-		if (self->cb[CALLBACK_READ].data) { /* hope its a GLOB! */
-			f = IoIFP(sv_2io(self->cb[CALLBACK_READ].data));
+		if (self->cb[CB_EASY_READ].data) { /* hope its a GLOB! */
+			f = IoIFP(sv_2io(self->cb[CB_EASY_READ].data));
 		} else { /* punt to stdin */
 			f = PerlIO_stdin();
 		}
@@ -493,14 +493,14 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	XPUSHs( sv_2mortal( newSVnv( dlnow ) ) );
 	XPUSHs( sv_2mortal( newSVnv( ultotal ) ) );
 	XPUSHs( sv_2mortal( newSVnv( ulnow ) ) );
-	if ( self->cb[CALLBACK_PROGRESS].data ) {
-		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACK_PROGRESS].data ) ) );
+	if ( self->cb[CB_EASY_PROGRESS].data ) {
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CB_EASY_PROGRESS].data ) ) );
 	} else {
 		XPUSHs( &PL_sv_undef );
 	}
 
 	PUTBACK;
-	count = perl_call_sv(self->cb[CALLBACK_PROGRESS].func, G_SCALAR);
+	count = perl_call_sv(self->cb[CB_EASY_PROGRESS].func, G_SCALAR);
 	SPAGAIN;
 
 	if (count != 1)
@@ -603,7 +603,7 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 		curl_easy_setopt(clone->curl, CURLOPT_INFILE, clone);
 		curl_easy_setopt(clone->curl, CURLOPT_ERRORBUFFER, clone->errbuf);
 
-		for(i=0;i<CALLBACK_LAST;i++) {
+		for(i=0;i<CB_EASY_LAST;i++) {
 			perl_curl_easy_register_callback( aTHX_ clone,&(clone->cb[i].func), self->cb[i].func);
 			perl_curl_easy_register_callback( aTHX_ clone,&(clone->cb[i].data), self->cb[i].data);
 		};

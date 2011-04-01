@@ -1,4 +1,4 @@
-/* vim: ts=4:sw=4:fdm=marker: */
+/* vim: ts=4:sw=4:ft=xs:fdm=marker: */
 /*
  * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
  *
