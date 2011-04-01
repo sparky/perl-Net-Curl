@@ -16,17 +16,22 @@ typedef enum {
 	CB_EASY_LAST
 } perl_curl_easy_callback_code_t;
 
-typedef enum {
-	SLIST_HTTPHEADER = 0,
-	SLIST_HTTP200ALIASES,
-	SLIST_MAIL_RCPT,
-	SLIST_QUOTE,
-	SLIST_POSTQUOTE,
-	SLIST_PREQUOTE,
-	SLIST_RESOLVE,
-	SLIST_TELNETOPTIONS,
-	SLIST_LAST
-} perl_curl_easy_slist_code_t;
+static const CURLoption perl_curl_easy_option_slist[] = {
+	CURLOPT_HTTPHEADER,
+	CURLOPT_HTTP200ALIASES,
+#ifdef CURLOPT_MAIL_RCPT
+	CURLOPT_MAIL_RCPT,
+#endif
+	CURLOPT_QUOTE,
+	CURLOPT_POSTQUOTE,
+	CURLOPT_PREQUOTE,
+#ifdef CURLOPT_RESOLVE
+	CURLOPT_RESOLVE,
+#endif
+	CURLOPT_TELNETOPTIONS
+};
+#define perl_curl_easy_option_slist_num \
+	sizeof(perl_curl_easy_option_slist) / sizeof(perl_curl_easy_option_slist[0])
 
 struct perl_curl_easy_s {
 	/* last seen version of this object */
@@ -37,7 +42,7 @@ struct perl_curl_easy_s {
 
 	/* Lists that can be set via curl_easy_setopt() */
 	I32 *y;
-	struct curl_slist *slist[ SLIST_LAST ];
+	struct curl_slist *slist[ perl_curl_easy_option_slist_num ];
 
 	/* list of callbacks */
 	callback_t cb[ CB_EASY_LAST ];
@@ -95,44 +100,18 @@ static int
 perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV *value,
 		int clear )
 /*{{{*/ {
-	perl_curl_easy_slist_code_t si = 0;
+	int si = 0;
 	AV *array;
 	int array_len;
 	struct curl_slist *slist = NULL;
 
-	switch( option ) {
-		case CURLOPT_HTTPHEADER:
-			si = SLIST_HTTPHEADER;
-			break;
-		case CURLOPT_HTTP200ALIASES:
-			si = SLIST_HTTP200ALIASES;
-			break;
-#ifdef CURLOPT_MAIL_RCPT
-		case CURLOPT_MAIL_RCPT:
-			si = SLIST_MAIL_RCPT;
-			break;
-#endif
-		case CURLOPT_QUOTE:
-			si = SLIST_QUOTE;
-			break;
-		case CURLOPT_POSTQUOTE:
-			si = SLIST_POSTQUOTE;
-			break;
-		case CURLOPT_PREQUOTE:
-			si = SLIST_PREQUOTE;
-			break;
-#ifdef CURLOPT_RESOLVE
-		case CURLOPT_RESOLVE:
-			si = SLIST_RESOLVE;
-			break;
-#endif
-		case CURLOPT_TELNETOPTIONS:
-			si = SLIST_TELNETOPTIONS;
-			break;
-		default:
-			return -1;
+	for ( si = 0; si < perl_curl_easy_option_slist_num; si++ ) {
+		if ( perl_curl_easy_option_slist[ si ] == option )
+			goto found;
 	}
+	return -1;
 
+found:
 
 	/* This is an option specifying a list, which we put in a curl_slist struct */
 	array = (AV *)SvRV( value );
@@ -181,7 +160,7 @@ perl_curl_easy_update( perl_curl_easy_t *self, SV *perl_self )
 static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 /*{{{*/ {
-	perl_curl_easy_slist_code_t index;
+	int index;
 	perl_curl_easy_callback_code_t i;
 
 	if ( self->curl )
@@ -189,7 +168,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 
 	*self->y = *self->y - 1;
 	if (*self->y <= 0) {
-		for ( index = 0; index < SLIST_LAST; index++ ) {
+		for ( index = 0; index < perl_curl_easy_option_slist_num; index++ ) {
 			if (self->slist[index])
 				curl_slist_free_all( self->slist[index] );
 		}
