@@ -40,10 +40,6 @@ struct perl_curl_easy_s {
 	/* The main curl handle */
 	CURL *curl;
 
-	/* Lists that can be set via curl_easy_setopt() */
-	I32 *y;
-	struct curl_slist *slist[ perl_curl_easy_option_slist_num ];
-
 	/* list of callbacks */
 	callback_t cb[ CB_EASY_LAST ];
 
@@ -52,6 +48,9 @@ struct perl_curl_easy_s {
 	char *errbufvarname;
 
 	optionll_t *strings;
+
+	/* Lists that can be set via curl_easy_setopt() */
+	optionll_t *slists;
 
 	/* parent, if easy is attached to any multi object */
 	perl_curl_multi_t *multi;
@@ -103,7 +102,7 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 	int si = 0;
 	AV *array;
 	int array_len;
-	struct curl_slist *slist = NULL;
+	struct curl_slist **pslist, *slist;
 
 	for ( si = 0; si < perl_curl_easy_option_slist_num; si++ ) {
 		if ( perl_curl_easy_option_slist[ si ] == option )
@@ -118,7 +117,8 @@ found:
 	array_len = av_len( array );
 
 	/* We have to find out which list to use... */
-	slist = self->slist[ si ];
+	pslist = perl_curl_optionll_add( aTHX_ &self->slists, option );
+	slist = *pslist;
 
 	if ( slist && clear ) {
 		curl_slist_free_all( slist );
@@ -126,7 +126,7 @@ found:
 	}
 
 	/* copy perl values into this slist */
-	self->slist[ si ] = slist = perl_curl_array2slist( aTHX_ slist, value );
+	*pslist = slist = perl_curl_array2slist( aTHX_ slist, value );
 
 	/* pass the list into curl_easy_setopt() */
 	return curl_easy_setopt(self->curl, option, slist);
@@ -166,15 +166,6 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 	if ( self->curl )
 		curl_easy_cleanup( self->curl );
 
-	*self->y = *self->y - 1;
-	if (*self->y <= 0) {
-		for ( index = 0; index < perl_curl_easy_option_slist_num; index++ ) {
-			if (self->slist[index])
-				curl_slist_free_all( self->slist[index] );
-		}
-		Safefree(self->y);
-	}
-
 	for ( i = 0; i < CB_EASY_LAST; i++ ) {
 		sv_2mortal( self->cb[i].func );
 		sv_2mortal( self->cb[i].data );
@@ -185,12 +176,20 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 
 	if ( self->strings ) {
 		optionll_t *next, *now = self->strings;
-		while ( now ) {
+		do {
 			next = now->next;
 			Safefree( now->data );
 			Safefree( now );
-			now = next;
-		}
+		} while ( now = next );
+	}
+
+	if ( self->slists ) {
+		optionll_t *next, *now = self->slists;
+		do {
+			next = now->next;
+			curl_slist_free_all( now->data );
+			Safefree( now );
+		} while ( now = next );
 	}
 
 	Safefree( self );
@@ -512,11 +511,6 @@ curl_easy_new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 
 		self = perl_curl_easy_new();
 
-		Newxz( self->y, 1, I32 );
-		if ( !self->y )
-			croak ("out of memory");
-		(*self->y)++;
-
 		/* configure curl to always callback to the XS interface layer */
 		curl_easy_setopt( self->curl, CURLOPT_WRITEFUNCTION, cb_easy_write );
 		curl_easy_setopt( self->curl, CURLOPT_READFUNCTION, cb_easy_read );
@@ -549,9 +543,7 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 		if ( ! SvOK( base ) || ! SvROK( base ) )
 			croak( "object base must be a valid reference\n" );
 
-		clone=perl_curl_easy_duphandle(self);
-		clone->y = self->y;
-		(*self->y)++;
+		clone = perl_curl_easy_duphandle(self);
 
 		/* configure curl to always callback to the XS interface layer */
 
@@ -583,11 +575,11 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 		};
 
 		/* clone strings and set */
-		{
+		if ( self->strings ) {
 			optionll_t *in, **out;
 			in = self->strings;
 			out = &clone->strings;
-			while ( in ) {
+			do {
 				Newx( *out, 1, optionll_t );
 				(*out)->next = NULL;
 				(*out)->option = in->option;
@@ -595,9 +587,32 @@ curl_easy_duphandle( self, base=HASHREF_BY_DEFAULT )
 
 				curl_easy_setopt( clone->curl, in->option, (*out)->data );
 				out = &(*out)->next;
-				in = in->next;
-			}
+			} while ( in = in->next );
 		}
+
+		/* clone slists and set */
+		if ( self->slists ) {
+			optionll_t *in, **out;
+			struct curl_slist *sin, *sout;
+			in = self->slists;
+			out = &clone->slists;
+			do {
+				Newx( *out, 1, optionll_t );
+				sout = NULL;
+				sin = in->data;
+				do {
+					sout = curl_slist_append( sout, sin->data );
+				} while ( sin = sin->next );
+
+				(*out)->next = NULL;
+				(*out)->option = in->option;
+				(*out)->data = sout;
+
+				curl_easy_setopt( clone->curl, in->option, (*out)->data );
+				out = &(*out)->next;
+			} while ( in = in->next );
+		}
+
 
 		perl_curl_setptr( aTHX_ base, clone );
 		stash = gv_stashpv( sclass, 0 );
