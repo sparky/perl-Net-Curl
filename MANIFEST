@@ -14,6 +14,7 @@ lib/WWW/CurlOO/Share.pm
 inc/symbols-in-versions
 t/00-info.t
 t/01-constants.t
+t/02-form.t
 t/01basic.t
 t/02callbacks.t
 t/04abort-test.t
