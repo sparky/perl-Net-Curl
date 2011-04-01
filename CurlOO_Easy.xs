@@ -205,7 +205,7 @@ curl_easy_setopt( self, option, value )
 					WWW__CurlOO__Share wrapper;
 					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
-					if ( RETVAL = CURLE_OK )
+					if ( RETVAL == CURLE_OK )
 						self->share = wrapper;
 				} else
 					croak("value is not of type WWW::CurlOO::Share");
@@ -421,6 +421,7 @@ curl_easy_strerror(self, errornum)
 	int errornum
 	PREINIT:
 		const char *errstr;
+		(void) self; /* unused */
 	CODE:
 		errstr = curl_easy_strerror( errornum );
 		RETVAL = newSVpv( errstr, 0 );

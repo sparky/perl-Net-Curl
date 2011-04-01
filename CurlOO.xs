@@ -428,7 +428,6 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *self,
 
 	if (call_function) { /* We are doing a callback to perl */
 		int count, status;
-		SV *sv;
 
 		ENTER;
 		SAVETMPS;
@@ -785,19 +784,19 @@ curl_version_info()
 			croak( "curl_version_info() returned NULL\n" );
 		ret = newHV();
 
-		hv_stores( ret, "age", newSViv(vi->age) );
+		(void)hv_stores( ret, "age", newSViv(vi->age) );
 		if ( vi->age >= CURLVERSION_FIRST ) {
 			if ( vi->version )
-				hv_stores( ret, "version", newSVpv(vi->version, 0) );
-			hv_stores( ret, "version_num", newSVuv(vi->version_num) );
+				(void)hv_stores( ret, "version", newSVpv(vi->version, 0) );
+			(void)hv_stores( ret, "version_num", newSVuv(vi->version_num) );
 			if ( vi->host )
-				hv_stores( ret, "host", newSVpv(vi->host, 0) );
-			hv_stores( ret, "features", newSViv(vi->features) );
+				(void)hv_stores( ret, "host", newSVpv(vi->host, 0) );
+			(void)hv_stores( ret, "features", newSViv(vi->features) );
 			if ( vi->ssl_version )
-				hv_stores( ret, "ssl_version", newSVpv(vi->ssl_version, 0) );
-			hv_stores( ret, "ssl_version_num", newSViv(vi->ssl_version_num) );
+				(void)hv_stores( ret, "ssl_version", newSVpv(vi->ssl_version, 0) );
+			(void)hv_stores( ret, "ssl_version_num", newSViv(vi->ssl_version_num) );
 			if ( vi->libz_version )
-				hv_stores( ret, "libz_version", newSVpv(vi->libz_version, 0) );
+				(void)hv_stores( ret, "libz_version", newSVpv(vi->libz_version, 0) );
 			if ( vi->protocols ) {
 				const char * const *p = vi->protocols;
 				AV *prot;
@@ -807,23 +806,23 @@ curl_version_info()
 					p++;
 				}
 
-				hv_stores( ret, "protocols", newRV((SV*)prot) );
+				(void)hv_stores( ret, "protocols", newRV((SV*)prot) );
 			}
 		}
 		if ( vi->age >= CURLVERSION_SECOND ) {
 			if ( vi->ares )
-				hv_stores( ret, "ares", newSVpv(vi->ares, 0) );
-			hv_stores( ret, "ares_num", newSViv(vi->ares_num) );
+				(void)hv_stores( ret, "ares", newSVpv(vi->ares, 0) );
+			(void)hv_stores( ret, "ares_num", newSViv(vi->ares_num) );
 		}
 		if ( vi->age >= CURLVERSION_THIRD ) {
 			if ( vi->libidn )
-				hv_stores( ret, "libidn", newSVpv(vi->libidn, 0) );
+				(void)hv_stores( ret, "libidn", newSVpv(vi->libidn, 0) );
 		}
 #ifdef CURLVERSION_FOURTH
 		if ( vi->age >= CURLVERSION_FOURTH ) {
-			hv_stores( ret, "iconv_ver_num", newSViv(vi->iconv_ver_num) );
+			(void)hv_stores( ret, "iconv_ver_num", newSViv(vi->iconv_ver_num) );
 			if ( vi->libssh_version )
-				hv_stores( ret, "libssh_version", newSVpv(vi->libssh_version, 0) );
+				(void)hv_stores( ret, "libssh_version", newSVpv(vi->libssh_version, 0) );
 		}
 #endif
 

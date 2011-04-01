@@ -232,6 +232,7 @@ curl_share_strerror(self, errornum)
 	int errornum
 	PREINIT:
 		const char *errstr;
+		(void) self; /* unused */
 	CODE:
 		errstr = curl_share_strerror( errornum );
 		RETVAL = newSVpv( errstr, 0 );

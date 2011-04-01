@@ -109,9 +109,9 @@ curl_multi_fdset(self)
 				}
 			}
 		}
-		XPUSHs(sv_2mortal(newSVpvn(readset, vecsize)));
-		XPUSHs(sv_2mortal(newSVpvn(writeset, vecsize)));
-		XPUSHs(sv_2mortal(newSVpvn(excepset, vecsize)));
+		XPUSHs( sv_2mortal( newSVpvn( (char *)readset, vecsize ) ) );
+		XPUSHs( sv_2mortal( newSVpvn( (char *)writeset, vecsize ) ) );
+		XPUSHs( sv_2mortal( newSVpvn( (char *)excepset, vecsize ) ) );
 		/* }}} */
 
 
@@ -122,8 +122,9 @@ curl_multi_timeout(self)
 		long timeout;
 		CURLMcode ret;
 	CODE:
-		if ( curl_multi_timeout( self->curlm, &timeout ) != CURLM_OK )
-			croak( "curl_multi_timeout() didn't return CURLM_OK" );
+		ret = curl_multi_timeout( self->curlm, &timeout );
+		if ( ret != CURLM_OK )
+			croak( "curl_multi_timeout() failed: %d\n", ret );
 
 		RETVAL = timeout;
 	OUTPUT:
@@ -215,6 +216,7 @@ curl_multi_strerror( self, errornum )
 	int errornum
 	PREINIT:
 		const char *errstr;
+		(void) self; /* unused */
 	CODE:
 		errstr = curl_multi_strerror( errornum );
 		RETVAL = newSVpv( errstr, 0 );
