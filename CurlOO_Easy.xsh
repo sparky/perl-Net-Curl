@@ -99,7 +99,6 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *self, CURLoption option, SV 
 	AV *array;
 	int array_len;
 	struct curl_slist *slist = NULL;
-	int i;
 
 	switch( option ) {
 		case CURLOPT_HTTPHEADER:
