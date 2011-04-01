@@ -1,3 +1,4 @@
+/* vim: ts=4:sw=4:fdm=marker: */
 /*
  * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
  *
@@ -257,4 +258,3 @@ curl_form_DESTROY(self)
 		perl_curl_form_delete( self );
 
 #endif
-#// vim:ts=4:sw=4

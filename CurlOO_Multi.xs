@@ -1,3 +1,157 @@
+/* vim: ts=4:sw=4:fdm=marker: */
+/*
+ * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
+ *
+ * Loosely based on code by Cris Bailiff <c.bailiff+curl at devsecure.com>,
+ * and subsequent fixes by other contributors.
+ */
+
+
+typedef enum {
+	CALLBACKM_SOCKET = 0,
+	CALLBACKM_TIMER,
+	CALLBACKM_LAST,
+} perl_curl_multi_callback_code_t;
+
+struct perl_curl_multi_s {
+	/* last seen version of this object */
+	SV *perl_self;
+
+	/* curl multi handle */
+	CURLM *curlm;
+
+	/* list of callbacks */
+	callback_t cb[ CALLBACKM_LAST ];
+};
+
+static void
+perl_curl_multi_register_callback( pTHX_ perl_curl_multi_t *self, SV **callback, SV *function )
+/*{{{*/ {
+	if (function && SvOK(function)) {
+		/* FIXME: need to check the ref-counts here */
+		if (*callback == NULL) {
+			*callback = newSVsv(function);
+		} else {
+			SvSetSV(*callback, function);
+		}
+	} else {
+		if (*callback != NULL) {
+			sv_2mortal(*callback);
+			*callback = NULL;
+		}
+	}
+} /*}}}*/
+
+/* make a new multi */
+static perl_curl_multi_t *
+perl_curl_multi_new( void )
+/*{{{*/ {
+	perl_curl_multi_t *self;
+	Newxz( self, 1, perl_curl_multi_t );
+	self->curlm=curl_multi_init();
+	return self;
+} /*}}}*/
+
+/* delete the multi */
+static void
+perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
+/*{{{*/ {
+	perl_curl_multi_callback_code_t i;
+
+	if (self->curlm)
+		curl_multi_cleanup(self->curlm);
+
+	for(i=0;i<CALLBACKM_LAST;i++) {
+		sv_2mortal(self->cb[i].func);
+		sv_2mortal(self->cb[i].data);
+	}
+
+	Safefree(self);
+} /*}}}*/
+
+static int
+cb_multi_socket( CURL *easy, curl_socket_t s, int what, void *userptr,
+		void *socketp )
+/*{{{*/ {
+	dTHX;
+	dSP;
+
+	int count;
+	perl_curl_multi_t *self;
+	perl_curl_easy_t *peasy;
+
+	self=(perl_curl_multi_t *)userptr;
+	(void) curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy);
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK(sp);
+
+	/* $easy, $socket, $what, $userdata */
+	/* XXX: add $socketdata */
+	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
+	XPUSHs(sv_2mortal(newSVuv( s )));
+	XPUSHs(sv_2mortal(newSViv( what )));
+	if (self->cb[CALLBACKM_SOCKET].data) {
+		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKM_SOCKET].data)));
+	} else {
+		XPUSHs(&PL_sv_undef);
+	}
+
+	PUTBACK;
+	count = perl_call_sv(self->cb[CALLBACKM_SOCKET].func, G_SCALAR);
+	SPAGAIN;
+
+	if (count != 1)
+		croak("callback for CURLMOPT_SOCKETFUNCTION didn't return 1\n");
+
+	count = POPi;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+	return count;
+} /*}}}*/
+
+static int
+cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
+/*{{{*/ {
+	dTHX;
+	dSP;
+
+	int count;
+	perl_curl_multi_t *self;
+	self=(perl_curl_multi_t *)userptr;
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK(sp);
+
+	/* $multi, $timeout, $userdata */
+	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSViv( timeout_ms ) ) );
+	if ( self->cb[CALLBACKM_TIMER].data )
+		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACKM_TIMER].data ) ) );
+
+	PUTBACK;
+	count = perl_call_sv( self->cb[CALLBACKM_TIMER].func, G_SCALAR );
+	SPAGAIN;
+
+	if (count != 1)
+		croak("callback for CURLMOPT_TIMERFUNCTION didn't return 1\n");
+
+	count = POPi;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+	return count;
+} /*}}}*/
+
+
+/* XS_SECTION */
+#ifdef XS_SECTION
+
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi	PREFIX = curl_multi_
 
 INCLUDE: const-multi-xs.inc
@@ -222,3 +376,5 @@ curl_multi_strerror( self, errornum )
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
+
+#endif

@@ -95,24 +95,6 @@ typedef struct {
 } perl_curl_easy_t;
 
 
-typedef enum {
-	CALLBACKM_SOCKET = 0,
-	CALLBACKM_TIMER,
-	CALLBACKM_LAST,
-} perl_curl_multi_callback_code_t;
-
-struct perl_curl_multi_s {
-	/* last seen version of this object */
-	SV *perl_self;
-
-	/* curl multi handle */
-	CURLM *curlm;
-
-	/* list of callbacks */
-	callback_t cb[ CALLBACKM_LAST ];
-};
-
-
 
 /* switch from curl option codes to the relevant callback index */
 static perl_curl_easy_callback_code_t
@@ -297,51 +279,6 @@ perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *self, SV **callback, S
 			*callback = NULL;
 		}
 	}
-} /*}}}*/
-
-static void
-perl_curl_multi_register_callback( pTHX_ perl_curl_multi_t *self, SV **callback, SV *function )
-/*{{{*/ {
-	if (function && SvOK(function)) {
-		/* FIXME: need to check the ref-counts here */
-		if (*callback == NULL) {
-			*callback = newSVsv(function);
-		} else {
-			SvSetSV(*callback, function);
-		}
-	} else {
-		if (*callback != NULL) {
-			sv_2mortal(*callback);
-			*callback = NULL;
-		}
-	}
-} /*}}}*/
-
-/* make a new multi */
-static perl_curl_multi_t *
-perl_curl_multi_new( void )
-/*{{{*/ {
-	perl_curl_multi_t *self;
-	Newxz( self, 1, perl_curl_multi_t );
-	self->curlm=curl_multi_init();
-	return self;
-} /*}}}*/
-
-/* delete the multi */
-static void
-perl_curl_multi_delete( pTHX_ perl_curl_multi_t *self )
-/*{{{*/ {
-	perl_curl_multi_callback_code_t i;
-
-	if (self->curlm)
-		curl_multi_cleanup(self->curlm);
-
-	for(i=0;i<CALLBACKM_LAST;i++) {
-		sv_2mortal(self->cb[i].func);
-		sv_2mortal(self->cb[i].data);
-	}
-
-	Safefree(self);
 } /*}}}*/
 
 static size_t
@@ -615,85 +552,6 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	return count;
 } /*}}}*/
 
-static int
-cb_multi_socket( CURL *easy, curl_socket_t s, int what, void *userptr,
-		void *socketp )
-/*{{{*/ {
-	dTHX;
-	dSP;
-
-	int count;
-	perl_curl_multi_t *self;
-	perl_curl_easy_t *peasy;
-
-	self=(perl_curl_multi_t *)userptr;
-	(void) curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy);
-
-	ENTER;
-	SAVETMPS;
-	PUSHMARK(sp);
-
-	/* $easy, $socket, $what, $userdata */
-	/* XXX: add $socketdata */
-	XPUSHs( sv_2mortal( newSVsv( peasy->perl_self ) ) );
-	XPUSHs(sv_2mortal(newSVuv( s )));
-	XPUSHs(sv_2mortal(newSViv( what )));
-	if (self->cb[CALLBACKM_SOCKET].data) {
-		XPUSHs(sv_2mortal(newSVsv(self->cb[CALLBACKM_SOCKET].data)));
-	} else {
-		XPUSHs(&PL_sv_undef);
-	}
-
-	PUTBACK;
-	count = perl_call_sv(self->cb[CALLBACKM_SOCKET].func, G_SCALAR);
-	SPAGAIN;
-
-	if (count != 1)
-		croak("callback for CURLMOPT_SOCKETFUNCTION didn't return 1\n");
-
-	count = POPi;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-	return count;
-} /*}}}*/
-
-static int
-cb_multi_timer( CURLM *multi, long timeout_ms, void *userptr )
-/*{{{*/ {
-	dTHX;
-	dSP;
-
-	int count;
-	perl_curl_multi_t *self;
-	self=(perl_curl_multi_t *)userptr;
-
-	ENTER;
-	SAVETMPS;
-	PUSHMARK(sp);
-
-	/* $multi, $timeout, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSViv( timeout_ms ) ) );
-	if ( self->cb[CALLBACKM_TIMER].data )
-		XPUSHs( sv_2mortal( newSVsv( self->cb[CALLBACKM_TIMER].data ) ) );
-
-	PUTBACK;
-	count = perl_call_sv( self->cb[CALLBACKM_TIMER].func, G_SCALAR );
-	SPAGAIN;
-
-	if (count != 1)
-		croak("callback for CURLMOPT_TIMERFUNCTION didn't return 1\n");
-
-	count = POPi;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-	return count;
-} /*}}}*/
-
 static const MGVTBL perl_curl_vtbl = { NULL };
 
 static void
@@ -739,6 +597,7 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *)newHV() ) )
 
 #include "CurlOO_Form.xs"
+#include "CurlOO_Multi.xs"
 #include "CurlOO_Share.xs"
 #define XS_SECTION
 
@@ -834,5 +693,5 @@ curl_version_info()
 
 INCLUDE: CurlOO_Easy.xs
 INCLUDE: perl -p getxs CurlOO_Form.xs |
-INCLUDE: CurlOO_Multi.xs
+INCLUDE: perl -p getxs CurlOO_Multi.xs |
 INCLUDE: perl -p getxs CurlOO_Share.xs |

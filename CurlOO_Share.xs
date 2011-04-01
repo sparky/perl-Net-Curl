@@ -1,3 +1,4 @@
+/* vim: ts=4:sw=4:fdm=marker: */
 /*
  * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
  *
@@ -240,4 +241,3 @@ curl_share_strerror(self, errornum)
 		RETVAL
 
 #endif
-#// vim:ts=4:sw=4
