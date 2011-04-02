@@ -186,7 +186,7 @@ curl_multi_add_handle( multi, easy )
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		perl_curl_easy_update( easy, newSVsv( ST(1) ) );
 		easy->multi = multi;
-		curl_multi_add_handle( multi->handle, easy->curl );
+		curl_multi_add_handle( multi->handle, easy->handle );
 
 void
 curl_multi_remove_handle( multi, easy )
@@ -194,7 +194,7 @@ curl_multi_remove_handle( multi, easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		curl_multi_remove_handle( multi->handle, easy->curl );
+		curl_multi_remove_handle( multi->handle, easy->handle );
 		sv_2mortal( easy->perl_self );
 		easy->perl_self = NULL;
 		easy->multi = NULL;
