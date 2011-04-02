@@ -55,7 +55,7 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 	if ( !SvOK( arrayref ) || !SvROK( arrayref ) )
 		croak( "not an array" );
 
-	array = (AV *)SvRV( arrayref );
+	array = (AV *) SvRV( arrayref );
 	array_len = av_len( array );
 
 	for ( i = 0; i <= array_len; i++ ) {
@@ -114,7 +114,7 @@ perl_curl_optionll_add( pTHX_ optionll_t **start, int option )
 
 	while ( *now ) {
 		if ( (*now)->option == option )
-			return &((*now)->data);
+			return &( (*now)->data );
 		if ( (*now)->option > option )
 			break;
 		now = &( (*now)->next );
@@ -126,7 +126,7 @@ perl_curl_optionll_add( pTHX_ optionll_t **start, int option )
 	(*now)->option = option;
 	(*now)->data = NULL;
 
-	return &((*now)->data);
+	return &( (*now)->data );
 }
 
 static void *
@@ -157,7 +157,8 @@ perl_curl_setptr( pTHX_ SV *self, void *ptr )
 {
 	MAGIC *mg;
 
-	mg = sv_magicext (SvRV (self), 0, PERL_MAGIC_ext, &perl_curl_vtbl, (const char *)ptr, 0);
+	mg = sv_magicext( SvRV( self ), 0, PERL_MAGIC_ext,
+		&perl_curl_vtbl, (const char *) ptr, 0 );
 	mg->mg_flags |= MGf_DUP;
 }
 
@@ -178,7 +179,7 @@ perl_curl_getptr( pTHX_ SV *self )
 	if ( !sv_isobject( self ) )
 		croak( "self is not an object" );
 
-	for (mg = SvMAGIC( SvRV( self ) ); mg; mg = mg->mg_moremagic ) {
+	for ( mg = SvMAGIC( SvRV( self ) ); mg != NULL; mg = mg->mg_moremagic ) {
 		if ( mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &perl_curl_vtbl )
 			return mg->mg_ptr;
 	}
@@ -192,7 +193,7 @@ typedef perl_curl_multi_t *WWW__CurlOO__Multi;
 typedef perl_curl_share_t *WWW__CurlOO__Share;
 
 /* default base object */
-#define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *)newHV() ) )
+#define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *) newHV() ) )
 
 #include "CurlOO_Easy.xsh"
 #include "CurlOO_Form.xsh"
@@ -203,7 +204,8 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
 
 BOOT:
-	curl_global_init(CURL_GLOBAL_ALL); /* FIXME: does this need a mutex for ithreads? */
+	/* FIXME: does this need a mutex for ithreads? */
+	curl_global_init( CURL_GLOBAL_ALL );
 
 PROTOTYPES: ENABLE
 
@@ -242,49 +244,49 @@ curl_version_info()
 			croak( "curl_version_info() returned NULL\n" );
 		ret = newHV();
 
-		(void)hv_stores( ret, "age", newSViv(vi->age) );
+		(void) hv_stores( ret, "age", newSViv( vi->age ) );
 		if ( vi->age >= CURLVERSION_FIRST ) {
 			if ( vi->version )
-				(void)hv_stores( ret, "version", newSVpv(vi->version, 0) );
-			(void)hv_stores( ret, "version_num", newSVuv(vi->version_num) );
+				(void) hv_stores( ret, "version", newSVpv( vi->version, 0 ) );
+			(void) hv_stores( ret, "version_num", newSVuv( vi->version_num ) );
 			if ( vi->host )
-				(void)hv_stores( ret, "host", newSVpv(vi->host, 0) );
-			(void)hv_stores( ret, "features", newSViv(vi->features) );
+				(void) hv_stores( ret, "host", newSVpv( vi->host, 0 ) );
+			(void) hv_stores( ret, "features", newSViv( vi->features ) );
 			if ( vi->ssl_version )
-				(void)hv_stores( ret, "ssl_version", newSVpv(vi->ssl_version, 0) );
-			(void)hv_stores( ret, "ssl_version_num", newSViv(vi->ssl_version_num) );
+				(void) hv_stores( ret, "ssl_version", newSVpv( vi->ssl_version, 0 ) );
+			(void) hv_stores( ret, "ssl_version_num", newSViv( vi->ssl_version_num ) );
 			if ( vi->libz_version )
-				(void)hv_stores( ret, "libz_version", newSVpv(vi->libz_version, 0) );
+				(void) hv_stores( ret, "libz_version", newSVpv( vi->libz_version, 0 ) );
 			if ( vi->protocols ) {
 				const char * const *p = vi->protocols;
 				AV *prot;
-				prot = (AV *)sv_2mortal((SV *)newAV());
+				prot = (AV *) sv_2mortal( (SV *) newAV() );
 				while ( *p != NULL ) {
 					av_push( prot, newSVpv( *p, 0 ) );
 					p++;
 				}
 
-				(void)hv_stores( ret, "protocols", newRV((SV*)prot) );
+				(void) hv_stores( ret, "protocols", newRV( (SV*) prot ) );
 			}
 		}
 		if ( vi->age >= CURLVERSION_SECOND ) {
 			if ( vi->ares )
-				(void)hv_stores( ret, "ares", newSVpv(vi->ares, 0) );
-			(void)hv_stores( ret, "ares_num", newSViv(vi->ares_num) );
+				(void) hv_stores( ret, "ares", newSVpv( vi->ares, 0 ) );
+			(void) hv_stores( ret, "ares_num", newSViv( vi->ares_num ) );
 		}
 		if ( vi->age >= CURLVERSION_THIRD ) {
 			if ( vi->libidn )
-				(void)hv_stores( ret, "libidn", newSVpv(vi->libidn, 0) );
+				(void) hv_stores( ret, "libidn", newSVpv( vi->libidn, 0 ) );
 		}
 #ifdef CURLVERSION_FOURTH
 		if ( vi->age >= CURLVERSION_FOURTH ) {
-			(void)hv_stores( ret, "iconv_ver_num", newSViv(vi->iconv_ver_num) );
+			(void) hv_stores( ret, "iconv_ver_num", newSViv( vi->iconv_ver_num ) );
 			if ( vi->libssh_version )
-				(void)hv_stores( ret, "libssh_version", newSVpv(vi->libssh_version, 0) );
+				(void) hv_stores( ret, "libssh_version", newSVpv( vi->libssh_version, 0 ) );
 		}
 #endif
 
-		RETVAL = newRV( (SV *)ret );
+		RETVAL = newRV( (SV *) ret );
 		/* }}} */
 	OUTPUT:
 		RETVAL
