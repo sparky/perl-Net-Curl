@@ -163,7 +163,6 @@ perl_curl_easy_update( perl_curl_easy_t *easy, SV *perl_self )
 static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 /*{{{*/ {
-	int index;
 	perl_curl_easy_callback_code_t i;
 
 	if ( easy->handle )
@@ -183,7 +182,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 			next = now->next;
 			Safefree( now->data );
 			Safefree( now );
-		} while ( now = next );
+		} while ( ( now = next ) != NULL );
 	}
 
 	if ( easy->slists ) {
@@ -192,7 +191,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 			next = now->next;
 			curl_slist_free_all( now->data );
 			Safefree( now );
-		} while ( now = next );
+		} while ( ( now = next ) != NULL );
 	}
 
 	if ( easy->form_sv )
@@ -600,7 +599,8 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 				curl_easy_setopt( clone->handle, in->option, (*out)->data );
 				out = &(*out)->next;
-			} while ( in = in->next );
+				in = in->next;
+			} while ( in != NULL );
 		}
 
 		/* clone slists and set */
@@ -615,7 +615,7 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 				sin = in->data;
 				do {
 					sout = curl_slist_append( sout, sin->data );
-				} while ( sin = sin->next );
+				} while ( ( sin = sin->next ) != NULL );
 
 				(*out)->next = NULL;
 				(*out)->option = in->option;
@@ -623,7 +623,8 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 				curl_easy_setopt( clone->handle, in->option, (*out)->data );
 				out = &(*out)->next;
-			} while ( in = in->next );
+				in = in->next;
+			} while ( in != NULL );
 		}
 
 
