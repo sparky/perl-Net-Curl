@@ -70,9 +70,10 @@ write_from_template( "Multi", $constant_types[ 3 ] );
 write_from_template( "Share", $constant_types[ 4 ] );
 
 WriteConstants(
-	PROXYSUBS => 1,
+	PROXYSUBS => { croak_on_read => 1 },
 	NAME => 'WWW::CurlOO',
-	NAMES => $constant_types[ 0 ],
+	NAMES => [ map { name => $_, type => 'IV', value => $_, macro => 1 },
+		@{ $constant_types[ 0 ] } ],
 	C_FILE => 'const-c.inc',
 	XS_FILE => 'const-curl-xs.inc',
 	XS_SUBNAME => 'curl_constant',
@@ -287,9 +288,9 @@ sub write_from_template
 	return if $havedir;
 	my $lname = lc $name;
 	WriteConstants(
-		PROXYSUBS => 1,
+		PROXYSUBS => { croak_on_read => 1 },
 		NAME => "WWW::CurlOO::$name",
-		NAMES => $constants,
+		NAMES => [ map { name => $_, type => 'IV', value => $_, macro => 1 }, @$constants ],
 		C_FILE => 'const-c.inc',
 		XS_FILE => "const-$lname-xs.inc",
 		XS_SUBNAME => "curl_${lname}_constant",
