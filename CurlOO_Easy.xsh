@@ -795,7 +795,7 @@ curl_easy_perform(self)
 	WWW::CurlOO::Easy self
 	CODE:
 		/* {{{ */
-		perl_curl_easy_update( self, ST(0) );
+		perl_curl_easy_update( self, sv_2mortal( newSVsv( ST(0) ) ) );
 		/* perform the actual curl fetch */
 		RETVAL = curl_easy_perform(self->curl);
 

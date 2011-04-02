@@ -220,6 +220,7 @@ curl_form_get( self, ... )
 	PREINIT:
 		SV *output;
 	PPCODE:
+		self->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		if ( items < 2 ) {
 			output = sv_2mortal( newSVpv( "", 0 ) );
 			curl_formget( self->post, output, cb_form_get_sv );
@@ -243,7 +244,6 @@ curl_form_get( self, ... )
 			XSRETURN(0);
 
 		} else {
-			self->perl_self = ST(0);
 			self->cb[ CB_FORM_GET ].data = ST(1);
 			self->cb[ CB_FORM_GET ].func = ST(2);
 			curl_formget( self->post, self, cb_form_get_code );
