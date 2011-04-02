@@ -734,9 +734,9 @@ curl_easy_setopt( self, option, value )
 			/* XXX: and this */
 			case CURLOPT_SHARE:
 				if (sv_derived_from(value, "WWW::CurlOO::Share")) {
-					WWW__CurlOO__Share wrapper;
-					wrapper = perl_curl_getptr( aTHX_ value );
-					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
+					WWW__CurlOO__Share share;
+					share = perl_curl_getptr( aTHX_ value );
+					RETVAL = curl_easy_setopt( self->curl, option, share->handle );
 					if ( RETVAL == CURLE_OK )
 						self->share_sv = newSVsv( value );
 				} else
