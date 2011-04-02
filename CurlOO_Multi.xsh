@@ -183,7 +183,7 @@ curl_multi_add_handle(curlm, curl)
 	WWW::CurlOO::Multi curlm
 	WWW::CurlOO::Easy curl
 	CODE:
-		curlm->perl_self = ST(0);
+		curlm->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		perl_curl_easy_update( curl, newSVsv( ST(1) ) );
 		curl->multi = curlm;
 		curl_multi_add_handle( curlm->curlm, curl->curl );
@@ -193,7 +193,8 @@ curl_multi_remove_handle(curlm, curl)
 	WWW::CurlOO::Multi curlm
 	WWW::CurlOO::Easy curl
 	CODE:
-		curl_multi_remove_handle(curlm->curlm, curl->curl);
+		curlm->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		curl_multi_remove_handle( curlm->curlm, curl->curl );
 		sv_2mortal( curl->perl_self );
 		curl->perl_self = NULL;
 		curl->multi = NULL;
@@ -209,6 +210,7 @@ curl_multi_info_read(self)
 		CURLMsg *msg;
 	PPCODE:
 		/* {{{ */
+		self->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		while ((msg = curl_multi_info_read(self->curlm, &queue))) {
 			if ( msg->msg == CURLMSG_DONE) {
 				easy = msg->easy_handle;
