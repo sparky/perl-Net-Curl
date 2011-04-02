@@ -23,20 +23,20 @@ struct perl_curl_form_s {
 static perl_curl_form_t *
 perl_curl_form_new( void )
 {
-	perl_curl_form_t *self;
-	Newxz( self, 1, perl_curl_form_t );
-	self->post = NULL;
-	self->last = NULL;
-	return self;
+	perl_curl_form_t *form;
+	Newxz( form, 1, perl_curl_form_t );
+	form->post = NULL;
+	form->last = NULL;
+	return form;
 }
 
 static void
-perl_curl_form_delete( perl_curl_form_t *self )
+perl_curl_form_delete( perl_curl_form_t *form )
 {
-	if ( self->post )
-		curl_formfree( self->post );
+	if ( form->post )
+		curl_formfree( form->post );
 
-	Safefree( self );
+	Safefree( form );
 }
 
 /* callback: append to a scalar */
@@ -44,7 +44,7 @@ static size_t
 cb_form_get_sv( void *arg, const char *buf, size_t len )
 {
 	dTHX;
-	sv_catpvn( (SV *)arg, buf, len );
+	sv_catpvn( (SV *) arg, buf, len );
 	return len;
 }
 
@@ -53,7 +53,7 @@ static size_t
 cb_form_get_io( void *arg, const char *buf, size_t len )
 {
 	dTHX;
-	return PerlIO_write( (PerlIO *)arg, buf, len );
+	return PerlIO_write( (PerlIO *) arg, buf, len );
 }
 
 /* callback: execute a callback */
@@ -63,25 +63,25 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 	dTHX;
 	dSP;
 	int count, status;
-	perl_curl_form_t *self = arg;
+	perl_curl_form_t *form = arg;
 
 	ENTER;
 	SAVETMPS;
 
-	PUSHMARK(SP);
+	PUSHMARK( SP );
 
 	/* $form, $buffer, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( self->perl_self ) ) );
+	XPUSHs( sv_2mortal( newSVsv( form->perl_self ) ) );
 	XPUSHs( sv_2mortal( newSVpvn( buf, len ) ) );
 
-	if ( self->cb[ CB_FORM_GET ].data )
-	    XPUSHs( sv_2mortal( newSVsv( self->cb[ CB_FORM_GET ].data ) ) );
+	if ( form->cb[ CB_FORM_GET ].data )
+	    XPUSHs( sv_2mortal( newSVsv( form->cb[ CB_FORM_GET ].data ) ) );
 
 	PUTBACK;
-	count = perl_call_sv( self->cb[ CB_FORM_GET ].func, G_SCALAR );
+	count = perl_call_sv( form->cb[ CB_FORM_GET ].func, G_SCALAR );
 	SPAGAIN;
 
-	if (count != 1)
+	if ( count != 1 )
 	    croak( "callback for formget() didn't return a status\n" );
 
 	status = POPi;
@@ -107,14 +107,14 @@ curl_form_new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
-		perl_curl_form_t *self;
+		perl_curl_form_t *form;
 		HV *stash;
 	PPCODE:
 		if ( ! SvOK( base ) || ! SvROK( base ) )
 			croak( "object base must be a valid reference\n" );
 
-		self = perl_curl_form_new();
-		perl_curl_setptr( aTHX_ base, self );
+		form = perl_curl_form_new();
+		perl_curl_setptr( aTHX_ base, form );
 
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
@@ -123,15 +123,15 @@ curl_form_new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 
 
 void
-curl_form_add( self, ... )
-	WWW::CurlOO::Form self
+curl_form_add( form, ... )
+	WWW::CurlOO::Form form
 	PROTOTYPE: $%
 	PREINIT:
 		struct curl_forms *farray;
 		int i_in, i_out;
 		CURLFORMcode ret;
 	CODE:
-		if ( !(items & 1) && (
+		if ( !( items & 1 ) && (
 				!SvOK( ST( items - 1 ) ) ||
 				sv_iv( ST( items - 1 ) ) != CURLFORM_END ) )
 			croak( "Expected even number of arguments" );
@@ -159,7 +159,7 @@ case_datawithzero:
 					farray[ i_out ].value = SvPV( ST( i_in + 1 ), len );
 					i_out++;
 					farray[ i_out ].option = option_len;
-					farray[ i_out ].value = (void *)len;
+					farray[ i_out ].value = (void *) len;
 					i_out++;
 					break;
 
@@ -204,7 +204,7 @@ case_datawithzero:
 		}
 		farray[ i_out ].option = CURLFORM_END;
 
-		ret = curl_formadd( &self->post, &self->last,
+		ret = curl_formadd( &form->post, &form->last,
 			CURLFORM_ARRAY, farray, CURLFORM_END );
 
 		Safefree( farray );
@@ -214,16 +214,16 @@ case_datawithzero:
 
 
 void
-curl_form_get( self, ... )
-	WWW::CurlOO::Form self
+curl_form_get( form, ... )
+	WWW::CurlOO::Form form
 	PROTOTYPE: $;$&
 	PREINIT:
 		SV *output;
 	PPCODE:
-		self->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		form->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		if ( items < 2 ) {
 			output = sv_2mortal( newSVpv( "", 0 ) );
-			curl_formget( self->post, output, cb_form_get_sv );
+			curl_formget( form->post, output, cb_form_get_sv );
 			ST(0) = output;
 			XSRETURN(1);
 
@@ -235,26 +235,26 @@ curl_form_get( self, ... )
 
 			if ( SvTYPE( output ) == SVt_PVGV ) {
 				PerlIO *handle = IoOFP( sv_2io( output ) );
-				curl_formget( self->post, handle, cb_form_get_io );
+				curl_formget( form->post, handle, cb_form_get_io );
 			} else if ( !SvREADONLY( output ) ) {
-				curl_formget( self->post, output, cb_form_get_sv );
+				curl_formget( form->post, output, cb_form_get_sv );
 			} else {
 				croak( "output buffer is invalid" );
 			}
 			XSRETURN(0);
 
 		} else {
-			self->cb[ CB_FORM_GET ].data = ST(1);
-			self->cb[ CB_FORM_GET ].func = ST(2);
-			curl_formget( self->post, self, cb_form_get_code );
+			form->cb[ CB_FORM_GET ].data = ST(1);
+			form->cb[ CB_FORM_GET ].func = ST(2);
+			curl_formget( form->post, form, cb_form_get_code );
 			XSRETURN(0);
 		}
 
 
 void
-curl_form_DESTROY(self)
-	WWW::CurlOO::Form self
+curl_form_DESTROY( form )
+	WWW::CurlOO::Form form
 	CODE:
-		perl_curl_form_delete( self );
+		perl_curl_form_delete( form );
 
 #endif

@@ -721,9 +721,9 @@ curl_easy_setopt( self, option, value )
 			/* XXX: finish this */
 			case CURLOPT_HTTPPOST:
 				if (sv_derived_from(value, "WWW::CurlOO::Form")) {
-					WWW__CurlOO__Form wrapper;
-					wrapper = perl_curl_getptr( aTHX_ value );
-					RETVAL = curl_easy_setopt(self->curl, option, wrapper->post);
+					WWW__CurlOO__Form form;
+					form = perl_curl_getptr( aTHX_ value );
+					RETVAL = curl_easy_setopt(self->curl, option, form->post);
 					if ( RETVAL == CURLE_OK )
 						self->form_sv = newSVsv( value );
 				} else
