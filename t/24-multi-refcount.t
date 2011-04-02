@@ -59,7 +59,6 @@ ok( $$ref eq "foo", "Ref correct" );
 
 {
 	my ( $easy, $value ) = $curlm->info_read;
-	print "$easy: $easy->{private}\n";
 
 	# here $easy goes out of scope
 	# and it should die

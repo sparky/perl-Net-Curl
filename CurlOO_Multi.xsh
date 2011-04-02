@@ -184,7 +184,6 @@ curl_multi_add_handle(curlm, curl)
 	WWW::CurlOO::Easy curl
 	CODE:
 		curlm->perl_self = ST(0);
-		/* XXX: increase refcount */
 		perl_curl_easy_update( curl, newSVsv( ST(1) ) );
 		curl->multi = curlm;
 		curl_multi_add_handle( curlm->curlm, curl->curl );
@@ -195,7 +194,6 @@ curl_multi_remove_handle(curlm, curl)
 	WWW::CurlOO::Easy curl
 	CODE:
 		curl_multi_remove_handle(curlm->curlm, curl->curl);
-		/* XXX: decrease refcount */
 		sv_2mortal( curl->perl_self );
 		curl->perl_self = NULL;
 		curl->multi = NULL;
@@ -221,7 +219,6 @@ curl_multi_info_read(self)
 		if (easy) {
 			curl_easy_getinfo( easy, CURLINFO_PRIVATE, (void *)&peasy );
 			curl_multi_remove_handle( self->curlm, easy );
-			/* XXX: decrease refcount */
 			XPUSHs( sv_2mortal( peasy->perl_self ) );
 			peasy->perl_self = NULL;
 			peasy->multi = NULL;
