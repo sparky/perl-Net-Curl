@@ -331,9 +331,10 @@ curl_multi_perform(self)
 	PREINIT:
 		int remaining;
 	CODE:
-		self->perl_self = ST(0);
-		while(CURLM_CALL_MULTI_PERFORM ==
-			curl_multi_perform(self->curlm, &remaining));
+		self->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		while( CURLM_CALL_MULTI_PERFORM ==
+				curl_multi_perform( self->curlm, &remaining ) )
+			;
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL
@@ -346,7 +347,7 @@ curl_multi_socket_action(self, sockfd=CURL_SOCKET_BAD, ev_bitmask=0)
 	PREINIT:
 		int remaining;
 	CODE:
-		self->perl_self = ST(0);
+		self->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		while( CURLM_CALL_MULTI_PERFORM == curl_multi_socket_action(
 				self->curlm, (curl_socket_t) sockfd, ev_bitmask, &remaining ) )
 			;
@@ -359,6 +360,7 @@ void
 curl_multi_DESTROY(self)
 	WWW::CurlOO::Multi self
 	CODE:
+		/* TODO: remove all associated easy handles */
 		perl_curl_multi_delete( aTHX_ self );
 
 SV *
