@@ -56,7 +56,10 @@ struct perl_curl_easy_s {
 	perl_curl_multi_t *multi;
 
 	/* if easy is attached to any share object */
-	perl_curl_share_t *share;
+	SV *share_sv;
+
+	/* if easy is attached to any form object */
+	SV *form_sv;
 };
 
 
@@ -191,6 +194,12 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *self )
 			Safefree( now );
 		} while ( now = next );
 	}
+
+	if ( self->form_sv )
+		sv_2mortal( self->form_sv );
+
+	if ( self->share_sv )
+		sv_2mortal( self->share_sv );
 
 	Safefree( self );
 
@@ -709,23 +718,27 @@ curl_easy_setopt( self, option, value )
 				break;
 
 			/* not working yet... */
+			/* XXX: finish this */
 			case CURLOPT_HTTPPOST:
 				if (sv_derived_from(value, "WWW::CurlOO::Form")) {
 					WWW__CurlOO__Form wrapper;
 					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->post);
+					if ( RETVAL == CURLE_OK )
+						self->form_sv = newSVsv( value );
 				} else
 					croak("value is not of type WWW::CurlOO::Form");
 				break;
 
 			/* Curl share support from Anton Fedorov */
+			/* XXX: and this */
 			case CURLOPT_SHARE:
 				if (sv_derived_from(value, "WWW::CurlOO::Share")) {
 					WWW__CurlOO__Share wrapper;
 					wrapper = perl_curl_getptr( aTHX_ value );
 					RETVAL = curl_easy_setopt(self->curl, option, wrapper->curlsh);
 					if ( RETVAL == CURLE_OK )
-						self->share = wrapper;
+						self->share_sv = newSVsv( value );
 				} else
 					croak("value is not of type WWW::CurlOO::Share");
 				break;
