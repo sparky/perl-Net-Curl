@@ -121,7 +121,7 @@ WriteMakefile(
 		"Scalar::Util" => 0,
 	},
 	depend		=> {
-		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
+		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
 		FILES => 'const-*.inc curloo-*.inc'
