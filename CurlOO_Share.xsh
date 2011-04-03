@@ -150,8 +150,7 @@ cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 	return;
 }
 
-/* XS_SECTION */
-#ifdef XS_SECTION
+
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share	PREFIX = curl_share_
 
@@ -239,5 +238,3 @@ curl_share_strerror( share, errornum )
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
-
-#endif

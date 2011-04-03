@@ -93,8 +93,6 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 }
 
 
-/* XS_SECTION */
-#ifdef XS_SECTION
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form	PREFIX = curl_form_
 
@@ -256,5 +254,3 @@ curl_form_DESTROY( form )
 	WWW::CurlOO::Form form
 	CODE:
 		perl_curl_form_delete( form );
-
-#endif

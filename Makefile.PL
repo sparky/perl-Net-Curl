@@ -75,6 +75,10 @@ write_from_template( "Easy", $constant_types[ 1 ] );
 write_from_template( "Form", $constant_types[ 2 ] );
 write_from_template( "Multi", $constant_types[ 3 ] );
 write_from_template( "Share", $constant_types[ 4 ] );
+split_xs( "Easy" );
+split_xs( "Form" );
+split_xs( "Multi" );
+split_xs( "Share" );
 
 WriteConstants(
 	PROXYSUBS => { croak_on_read => 1 },
@@ -124,7 +128,7 @@ WriteMakefile(
 		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
-		FILES => 'const-c.inc const-*-xs.inc const-defenums.h'
+		FILES => 'const-c.inc const-*-xs.inc curloo-*.inc const-defenums.h'
 	},
 	realclean	=> {
 		FILES => 'pplib',
@@ -245,6 +249,32 @@ sub divide_constants
 		push @{ $out[ $list ] }, $_;
 	}
 	return @out;
+}
+
+sub split_xs
+{
+	my $name = shift;
+	my $in = "CurlOO_$name.xsh";
+
+	open my $fin, '<', $in
+		or die "Can't open $in: $!\n";
+
+	open my $foutc, '>', "curloo-$name-c.inc"
+		or die "Can't create c.int: $!\n";
+
+	open my $foutxs, '>', "curloo-$name-xs.inc"
+		or die "Can't create xs.int: $!\n";
+
+	while ( <$fin> ) {
+		if ( /^MODULE\s*=.*PACKAGE/ ) {
+			print $foutxs $_;
+			print $foutxs @_ = <$fin>;
+			last;
+		} else {
+			print $foutxs "\n";
+			print $foutc $_;
+		}
+	}
 }
 
 sub write_from_template

@@ -7,7 +7,6 @@ LICENSE
 MANIFEST
 Makefile.PL
 README
-getxs
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm

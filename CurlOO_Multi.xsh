@@ -149,8 +149,6 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 } /*}}}*/
 
 
-/* XS_SECTION */
-#ifdef XS_SECTION
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi	PREFIX = curl_multi_
 
@@ -374,5 +372,3 @@ curl_multi_strerror( multi, errornum )
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
-
-#endif

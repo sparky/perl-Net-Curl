@@ -496,9 +496,6 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 
 
 
-/* XS_SECTION */
-#ifdef XS_SECTION
-
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
 
 INCLUDE: const-easy-xs.inc
@@ -979,5 +976,3 @@ curl_easy_strerror( easy, errornum )
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
-
-#endif
