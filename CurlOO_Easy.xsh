@@ -817,24 +817,18 @@ curl_easy_pushopt( easy, option, value )
 		RETVAL
 
 
-int
+void
 curl_easy_perform( easy )
 	WWW::CurlOO::Easy easy
+	PREINIT:
+		CURLcode ret;
 	CODE:
-		/* {{{ */
 		perl_curl_easy_update( easy, sv_2mortal( newSVsv( ST(0) ) ) );
-		/* perform the actual curl fetch */
-		RETVAL = curl_easy_perform( easy->handle );
+		ret = curl_easy_perform( easy->handle );
 
-		if ( RETVAL && easy->errbufvarname ) {
-			/* If an error occurred and a varname for error messages has been
-			specified, store the error message. */
-			SV *sv = perl_get_sv( easy->errbufvarname, TRUE | GV_ADDMULTI );
-			sv_setpv( sv, easy->errbuf );
-		}
-		/* }}} */
-	OUTPUT:
-		RETVAL
+		if ( ret != CURLE_OK )
+			croak( "curl_easy_perform() failed: %d: %s\n", ret,
+				curl_easy_strerror( ret ) );
 
 
 SV *

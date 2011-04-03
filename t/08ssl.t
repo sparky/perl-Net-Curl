@@ -84,7 +84,11 @@ for my $test_list (@$url_list) {
 
     $curl->setopt(CURLOPT_URL, $url);
 
-    $retcode = $curl->perform();
-    ok(($retcode != 0) == $result, "$url ssl test succeeds");
+    eval { $curl->perform(); };
+    ok( (!!$@) == $result, "$url ssl test succeeds");
+    if ( $@ and (!!$@) != $result ) {
+	    diag( $@ );
+	    diag( "errbuf: " . $curl->errbuf );
+    }
 }
 

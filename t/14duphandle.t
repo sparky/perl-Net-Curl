@@ -44,9 +44,11 @@ my $body = tempfile();
 		ok ($other_handle && ref($other_handle) eq 'WWW::CurlOO::Easy', "Duplicated handle seems to be an object in the right namespace");
 
 		foreach my $x ($other_handle,$curl) {
-			my $retcode = $x->perform();
-			ok(!$retcode, "Perform returns without an error");
-			if ($retcode == 0) {
+			eval {
+				$x->perform();
+			};
+			ok( !$@, "Perform returns without an error");
+			if ( not $@ ) {
 				my $bytes	= $x->getinfo(CURLINFO_SIZE_DOWNLOAD);
 				my $realurl	= $x->getinfo(CURLINFO_EFFECTIVE_URL);
 				my $httpcode	= $x->getinfo(CURLINFO_HTTP_CODE);
@@ -57,9 +59,9 @@ my $body = tempfile();
 ok(1, "Survived original curl handle DESTROY");
 
 ok(! $other_handle->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
-my $retcode = $other_handle->perform();
-ok(!$retcode, "Perform returns without an error");
-if ($retcode == 0) {
+eval { $other_handle->perform(); };
+ok( !$@, "Perform returns without an error");
+if ( not $@) {
 	my $bytes=$other_handle->getinfo(CURLINFO_SIZE_DOWNLOAD);
 	my $realurl=$other_handle->getinfo(CURLINFO_EFFECTIVE_URL);
 	my $httpcode=$other_handle->getinfo(CURLINFO_HTTP_CODE);

@@ -23,15 +23,15 @@ $curl->setopt(CURLOPT_TIMEOUT, 30);
 
 open (HEAD, "+>",undef);
 WWW::CurlOO::Easy::setopt($curl, CURLOPT_WRITEHEADER, \*HEAD);
-open (BODY, "+>, undef);
+open (BODY, "+>", undef);
 WWW::CurlOO::Easy::setopt($curl, CURLOPT_FILE, \*BODY);
 
 $curl->setopt(CURLOPT_URL, $url);
                                                                         
 my $httpcode = 0;
 
-my $retcode=$curl->perform();
-if ($retcode == 0) {
+eval { $curl->perform(); };
+if ( not $@ ) {
 	my bytes=$curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
 	my $realurl=$curl->getinfo(CURLINFO_EFFECTIVE_URL);
 	my $httpcode=$curl->getinfo(CURLINFO_HTTP_CODE);

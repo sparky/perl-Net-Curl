@@ -32,11 +32,10 @@ $myheaders[0] = "Server: www";
 $myheaders[1] = "User-Agent: Perl interface for libcURL";
 ok(! $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders), "Setting CURLOPT_HTTPHEADER");
 
-my $retcode;
-$retcode = $curl->perform();
-ok(! $retcode,"Checking perform return code");
+eval { $curl->perform(); };
+ok( !$@,"Checking perform return code");
 
-if ($retcode == 0) {
+if ( not $@ ) {
     my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
     ok($bytes, "Non-zero bytesize check");
     my $realurl = $curl->getinfo(CURLINFO_EFFECTIVE_URL);

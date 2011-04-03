@@ -56,4 +56,4 @@ ok(! $curl->setopt(CURLOPT_INFILESIZE,$read_max ), "Setting CURLOPT_INFILESIZE")
 ok(! $curl->setopt(CURLOPT_UPLOAD,1 ), "Setting CURLOPT_UPLOAD");
 ok(! $curl->setopt(CURLOPT_CUSTOMREQUEST,"POST" ), "Setting CURLOPT_CUSTOMREQUEST");
                                                        
-ok(! $curl->perform(), "Performing perform");
+ok(! eval { $curl->perform() }, "Performing perform");

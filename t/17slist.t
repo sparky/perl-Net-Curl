@@ -76,8 +76,8 @@ $myheaders[1] = "Foo: bar";
 $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders);
                                                                         
 # Go get it
-my $retcode=$curl->perform();
-if ($retcode == 0) {
+eval { $curl->perform(); };
+if ( not $@ ) {
 	if ($body !~ m/FOO\s*=\s*"?bar"?/) {            
 		print "not ";
 	}

@@ -43,12 +43,12 @@ for my $handle ($curl1,$curl2) {
 ok(! $curl1->setopt(CURLOPT_URL, "zxxypz://whoa"), "Setting deliberately bad protocol succeeds - should return error on perform"); # deliberate error
 ok(! $curl2->setopt(CURLOPT_URL, $url), "Setting OK url");
 
-my $code1=$curl1->perform();
-ok($code1 != 0, "Curl1 handle fails as expected");
-ok($code1 == CURLE_UNSUPPORTED_PROTOCOL, "Curl1 handle fails with the correct error");
+eval { $curl1->perform(); };
+ok( $@ =~ /failed: (\d+)/, "Curl1 handle fails as expected");
+ok( $1 == CURLE_UNSUPPORTED_PROTOCOL, "Curl1 handle fails with the correct error");
 
-my $code2=$curl2->perform();
-ok($code2 == 0, "Curl2 handle succeeds");
+eval { $curl2->perform(); };
+ok( !$@, "Curl2 handle succeeds");
 
 ok($header_called, "Header callback works");
 ok($body_called, "Body callback works");

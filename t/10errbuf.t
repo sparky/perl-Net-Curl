@@ -35,9 +35,8 @@ ok(! $curl->setopt(CURLOPT_STDERR, $new_error), "Setting CURLOPT_STDERR");
 
 ok(! $curl->setopt(CURLOPT_URL, "badprotocol://127.0.0.1:2"), "Setting CURLOPT_URL succeeds, even with a bad protocol");
 
-my $retcode = $curl->perform();
-
-ok($retcode, "Non-zero return code indicates the expected failure");
+eval { $curl->perform(); };
+ok( $@, "Non-zero return code indicates the expected failure");
 
 seek $new_error, 0, 0;
 my $line = <$new_error>;

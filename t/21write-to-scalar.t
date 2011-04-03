@@ -25,9 +25,9 @@ ok(! $curl->setopt(CURLOPT_WRITEDATA, \$body), "Setting CURLOPT_WRITEDATA");
 
 ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
 
-my $retcode = $curl->perform();
+eval { $curl->perform(); };
 
-ok(! $retcode, "Curl return code ok");
+ok( !$@, "Curl return code ok");
 
 my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
 ok( $bytes, "getinfo returns non-zero number of bytes");

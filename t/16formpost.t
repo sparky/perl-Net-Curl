@@ -78,7 +78,7 @@ $curl->setopt(CURLOPT_INFILESIZE,$read_max );
 $curl->setopt(CURLOPT_UPLOAD,1 );
 $curl->setopt(CURLOPT_CUSTOMREQUEST,"POST" );
                                                        
-if ($curl->perform() != 0) {
+if ( eval { $curl->perform() } ) {
 	print "not ";
 };
 print "ok ".++$count."\n";

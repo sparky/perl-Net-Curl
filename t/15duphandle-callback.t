@@ -61,9 +61,9 @@ my $head_called = 0;
 	ok(ref($other_handle) eq 'WWW::CurlOO::Easy', 'Dup handle looks like an object from the WWW::CurlOO::Easy module'); #13
 
 	foreach my $x ($curl,$other_handle) {
-		my $retcode=$x->perform();
-		ok(!$retcode, "Handle return code check"); #14-15
-		if ($retcode == 0) {
+		eval { $x->perform() };
+		ok( !$@, "Handle return code check"); #14-15
+		if ( not $@ ) {
 			my $bytes	= $x->getinfo(CURLINFO_SIZE_DOWNLOAD);
 			my $realurl	= $x->getinfo(CURLINFO_EFFECTIVE_URL);
 			my $httpcode	= $x->getinfo(CURLINFO_HTTP_CODE);
@@ -75,8 +75,8 @@ my $head_called = 0;
 
 ok(! $other_handle->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL"); #18
 
-my $retcode=$other_handle->perform();
-ok(!$retcode, "Handle return code check");
+eval { $other_handle->perform(); };
+ok( !$@, "Handle return code check");
 ok( 1, "We survive DESTROY time for the original handle");
 ok( head_callback(undef, '1',undef), "We can still access the callbacks");
 my $third = $other_handle->duphandle();
@@ -84,9 +84,9 @@ ok($third, 'duphandle seems to return something again');
 ok(ref($third) eq 'WWW::CurlOO::Easy', 'Dup handle looks like an object from the WWW::CurlOO::Easy module');
 
 foreach my $x ($other_handle,$third) {
-	my $retcode=$x->perform();
-	ok(!$retcode, "Handle return code check");
-	if ($retcode == 0) {
+	eval { $x->perform(); };
+	ok( !$@, "Handle return code check");
+	if ( not $@ ) {
 		my $bytes	= $x->getinfo(CURLINFO_SIZE_DOWNLOAD);
 		my $realurl	= $x->getinfo(CURLINFO_EFFECTIVE_URL);
 		my $httpcode	= $x->getinfo(CURLINFO_HTTP_CODE);

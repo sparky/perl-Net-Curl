@@ -38,10 +38,10 @@ ok(! $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders), "Setting CURLOPT_HTTPHEADER
 ok(! $curl->pushopt(CURLOPT_HTTPHEADER, ["Random: header"]));
 
 $curl->setopt(CURLOPT_COOKIEFILE, "");
-my $retcode = $curl->perform();
+eval { $curl->perform(); };
 
-ok(! $retcode, "Curl return code ok");
-diag("An error happened: $retcode ".$curl->strerror($retcode)." ".$curl->errbuf."\n") if ($retcode);
+ok( !$@, "Curl return code ok");
+diag("An error happened: $@ --".$curl->errbuf."\n") if ($@);
 my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
 ok( $bytes, "getinfo returns non-zero number of bytes");
 my $realurl = $curl->getinfo(CURLINFO_EFFECTIVE_URL);

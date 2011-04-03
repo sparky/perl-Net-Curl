@@ -32,6 +32,7 @@ sub body_abort_callback { $body_abort_called++; return -1 };
 
 $curl->setopt(CURLOPT_WRITEFUNCTION, \&body_abort_callback);
 
-ok( $curl->perform(), "Request fails, Abort succeeds");
+eval { $curl->perform(); };
+ok( $@, "Request fails, Abort succeeds");
 
 ok( $body_abort_called, "Abort function was invoked");

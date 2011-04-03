@@ -21,8 +21,8 @@ my $c = WWW::CurlOO::Easy->new();
 $c->setopt( CURLOPT_URL, $url );
 $c->setopt( CURLOPT_CONNECT_ONLY, 1 );
 
-my $r = $c->perform();
-ok( $r == 0, "perform didn't block" );
+eval { $c->perform(); };
+ok( !$@, "perform didn't block" );
 
 my $socket = $c->getinfo( CURLINFO_LASTSOCKET );
 ok( $socket > 2, "open socket" );
