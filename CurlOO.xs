@@ -20,7 +20,7 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/multi.h>
-#include "const-defenums.h"
+#include "const-defenums-h.inc"
 #include "const-c.inc"
 
 #ifndef Newx

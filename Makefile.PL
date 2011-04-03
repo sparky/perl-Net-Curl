@@ -67,14 +67,12 @@ if ( $@ ) {
 my @constant_types = divide_constants();
 
 # WriteConstants does not honour enums, so we define those symbols
-write_defenums( "const-defenums.h" );
+write_defenums( "const-defenums-h.inc" );
 
-make_path( "pplib/WWW/CurlOO" );
-write_from_template( "CurlOO", $constant_types[ 0 ], "WWW" );
-write_from_template( "Easy", $constant_types[ 1 ] );
-write_from_template( "Form", $constant_types[ 2 ] );
-write_from_template( "Multi", $constant_types[ 3 ] );
-write_from_template( "Share", $constant_types[ 4 ] );
+write_constants( "Easy", $constant_types[ 1 ] );
+write_constants( "Form", $constant_types[ 2 ] );
+write_constants( "Multi", $constant_types[ 3 ] );
+write_constants( "Share", $constant_types[ 4 ] );
 split_xs( "Easy" );
 split_xs( "Form" );
 split_xs( "Multi" );
@@ -96,8 +94,8 @@ WriteConstants(
 my $l_ = $] >= 5.010 ? "ł" : "l";
 WriteMakefile(
 	NAME 		=> 'WWW::CurlOO',
-	VERSION_FROM	=> 'pplib/WWW/CurlOO.pm',
-	ABSTRACT_FROM	=> 'pplib/WWW/CurlOO.pm',
+	VERSION_FROM	=> 'lib/WWW/CurlOO.pm',
+	ABSTRACT_FROM	=> 'lib/WWW/CurlOO.pm',
 	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
 	META_MERGE	=> {
 		resources => {
@@ -122,16 +120,11 @@ WriteMakefile(
 		"File::Temp" => 0,
 		"Scalar::Util" => 0,
 	},
-	PMLIBDIRS => [ 'pplib' ],
-	PMLIBPARENTDIRS => [ 'pplib' ],
 	depend		=> {
 		'CurlOO.c' => 'CurlOO.xs CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
-		FILES => 'const-c.inc const-*-xs.inc curloo-*.inc const-defenums.h'
-	},
-	realclean	=> {
-		FILES => 'pplib',
+		FILES => 'const-*.inc curloo-*.inc'
 	},
 );
 
@@ -259,11 +252,15 @@ sub split_xs
 	open my $fin, '<', $in
 		or die "Can't open $in: $!\n";
 
-	open my $foutc, '>', "curloo-$name-c.inc"
-		or die "Can't create c.int: $!\n";
+	my $outc = "curloo-$name-c.inc";
+	open my $foutc, '>', $outc
+		or die "Can't create $outc: $!\n";
+	print "Writing $outc\n";
 
-	open my $foutxs, '>', "curloo-$name-xs.inc"
-		or die "Can't create xs.int: $!\n";
+	my $outxs = "curloo-$name-xs.inc";
+	open my $foutxs, '>', $outxs
+		or die "Can't create $outxs: $!\n";
+	print "Writing $outxs\n";
 
 	while ( <$fin> ) {
 		if ( /^MODULE\s*=.*PACKAGE/ ) {
@@ -277,41 +274,21 @@ sub split_xs
 	}
 }
 
-sub write_from_template
+sub write_constants
 {
 	my $name = shift;
 	my $constants = shift;
-	my $dir = shift;
-	my $havedir = !!$dir;
-	$dir ||= "WWW/CurlOO";
 
-	my $template = "lib/$dir/$name.pm";
-	my $out = "pplib/$dir/$name.pm";
-
-	print "Writing $out from $template\n";
-	open my $fout, ">", $out
-		or die "Can't create $out\n";
-
-	open my $fin, "<", $template
-		or die "Can't read $template\n";
-
-	local $_;
-	while (<$fin>) {
-		if (m/^\s*#\s*\@CURLOPT_INCLUDE\@/) {
-			print $fout join "\n", 'qw(', @$constants, ')';
-		} else {
-			print $fout $_;
-		}
-	}
-
-	return if $havedir;
 	my $lname = lc $name;
+	my $out = "const-$lname-xs.inc";
+	print "Writing $out\n";
+
 	WriteConstants(
 		PROXYSUBS => { croak_on_read => 1 },
 		NAME => "WWW::CurlOO::$name",
 		NAMES => [ map { name => $_, type => 'IV', value => $_, macro => 1 }, @$constants ],
 		C_FILE => 'const-c.inc',
-		XS_FILE => "const-$lname-xs.inc",
+		XS_FILE => $out,
 		XS_SUBNAME => "curl_${lname}_constant",
 		C_SUBNAME => 'curl_constant',
 	);
