@@ -105,6 +105,19 @@ WriteMakefile(
 	SIGN		=> 1,
 	LICENSE		=> 'MPL or MIT/X-derivate',	
 	MIN_PERL_VERSION => 5.008001,
+	CONFIGURE_REQUIRES => {
+		"ExtUtils::MakeMaker" => 0,
+		"ExtUtils::MakeMaker::Config" => 0,
+		"ExtUtils::Constant" => 0.11,
+		"ExtUtils::PkgConfig" => 0,
+	},
+	PREREQ_PM => {
+		"Test::More" => 0,
+		"Test::CPAN::Meta" => 0,
+		"Test::Pod" => 0,
+		"File::Temp" => 0,
+		"Scalar::Util" => 0,
+	},
 	PMLIBDIRS => [ 'pplib' ],
 	PMLIBPARENTDIRS => [ 'pplib' ],
 	depend		=> {
