@@ -6,6 +6,7 @@ CurlOO_Multi.xsh
 LICENSE
 MANIFEST
 Makefile.PL
+README
 getxs
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Easy.pm

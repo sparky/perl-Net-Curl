@@ -1,0 +1,34 @@
+This package is working, but still a lot has to change.
+
+
+** TODO **
+
+Easy:
+- review !
+- delay deaths
+- test callback arguments just before perform
+- implement pause (curl_easy_pause)
+- implement reset (curl_easy_reset)
+- allow calling strerror as function
+- write documentation
+
+Form:
+- test with Easy
+
+Multi:
+- remove all remaining easy handles when destroying multi
+- implement assign (curl_multi_assign)
+- allow calling strerror as function
+- write documentation
+
+Share:
+- test with Easy
+- implement buffer options
+- implement read callback
+- allow calling strerror as function
+- write documentation
+
+tests:
+- use some pure-perl http server, should do for most tests
+- review and renumerate
+- add more crash tests (remove last reference while performing)
