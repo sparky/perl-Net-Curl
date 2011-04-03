@@ -105,7 +105,7 @@ WriteMakefile(
 	CCFLAGS		=> $curl{cflags},
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
-	LICENSE		=> 'MPL or MIT/X-derivate',	
+	LICENSE		=> 'mit',
 	MIN_PERL_VERSION => 5.008001,
 	CONFIGURE_REQUIRES => {
 		"ExtUtils::MakeMaker" => 0,
