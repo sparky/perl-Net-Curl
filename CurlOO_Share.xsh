@@ -75,39 +75,26 @@ cb_share_lock( CURL *easy_handle, curl_lock_data data, curl_lock_access locktype
 		void *userptr )
 {
 	dTHX;
-	dSP;
 
-	int count;
 	perl_curl_share_t *share;
 	perl_curl_easy_t *easy;
 
 	share = (perl_curl_share_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	ENTER;
-	SAVETMPS;
-	PUSHMARK( sp );
-
 	/* $easy, $data, $locktype, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( easy->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSViv( data ) ) );
-	XPUSHs( sv_2mortal( newSViv( locktype ) ) );
-	if ( share->cb[CB_SHARE_LOCK].data ) {
-		XPUSHs( sv_2mortal( newSVsv( share->cb[CB_SHARE_LOCK].data ) ) );
-	} else {
-		XPUSHs( &PL_sv_undef );
-	}
+	SV *args[] = {
+		newSVsv( easy->perl_self ),
+		newSViv( data ),
+		newSViv( locktype ),
+		NULL
+	};
+	int argn = 3;
 
-	PUTBACK;
-	count = perl_call_sv( share->cb[CB_SHARE_LOCK].func, G_SCALAR );
-	SPAGAIN;
+	if ( share->cb[CB_SHARE_LOCK].data )
+		args[ argn++ ] = newSVsv( share->cb[CB_SHARE_LOCK].data );
 
-	if ( count != 0 )
-		croak( "callback for CURLSHOPT_LOCKFUNCTION didn't return void\n" );
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
+	perl_curl_call( aTHX_ share->cb[CB_SHARE_LOCK].func, argn, args );
 	return;
 }
 
@@ -115,38 +102,25 @@ static void
 cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 {
 	dTHX;
-	dSP;
 
-	int count;
 	perl_curl_share_t *share;
 	perl_curl_easy_t *easy;
 
 	share = (perl_curl_share_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	ENTER;
-	SAVETMPS;
-	PUSHMARK( sp );
-
 	/* $easy, $data, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( easy->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSViv( data ) ) );
-	if ( share->cb[CB_SHARE_LOCK].data ) {
-		XPUSHs( sv_2mortal( newSVsv( share->cb[CB_SHARE_LOCK].data ) ) );
-	} else {
-		XPUSHs( &PL_sv_undef );
-	}
+	SV *args[] = {
+		newSVsv( easy->perl_self ),
+		newSViv( data ),
+		NULL,
+	};
+	int argn = 2;
 
-	PUTBACK;
-	count = perl_call_sv( share->cb[CB_SHARE_LOCK].func, G_SCALAR );
-	SPAGAIN;
+	if ( share->cb[CB_SHARE_LOCK].data )
+		args[ argn++ ] = newSVsv( share->cb[CB_SHARE_LOCK].data );
 
-	if ( count != 0 )
-		croak( "callback for CURLSHOPT_UNLOCKFUNCTION didn't return void\n" );
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
+	perl_curl_call( aTHX_ share->cb[CB_SHARE_UNLOCK].data, argn, args );
 	return;
 }
 

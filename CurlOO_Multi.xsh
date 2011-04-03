@@ -74,78 +74,49 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 		void *socketp )
 /*{{{*/ {
 	dTHX;
-	dSP;
 
-	int count;
 	perl_curl_multi_t *multi;
 	perl_curl_easy_t *easy;
 
 	multi = (perl_curl_multi_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	ENTER;
-	SAVETMPS;
-	PUSHMARK( sp );
-
 	/* $easy, $socket, $what, $userdata */
 	/* XXX: add $socketdata */
-	XPUSHs( sv_2mortal( newSVsv( easy->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSVuv( s ) ) );
-	XPUSHs( sv_2mortal( newSViv( what ) ) );
-	if ( multi->cb[CB_MULTI_SOCKET].data ) {
-		XPUSHs( sv_2mortal( newSVsv( multi->cb[CB_MULTI_SOCKET].data ) ) );
-	} else {
-		XPUSHs( &PL_sv_undef );
-	}
+	SV *args[] = {
+		newSVsv( easy->perl_self ),
+		newSVuv( s ),
+		newSViv( what ),
+		NULL
+	};
+	int argn = 3;
 
-	PUTBACK;
-	count = perl_call_sv( multi->cb[CB_MULTI_SOCKET].func, G_SCALAR );
-	SPAGAIN;
+	if ( multi->cb[CB_MULTI_SOCKET].data )
+		args[ argn++ ] = newSVsv( multi->cb[CB_MULTI_SOCKET].data );
 
-	if ( count != 1 )
-		croak( "callback for CURLMOPT_SOCKETFUNCTION didn't return 1\n" );
-
-	count = POPi;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-	return count;
+	return perl_curl_call( aTHX_ multi->cb[CB_MULTI_SOCKET].func, argn, args );
 } /*}}}*/
 
 static int
 cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 /*{{{*/ {
 	dTHX;
-	dSP;
 
-	int count;
 	perl_curl_multi_t *multi;
 	multi = (perl_curl_multi_t *) userptr;
 
-	ENTER;
-	SAVETMPS;
-	PUSHMARK( sp );
-
 	/* $multi, $timeout, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( multi->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSViv( timeout_ms ) ) );
+	SV *args[] = {
+		newSVsv( multi->perl_self ),
+		newSViv( timeout_ms ),
+		NULL
+	};
+	int argn = 2;
+
 	if ( multi->cb[CB_MULTI_TIMER].data )
-		XPUSHs( sv_2mortal( newSVsv( multi->cb[CB_MULTI_TIMER].data ) ) );
+		args[ argn++ ] = newSVsv( multi->cb[CB_MULTI_TIMER].data );
 
-	PUTBACK;
-	count = perl_call_sv( multi->cb[CB_MULTI_TIMER].func, G_SCALAR );
-	SPAGAIN;
-
-	if ( count != 1 )
-		croak( "callback for CURLMOPT_TIMERFUNCTION didn't return 1\n" );
-
-	count = POPi;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-	return count;
+	return perl_curl_call( aTHX_ multi->cb[CB_MULTI_TIMER].func, argn, args );
 } /*}}}*/
 
 
@@ -192,10 +163,16 @@ curl_multi_remove_handle( multi, easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		sv_setsv( ERRSV, &PL_sv_undef );
 		curl_multi_remove_handle( multi->handle, easy->handle );
 		sv_2mortal( easy->perl_self );
 		easy->perl_self = NULL;
 		easy->multi = NULL;
+
+		/* rethrow errors */
+		if ( SvTRUE( ERRSV ) )
+			Perl_die_where( aTHX_ NULL );
+
 
 void
 curl_multi_info_read( multi )
@@ -209,6 +186,7 @@ curl_multi_info_read( multi )
 	PPCODE:
 		/* {{{ */
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		sv_setsv( ERRSV, &PL_sv_undef );
 		while ( (msg = curl_multi_info_read( multi->handle, &queue ) ) ) {
 			if ( msg->msg == CURLMSG_DONE ) {
 				easy_handle = msg->easy_handle;
@@ -219,13 +197,16 @@ curl_multi_info_read( multi )
 		if ( easy_handle ) {
 			curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 			curl_multi_remove_handle( multi->handle, easy_handle );
-			XPUSHs( sv_2mortal( easy->perl_self ) );
+			mXPUSHs( easy->perl_self );
 			easy->perl_self = NULL;
 			easy->multi = NULL;
-			XPUSHs( sv_2mortal( newSViv( res ) ) );
-		} else {
-			XSRETURN_EMPTY;
+			mXPUSHs( newSViv( res ) );
 		}
+
+		/* rethrow errors */
+		if ( SvTRUE( ERRSV ) )
+			Perl_die_where( aTHX_ NULL );
+
 		/* }}} */
 
 
@@ -329,9 +310,15 @@ curl_multi_perform( multi )
 		int remaining;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		sv_setsv( ERRSV, &PL_sv_undef );
 		while( CURLM_CALL_MULTI_PERFORM ==
 				curl_multi_perform( multi->handle, &remaining ) )
 			;
+
+		/* rethrow errors */
+		if ( SvTRUE( ERRSV ) )
+			Perl_die_where( aTHX_ NULL );
+
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL
@@ -345,9 +332,15 @@ curl_multi_socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 		int remaining;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		sv_setsv( ERRSV, &PL_sv_undef );
 		while( CURLM_CALL_MULTI_PERFORM == curl_multi_socket_action(
 				multi->handle, (curl_socket_t) sockfd, ev_bitmask, &remaining ) )
 			;
+
+		/* rethrow errors */
+		if ( SvTRUE( ERRSV ) )
+			Perl_die_where( aTHX_ NULL );
+
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL

@@ -61,35 +61,21 @@ static size_t
 cb_form_get_code( void *arg, const char *buf, size_t len )
 {
 	dTHX;
-	dSP;
-	int count, status;
+
 	perl_curl_form_t *form = arg;
 
-	ENTER;
-	SAVETMPS;
-
-	PUSHMARK( SP );
-
 	/* $form, $buffer, $userdata */
-	XPUSHs( sv_2mortal( newSVsv( form->perl_self ) ) );
-	XPUSHs( sv_2mortal( newSVpvn( buf, len ) ) );
+	SV *args[] = {
+		newSVsv( form->perl_self ),
+		newSVpvn( buf, len ),
+		NULL
+	};
+	int argn = 2;
 
 	if ( form->cb[ CB_FORM_GET ].data )
-	    XPUSHs( sv_2mortal( newSVsv( form->cb[ CB_FORM_GET ].data ) ) );
+		args[ argn++ ] = newSVsv( form->cb[ CB_FORM_GET ].data );
 
-	PUTBACK;
-	count = perl_call_sv( form->cb[ CB_FORM_GET ].func, G_SCALAR );
-	SPAGAIN;
-
-	if ( count != 1 )
-	    croak( "callback for formget() didn't return a status\n" );
-
-	status = POPi;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-	return status;
+	return perl_curl_call( aTHX_ form->cb[ CB_FORM_GET ].func, argn, args );
 }
 
 
@@ -219,9 +205,15 @@ curl_form_get( form, ... )
 		SV *output;
 	PPCODE:
 		form->perl_self = sv_2mortal( newSVsv( ST(0) ) );
+		sv_setsv( ERRSV, &PL_sv_undef );
 		if ( items < 2 ) {
 			output = sv_2mortal( newSVpv( "", 0 ) );
 			curl_formget( form->post, output, cb_form_get_sv );
+
+			/* rethrow errors */
+			if ( SvTRUE( ERRSV ) )
+				Perl_die_where( aTHX_ NULL );
+
 			ST(0) = output;
 			XSRETURN(1);
 
@@ -239,12 +231,22 @@ curl_form_get( form, ... )
 			} else {
 				croak( "output buffer is invalid" );
 			}
+
+			/* rethrow errors */
+			if ( SvTRUE( ERRSV ) )
+				Perl_die_where( aTHX_ NULL );
+
 			XSRETURN(0);
 
 		} else {
 			form->cb[ CB_FORM_GET ].data = ST(1);
 			form->cb[ CB_FORM_GET ].func = ST(2);
 			curl_formget( form->post, form, cb_form_get_code );
+
+			/* rethrow errors */
+			if ( SvTRUE( ERRSV ) )
+				Perl_die_where( aTHX_ NULL );
+
 			XSRETURN(0);
 		}
 
