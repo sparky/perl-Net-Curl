@@ -227,14 +227,14 @@ curl_share_setopt( share, option, value )
 
 
 SV *
-curl_share_strerror( share, errornum )
-	WWW::CurlOO::Share share
-	int errornum
+curl_share_strerror( ... )
+	PROTOTYPE: $;$
 	PREINIT:
 		const char *errstr;
-		(void) share; /* unused */
 	CODE:
-		errstr = curl_share_strerror( errornum );
+		if ( items < 1 || items > 2 )
+			croak_xs_usage(cv,  "[share], errnum");
+		errstr = curl_share_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL

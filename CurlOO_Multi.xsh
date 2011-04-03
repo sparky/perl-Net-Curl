@@ -361,14 +361,14 @@ curl_multi_DESTROY( multi )
 		perl_curl_multi_delete( aTHX_ multi );
 
 SV *
-curl_multi_strerror( multi, errornum )
-	WWW::CurlOO::Multi multi
-	int errornum
+curl_multi_strerror( ... )
+	PROTOTYPE: $;$
 	PREINIT:
 		const char *errstr;
-		(void) multi; /* unused */
 	CODE:
-		errstr = curl_multi_strerror( errornum );
+		if ( items < 1 || items > 2 )
+			croak_xs_usage(cv,  "[multi], errnum");
+		errstr = curl_multi_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL

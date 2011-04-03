@@ -959,14 +959,14 @@ curl_easy_DESTROY( easy )
 
 
 SV *
-curl_easy_strerror( easy, errornum )
-	WWW::CurlOO::Easy easy
-	int errornum
+curl_easy_strerror( ... )
+	PROTOTYPE: $;$
 	PREINIT:
 		const char *errstr;
-		(void) easy; /* unused */
 	CODE:
-		errstr = curl_easy_strerror( errornum );
+		if ( items < 1 || items > 2 )
+			croak_xs_usage(cv,  "[easy], errnum");
+		errstr = curl_easy_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
