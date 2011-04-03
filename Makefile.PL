@@ -2,6 +2,7 @@ use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
 use ExtUtils::Constant 0.11 'WriteConstants';
+use ExtUtils::PkgConfig;
 use File::Path qw(make_path);
 
 # you can set those manually if curl-config is not working for you
@@ -14,19 +15,14 @@ my %curl = (
 
 
 # - this version added curl_multi_socket_action() and many symbols
-my $minimum_libcurl_verstr = "7.15.4";
-my $minimum_libcurl_ver = 0x070f04;
+my $minimum_libcurl_ver = "7.15.4";
 my $constant_names;
 
-if ( $curl{libs} and $curl{libs} ) {
+if ( $curl{libs} and $curl{version} ) {
 	print "Using manually introduced curl options:\n";
 	while ( my ($k, $v) = each %curl ) {
 		printf " %8s => %s\n", $k, $v;
 	}
-} elsif ( $^O eq 'MSWin32' ) {
-	print	"Sorry, no automated install is available on Windows,\n".
-		"please see the README.Win32 file on instructions for a manual install.\n";
-	exit 1;
 } else {
 	%curl = get_curl_config();
 }
@@ -115,27 +111,15 @@ exit 0;
 
 sub get_curl_config
 {
-	my $curl_config = $ENV{CURL_CONFIG} || 'curl-config';
-	my %cc;
-	foreach my $opt ( qw(vernum version prefix cflags libs) ) {
-		my $ret = `${curl_config} --$opt`;
-		if ( $? ) {
-			print "Execution ${curl_config} --$opt failed.\n" .
-				"is your curl installed correctly ?\n";
-			exit 1;
-		}
-		chomp $ret;
-		$cc{ $opt } = $ret;
-		# print "${curl_config} --$opt: $ret\n";
-	}
+	my %cc = ExtUtils::PkgConfig->find( 'libcurl' );
+	$cc{version} = $cc{modversion};
 
 	print "Found libcurl version $cc{version}\n";
 	
-	if ( $cc{vernum} and hex( $cc{vernum} ) < $minimum_libcurl_ver) {
+	if ( eval "v$cc{version} lt v$minimum_libcurl_ver" ) {
 		print
 			"Your currently installed libcurl version - $cc{version} - is too old.\n".
-			"This module doesn't seek compatibility with versions older than $minimum_libcurl_verstr\n".
-			"Proceed manually if you know what you're doing.\n";
+			"This module does not support libcurl older than $minimum_libcurl_ver\n";
 		exit 1;
 	}
 
