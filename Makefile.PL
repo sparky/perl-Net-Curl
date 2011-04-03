@@ -24,18 +24,29 @@ if ( $curl{libs} and $curl{version} ) {
 		printf " %8s => %s\n", $k, $v;
 	}
 } else {
-	%curl = get_curl_config();
+	%curl = ExtUtils::PkgConfig->find( 'libcurl' );
+	$curl{version} = $curl{modversion};
+
+	print "Found libcurl version $curl{version}\n";
+
+	if ( eval "v$curl{version} lt v$minimum_libcurl_ver" ) {
+		print
+			"Your currently installed libcurl version - $curl{version} - is too old.\n".
+			"This module does not support libcurl older than $minimum_libcurl_ver\n";
+		exit 1;
+	}
 }
 
 my $constant_names_sym = get_constants_symbols( $curl{version} );
 eval {
-	$constant_names = get_constants( $curl{cflags},
+	$curl{incdir} = get_curl_incdir();
+	$constant_names = get_constants_headers( $curl{cflags},
 		$curl{incdir} . "/curl/curl.h",
 		-f $curl{incdir} . "/curl/multi.h" ? $curl{incdir} . "/curl/multi.h" : ()
 	);
 };
 if ( $@ ) {
-	warn "Cannot extract constants from header files: $@\n";
+	warn "Cannot extract constants from header files: $@";
 	warn "Using symbols-in-versions instead\n";
 	$constant_names = $constant_names_sym;
 }
@@ -109,24 +120,12 @@ WriteMakefile(
 
 exit 0;
 
-sub get_curl_config
+sub get_curl_incdir
 {
-	my %cc = ExtUtils::PkgConfig->find( 'libcurl' );
-	$cc{version} = $cc{modversion};
-
-	print "Found libcurl version $cc{version}\n";
-	
-	if ( eval "v$cc{version} lt v$minimum_libcurl_ver" ) {
-		print
-			"Your currently installed libcurl version - $cc{version} - is too old.\n".
-			"This module does not support libcurl older than $minimum_libcurl_ver\n";
-		exit 1;
-	}
-
 	my @incpath = (
 		( defined $curl{incdir} ? $curl{incdir} : () ),
-		( $cc{cflags} =~ /-I(\S+)/g ),
-		( "$cc{prefix}/include" ),
+		( $curl{cflags} =~ /-I(\S+)/g ),
+		( "$curl{prefix}/include" ),
 		( split /\s+/, $Config{usrinc} ),
 		( split /\s+/, $Config{locincpth} ),
 		qw(
@@ -137,20 +136,13 @@ sub get_curl_config
 		)
 	);
 
-	my $curl_d;
 	foreach my $inc ( @incpath ) {
 		if ( -f $inc . "/curl/curl.h") {
-			$curl_d = $inc;
-			last;
+			return $inc;
 		}
 	}
 
-	die "Cannot find curl.h - cannot build constants files  - see Makefile.PL"
-		unless defined $curl_d;
-
-	$cc{incdir} = $curl_d;
-	$cc{libs} ||= "-lcurl";
-	return %cc;
+	die "Cannot find curl/curl.h\n";
 }
 
 sub get_constants_symbols
@@ -184,7 +176,7 @@ sub get_constants_symbols
 	return \@out;
 }
 
-sub get_constants
+sub get_constants_headers
 {
 	my %syms;
 	my $cflags = shift;
