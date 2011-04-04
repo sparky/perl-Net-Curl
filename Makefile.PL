@@ -2,7 +2,6 @@ use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
 use ExtUtils::PkgConfig;
-use File::Path qw(make_path);
 
 # you can set those manually if curl-config is not working for you
 my %curl = (
