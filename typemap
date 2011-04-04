@@ -1,6 +1,6 @@
 INPUT
 T_PTROBJ_CURL
-	$var = ($type)perl_curl_getptr( aTHX_ $arg );
+	$var = ($type) perl_curl_getptr_fatal( aTHX_ $arg, \"$var\", \"$ntype\" );
 TYPEMAP
 WWW::CurlOO::Easy T_PTROBJ_CURL
 WWW::CurlOO::Form T_PTROBJ_CURL

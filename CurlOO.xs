@@ -97,15 +97,15 @@ struct optionll_s {
 	optionll_t *next;
 
 	/* curl option it belongs to */
-	int option;
+	long option;
 
 	/* the actual data */
 	void *data;
 };
 
 #if 0
-static void **
-perl_curl_optionll_get( pTHX_ optionll_t *start, int option )
+static void *
+perl_curl_optionll_get( pTHX_ optionll_t *start, long option )
 {
 	optionll_t *now = start;
 
@@ -126,7 +126,7 @@ perl_curl_optionll_get( pTHX_ optionll_t *start, int option )
 
 
 static void *
-perl_curl_optionll_add( pTHX_ optionll_t **start, int option )
+perl_curl_optionll_add( pTHX_ optionll_t **start, long option )
 {
 	optionll_t **now = start;
 	optionll_t *tmp = NULL;
@@ -149,7 +149,7 @@ perl_curl_optionll_add( pTHX_ optionll_t **start, int option )
 }
 
 static void *
-perl_curl_optionll_del( pTHX_ optionll_t **start, int option )
+perl_curl_optionll_del( pTHX_ optionll_t **start, long option )
 {
 	optionll_t **now = start;
 
@@ -200,6 +200,7 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 
 	SPAGAIN;
 
+	/* XXX: this will be wrong if ERRSV has been set by earlier callback */
 	if ( SvTRUE( ERRSV ) ) {
 		/* cleanup after the error */
 		(void) POPs;
@@ -215,20 +216,11 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 	return status;
 }
 
-#define PERL_CURL_CALL( cb, arg ) perl_curl_call( aTHX_ (cb), sizeof( arg ) / sizeof( (arg)[0] ), (arg) )
+#define PERL_CURL_CALL( cb, arg ) \
+	perl_curl_call( aTHX_ (cb), sizeof( arg ) / sizeof( (arg)[0] ), (arg) )
 
 
 static MGVTBL perl_curl_vtbl = { NULL };
-
-static void
-perl_curl_setptr( pTHX_ SV *self, void *ptr )
-{
-	MAGIC *mg;
-
-	mg = sv_magicext( SvRV( self ), 0, PERL_MAGIC_ext,
-		&perl_curl_vtbl, (const char *) ptr, 0 );
-	mg->mg_flags |= MGf_DUP;
-}
 
 static void *
 perl_curl_getptr( pTHX_ SV *self )
@@ -236,24 +228,47 @@ perl_curl_getptr( pTHX_ SV *self )
 	MAGIC *mg;
 
 	if ( !self )
-		croak( "self is null\n" );
+		return NULL;
 
 	if ( !SvOK( self ) )
-		croak( "self not OK\n" );
+		return NULL;
 
 	if ( !SvROK( self ) )
-		croak( "self not ROK\n" );
+		return NULL;
 
 	if ( !sv_isobject( self ) )
-		croak( "self is not an object" );
+		return NULL;
 
 	for ( mg = SvMAGIC( SvRV( self ) ); mg != NULL; mg = mg->mg_moremagic ) {
 		if ( mg->mg_type == PERL_MAGIC_ext && mg->mg_virtual == &perl_curl_vtbl )
 			return mg->mg_ptr;
 	}
 
-	croak( "object does not have required pointer" );
+	return NULL;
 }
+
+static void *
+perl_curl_getptr_fatal( pTHX_ SV *self, const char *name, const char *type )
+{
+	void *ptr = perl_curl_getptr( aTHX_ self );
+	if ( ptr == NULL || ! sv_derived_from( self, type ) )
+		croak( "'%s' is not a valid %s object", name, type );
+	return ptr;
+}
+
+static void
+perl_curl_setptr( pTHX_ SV *self, void *ptr )
+{
+	MAGIC *mg;
+
+	if ( perl_curl_getptr( aTHX_ self ) )
+		croak( "object already has our pointer" );
+
+	mg = sv_magicext( SvRV( self ), 0, PERL_MAGIC_ext,
+		&perl_curl_vtbl, (const char *) ptr, 0 );
+	mg->mg_flags |= MGf_DUP;
+}
+
 
 /* code shamelessly stolen from ExtUtils::Constant */
 static void
