@@ -44,11 +44,12 @@
 
 #define die_dual( num, str ) 			\
 	STMT_START {						\
-		sv_setsv( ERRSV, &PL_sv_undef ); \
-		sv_setiv( ERRSV, num );			\
-		sv_setpv( ERRSV, str );			\
-		SvPOK_only( ERRSV );			\
-		SvIOK_on( ERRSV );				\
+		SV *errsv = get_sv( "@", GV_ADD ); \
+		sv_setsv( errsv, &PL_sv_undef ); \
+		sv_setiv( errsv, num );			\
+		sv_setpv( errsv, str );			\
+		SvPOK_only( errsv );			\
+		SvIOK_on( errsv );				\
 		croak( NULL );					\
 	} STMT_END
 
