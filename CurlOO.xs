@@ -35,7 +35,7 @@
 #ifndef CLEAR_ERRSV
 # define CLEAR_ERRSV()					\
 	STMT_START {						\
-		sv_setpvs( ERRSV, "" );			\
+		sv_setpvn( ERRSV, "", 0 );		\
 		if ( SvMAGICAL( ERRSV ) )		\
 			mg_free( ERRSV );			\
 		SvPOK_only( ERRSV );			\
@@ -51,6 +51,10 @@
 		SvIOK_on( ERRSV );				\
 		croak( NULL );					\
 	} STMT_END
+
+#ifndef mXPUSHs
+# define mXPUSHs( sv ) XPUSHs( sv_2mortal( sv ) )
+#endif
 
 typedef struct {
 	/* function that will be called */

@@ -914,7 +914,11 @@ curl_easy_strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
+#ifdef croak_xs_usage
 			croak_xs_usage(cv,  "[easy], errnum");
+#else
+			croak( "Usage: WWW::CurlOO::Easy::strerror( [easy], errnum )" );
+#endif
 		errstr = curl_easy_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
