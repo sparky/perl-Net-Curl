@@ -44,8 +44,7 @@ struct perl_curl_easy_s {
 	callback_t cb[ CB_EASY_LAST ];
 
 	/* copy of error buffer var for caller*/
-	char errbuf[CURL_ERROR_SIZE+1];
-	char *errbufvarname;
+	char errbuf[ CURL_ERROR_SIZE + 1 ];
 
 	optionll_t *strings;
 
@@ -172,9 +171,6 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 		sv_2mortal( easy->cb[i].func );
 		sv_2mortal( easy->cb[i].data );
 	}
-
-	if ( easy->errbufvarname )
-		free( easy->errbufvarname );
 
 	if ( easy->strings ) {
 		optionll_t *next, *now = easy->strings;
@@ -665,15 +661,9 @@ curl_easy_setopt( easy, option, value )
 				ret1 = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 1 );
 				break;
 
-			/* Pass in variable name for storing error messages. Yuck. */
 			/* XXX: fix this */
 			case CURLOPT_ERRORBUFFER:
-			{
-				STRLEN dummy;
-				if ( easy->errbufvarname )
-					free( easy->errbufvarname );
-				easy->errbufvarname = strdup( (char *) SvPV( value, dummy ) );
-			};
+				croak( "CURLOPT_ERRORBUFFER is not supported, use $easy->errbuf instead" );
 				break;
 
 			/* tell curl to redirect STDERR - value should be a glob */
