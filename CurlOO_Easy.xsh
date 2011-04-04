@@ -836,7 +836,7 @@ curl_easy_send( easy, buffer )
 		RETVAL
 
 
-void
+size_t
 curl_easy_recv( easy, buffer, length )
 	WWW::CurlOO::Easy easy
 	SV *buffer
@@ -854,9 +854,12 @@ curl_easy_recv( easy, buffer, length )
 		sv_setpvn( buffer, tmpbuf, out_len );
 
 		Safefree( tmpbuf );
+		RETVAL = out_len;
 #else
 		croak( "curl_easy_recv() not available in curl before 7.18.2\n" );
 #endif
+	OUTPUT:
+		RETVAL
 
 
 void
