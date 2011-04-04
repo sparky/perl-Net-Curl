@@ -108,6 +108,7 @@ WriteMakefile(
 		"Scalar::Util" => 0,
 	},
 	depend		=> {
+		'Makefile'	=> '$(VERSION_FROM)',
 		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
