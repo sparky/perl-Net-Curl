@@ -15,17 +15,18 @@ Easy:
 
 Form:
 - test with Easy
+- implement buffer options
+- implement read callback
 
 Multi:
 - remove all remaining easy handles when destroying multi
 - implement assign (curl_multi_assign)
+- remove remove_handle from info_read
 + allow calling strerror as function
 - write documentation
 
 Share:
 - test with Easy
-- implement buffer options
-- implement read callback
 + allow calling strerror as function
 - write documentation
 
