@@ -58,6 +58,12 @@ if ( $@ ) {
 	foreach my $cnt ( @$constant_names_sym ) {
 		print "$cnt missing\n" unless $cn{ $cnt };
 	}
+
+	my %cns;
+	@cns{ @$constant_names_sym } = ( 1 ) x scalar @$constant_names_sym;
+	foreach my $cnt ( @$constant_names ) {
+		print "$cnt unexpected\n" unless $cns{ $cnt };
+	}
 	die "Found only $cn constants, there should be at least $cns\n"
 		if $cn < $cns;
 	print "-> found $cn constants (should be $cns)\n";
@@ -207,7 +213,7 @@ sub get_constants_headers
 
 	my @out;
 	foreach my $e (sort keys %syms) {
-		if($e =~ /(OBSOLETE|^CURL_EXTERN|_LAST\z|_LASTENTRY\z)/) {
+		if ( $e =~ /(OBSOLETE|^CURL_EXTERN|_LAST\z|_LASTENTRY\z|^CURL_FORMAT_OFF_T$|^CURL_ISOCPP$)/ ) {
 			next;
 		}
 		push @out, $e;
