@@ -2,13 +2,13 @@ package WWW::CurlOO;
 
 use strict;
 use warnings;
-use XSLoader;
+use XSLoader ();
 use Exporter ();
 
 our $VERSION;
 BEGIN {
 	$VERSION = '0.06';
-	XSLoader::load(__PACKAGE__, $VERSION);
+	XSLoader::load( __PACKAGE__, $VERSION );
 }
 END {
 	_global_cleanup();
