@@ -44,8 +44,9 @@ ok(! $curl1->setopt(CURLOPT_URL, "zxxypz://whoa"), "Setting deliberately bad pro
 ok(! $curl2->setopt(CURLOPT_URL, $url), "Setting OK url");
 
 eval { $curl1->perform(); };
-ok( $@ =~ /failed: (\d+)/, "Curl1 handle fails as expected");
-ok( $1 == CURLE_UNSUPPORTED_PROTOCOL, "Curl1 handle fails with the correct error");
+
+ok( $@, "Curl1 handle fails as expected");
+ok( $@ == CURLE_UNSUPPORTED_PROTOCOL, "Curl1 handle fails with the correct error");
 
 eval { $curl2->perform(); };
 ok( !$@, "Curl2 handle succeeds");

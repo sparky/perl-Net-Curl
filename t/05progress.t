@@ -48,7 +48,8 @@ ok (! $curl->setopt(CURLOPT_PROGRESSFUNCTION, \&prog_callb), "Setting CURLOPT_PR
 
 ok (! $curl->setopt(CURLOPT_NOPROGRESS, 0), "Turning progress meter back on");
 
-ok (! eval { $curl->perform() }, "Performing perform");
+eval { $curl->perform() };
+ok (!$@, "Performing perform");
 
 ok ($progress_called, "Progress callback called");
 

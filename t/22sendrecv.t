@@ -43,12 +43,16 @@ ok( length $tosend == $sent, "sent all data at once" );
 $cnt = select $rout = $vec, undef, $eout = $vec, 2;
 ok( $cnt, "ready to read" );
 
-my ($buffer, $code);
+my $buffer;
 
-$code = $c->recv( $buffer, 102400 );
-ok( $code == CURLE_OK, "received data" );
+eval {
+	$c->recv( $buffer, 102400 );
+};
+ok( !$@, "received data" );
 
-$code = $c->recv( $buffer, 102400 );
-ok( $code == CURLE_AGAIN || $code == CURLE_UNSUPPORTED_PROTOCOL,
+eval {
+	$c->recv( $buffer, 102400 );
+};
+ok( $@ == CURLE_AGAIN || $@ == CURLE_UNSUPPORTED_PROTOCOL,
 	"no more data to read" );
 

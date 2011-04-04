@@ -72,8 +72,7 @@ eval {
 		CURLFORM_FILECONTENT, "MANIFEST"
 	);
 };
-ok( ( $@ and $@ =~ m/: (\d)/ and $1 == CURL_FORMADD_INCOMPLETE ),
-	"8. missing name" );
+ok( $@ == CURL_FORMADD_INCOMPLETE, "8. missing name" );
 
 eval {
 	$form->get( undef );
