@@ -194,7 +194,7 @@ case_datawithzero:
 		Safefree( farray );
 
 		if ( ret != CURL_FORMADD_OK )
-			croak( "curl_formadd() failed: %d\n", ret );
+			die_dual( ret, "curl_formadd() failed\n" );
 
 
 void

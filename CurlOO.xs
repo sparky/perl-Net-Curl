@@ -33,6 +33,16 @@
 # define hv_stores(hv,key,val) hv_store( hv, key, sizeof( key ) - 1, val, 0 )
 #endif
 
+#define die_dual( num, str ) 			\
+	STMT_START {						\
+		sv_setsv( ERRSV, &PL_sv_undef ); \
+		sv_setiv( ERRSV, num );			\
+		sv_setpv( ERRSV, str );			\
+		SvPOK_only( ERRSV );			\
+		SvIOK_on( ERRSV );				\
+		Perl_die_where( aTHX_ NULL );	\
+	} STMT_END
+
 typedef struct {
 	/* function that will be called */
 	SV *func;

@@ -158,27 +158,28 @@ curl_share_DESTROY( share )
 	CODE:
 		perl_curl_share_delete( aTHX_ share );
 
-int
+
+void
 curl_share_setopt( share, option, value )
 	WWW::CurlOO::Share share
 	int option
 	SV * value
+	PREINIT:
+		CURLSHcode ret1 = CURLSHE_OK, ret2 = CURLSHE_OK;
 	CODE:
-		/* {{{ */
-		RETVAL = CURLE_OK;
 		switch ( option ) {
 			case CURLSHOPT_LOCKFUNC:
-				RETVAL = curl_share_setopt( share->handle,
+				ret1 = curl_share_setopt( share->handle,
 					CURLSHOPT_LOCKFUNC, SvOK( value ) ? cb_share_lock : NULL );
-				curl_share_setopt( share->handle,
+				ret2 = curl_share_setopt( share->handle,
 					CURLSHOPT_USERDATA, SvOK( value ) ? share : NULL );
 				perl_curl_share_register_callback( aTHX_ share,
 					&(share->cb[CB_SHARE_LOCK].func), value );
 				break;
 			case CURLSHOPT_UNLOCKFUNC:
-				RETVAL = curl_share_setopt( share->handle,
+				ret1 = curl_share_setopt( share->handle,
 					CURLSHOPT_UNLOCKFUNC, SvOK( value ) ? cb_share_unlock : NULL );
-				curl_share_setopt( share->handle,
+				ret2 = curl_share_setopt( share->handle,
 					CURLSHOPT_USERDATA, SvOK( value ) ? share : NULL );
 				perl_curl_share_register_callback( aTHX_ share,
 					&(share->cb[CB_SHARE_UNLOCK].func), value );
@@ -189,15 +190,14 @@ curl_share_setopt( share, option, value )
 				break;
 			case CURLSHOPT_SHARE:
 			case CURLSHOPT_UNSHARE:
-				RETVAL = curl_share_setopt( share->handle, option, (long) SvIV( value ) );
+				ret1 = curl_share_setopt( share->handle, option, (long) SvIV( value ) );
 				break;
 			default:
-				croak( "Unknown curl share option" );
+				ret1 = CURLSHE_BAD_OPTION;
 				break;
 		};
-		/* }}} */
-	OUTPUT:
-		RETVAL
+		if ( ret1 != CURLSHE_OK || ( ret1 = ret2 ) != CURLSHE_OK )
+			die_dual( ret1, curl_share_strerror( ret1 ) );
 
 
 SV *

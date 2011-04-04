@@ -120,6 +120,13 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 } /*}}}*/
 
 
+#define MULTI_DIE( ret )		\
+	STMT_START {				\
+		CURLMcode code = (ret);	\
+		if ( code != CURLM_OK )	\
+			die_dual( code, curl_multi_strerror( code ) ); \
+	} STMT_END
+
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi	PREFIX = curl_multi_
 
@@ -151,20 +158,25 @@ void
 curl_multi_add_handle( multi, easy )
 	WWW::CurlOO::Multi multi
 	WWW::CurlOO::Easy easy
+	PREINIT:
+		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		perl_curl_easy_update( easy, newSVsv( ST(1) ) );
 		easy->multi = multi;
-		curl_multi_add_handle( multi->handle, easy->handle );
+		ret = curl_multi_add_handle( multi->handle, easy->handle );
+		MULTI_DIE( ret );
 
 void
 curl_multi_remove_handle( multi, easy )
 	WWW::CurlOO::Multi multi
 	WWW::CurlOO::Easy easy
+	PREINIT:
+		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		sv_setsv( ERRSV, &PL_sv_undef );
-		curl_multi_remove_handle( multi->handle, easy->handle );
+		ret = curl_multi_remove_handle( multi->handle, easy->handle );
 		sv_2mortal( easy->perl_self );
 		easy->perl_self = NULL;
 		easy->multi = NULL;
@@ -172,6 +184,8 @@ curl_multi_remove_handle( multi, easy )
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
 			Perl_die_where( aTHX_ NULL );
+
+		MULTI_DIE( ret );
 
 
 void
@@ -194,18 +208,29 @@ curl_multi_info_read( multi )
 				break;
 			}
 		};
+		/* TODO: do not automatically remove the handle, because exceptions can mess
+		 * things up */
 		if ( easy_handle ) {
+			CURLMcode ret;
 			curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
-			curl_multi_remove_handle( multi->handle, easy_handle );
+			ret = curl_multi_remove_handle( multi->handle, easy_handle );
+
+			MULTI_DIE( ret );
+
+			/* rethrow errors */
+			if ( SvTRUE( ERRSV ) )
+				Perl_die_where( aTHX_ NULL );
+
 			mXPUSHs( easy->perl_self );
 			easy->perl_self = NULL;
 			easy->multi = NULL;
 			mXPUSHs( newSViv( res ) );
+		} else {
+			/* rethrow errors */
+			if ( SvTRUE( ERRSV ) )
+				Perl_die_where( aTHX_ NULL );
+			XSRETURN_EMPTY;
 		}
-
-		/* rethrow errors */
-		if ( SvTRUE( ERRSV ) )
-			Perl_die_where( aTHX_ NULL );
 
 		/* }}} */
 
@@ -214,6 +239,7 @@ void
 curl_multi_fdset( multi )
 	WWW::CurlOO::Multi multi
 	PREINIT:
+		CURLMcode ret;
 		fd_set fdread, fdwrite, fdexcep;
 		int maxfd, i, vecsize;
 		unsigned char readset[ sizeof( fd_set ) ] = { 0 };
@@ -225,7 +251,10 @@ curl_multi_fdset( multi )
 		FD_ZERO( &fdwrite );
 		FD_ZERO( &fdexcep );
 
-		curl_multi_fdset( multi->handle, &fdread, &fdwrite, &fdexcep, &maxfd );
+		ret = curl_multi_fdset( multi->handle,
+			&fdread, &fdwrite, &fdexcep, &maxfd );
+		MULTI_DIE( ret );
+
 		vecsize = ( maxfd + 8 ) / 8;
 
 		if ( maxfd != -1 ) {
@@ -252,26 +281,27 @@ curl_multi_timeout( multi )
 		CURLMcode ret;
 	CODE:
 		ret = curl_multi_timeout( multi->handle, &timeout );
-		if ( ret != CURLM_OK )
-			croak( "curl_multi_timeout() failed: %d\n", ret );
+		MULTI_DIE( ret );
 
 		RETVAL = timeout;
 	OUTPUT:
 		RETVAL
 
-int
+void
 curl_multi_setopt( multi, option, value )
 	WWW::CurlOO::Multi multi
 	int option
 	SV *value
+	PREINIT:
+		CURLMcode ret1, ret2 = CURLM_OK;
 	CODE:
-		/* {{{ */
-		RETVAL = CURLM_OK;
 		switch ( option ) {
 			case CURLMOPT_SOCKETFUNCTION:
 			case CURLMOPT_SOCKETDATA:
-				curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION, SvOK( value ) ? cb_multi_socket : NULL );
-				curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA, SvOK( value ) ? multi : NULL );
+				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION,
+					SvOK( value ) ? cb_multi_socket : NULL );
+				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA,
+					SvOK( value ) ? multi : NULL );
 				perl_curl_multi_register_callback( aTHX_ multi,
 					option == CURLMOPT_SOCKETDATA ?
 						&( multi->cb[CB_MULTI_SOCKET].data ) :
@@ -280,8 +310,10 @@ curl_multi_setopt( multi, option, value )
 				break;
 			case CURLMOPT_TIMERFUNCTION:
 			case CURLMOPT_TIMERDATA:
-				curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION, SvOK( value ) ? cb_multi_timer : NULL );
-				curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA, SvOK( value ) ? multi : NULL );
+				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION,
+					SvOK( value ) ? cb_multi_timer : NULL );
+				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA,
+					SvOK( value ) ? multi : NULL );
 				perl_curl_multi_register_callback( aTHX_ multi,
 					option == CURLMOPT_TIMERDATA ?
 						&( multi->cb[CB_MULTI_TIMER].data ) :
@@ -291,16 +323,17 @@ curl_multi_setopt( multi, option, value )
 
 			/* default cases */
 			default:
-				if ( option < CURLOPTTYPE_OBJECTPOINT ) { /* A long (integer) value */
-					RETVAL = curl_multi_setopt( multi->handle, option, (long) SvIV( value ) );
+				if ( option < CURLOPTTYPE_OBJECTPOINT ) {
+					/* A long (integer) value */
+					ret1 = curl_multi_setopt( multi->handle, option,
+						(long) SvIV( value ) );
 				} else {
 					croak( "Unknown curl multi option" );
 				}
 				break;
 		};
-		/* }}} */
-	OUTPUT:
-		RETVAL
+		MULTI_DIE( ret2 );
+		MULTI_DIE( ret1 );
 
 
 int
@@ -308,20 +341,24 @@ curl_multi_perform( multi )
 	WWW::CurlOO::Multi multi
 	PREINIT:
 		int remaining;
+		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		sv_setsv( ERRSV, &PL_sv_undef );
-		while( CURLM_CALL_MULTI_PERFORM ==
-				curl_multi_perform( multi->handle, &remaining ) )
-			;
+		do {
+			ret = curl_multi_perform( multi->handle, &remaining );
+		} while ( ret == CURLM_CALL_MULTI_PERFORM );
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
 			Perl_die_where( aTHX_ NULL );
 
+		MULTI_DIE( ret );
+
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL
+
 
 int
 curl_multi_socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
@@ -330,16 +367,20 @@ curl_multi_socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 	int ev_bitmask
 	PREINIT:
 		int remaining;
+		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		sv_setsv( ERRSV, &PL_sv_undef );
-		while( CURLM_CALL_MULTI_PERFORM == curl_multi_socket_action(
-				multi->handle, (curl_socket_t) sockfd, ev_bitmask, &remaining ) )
-			;
+		do {
+			ret = curl_multi_socket_action( multi->handle,
+				(curl_socket_t) sockfd, ev_bitmask, &remaining );
+		} while ( ret == CURLM_CALL_MULTI_PERFORM );
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
 			Perl_die_where( aTHX_ NULL );
+
+		MULTI_DIE( ret );
 
 		RETVAL = remaining;
 	OUTPUT:
@@ -352,6 +393,7 @@ curl_multi_DESTROY( multi )
 	CODE:
 		/* TODO: remove all associated easy handles */
 		perl_curl_multi_delete( aTHX_ multi );
+
 
 SV *
 curl_multi_strerror( ... )

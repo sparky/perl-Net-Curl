@@ -111,7 +111,7 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV 
 		if ( perl_curl_easy_option_slist[ si ] == option )
 			goto found;
 	}
-	return -1;
+	return CURLE_BAD_FUNCTION_ARGUMENT;
 
 found:
 
@@ -444,6 +444,13 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 } /*}}}*/
 
 
+#define EASY_DIE( ret )			\
+	STMT_START {				\
+		CURLcode code = (ret);	\
+		if ( code != CURLE_OK )	\
+			die_dual( code, curl_easy_strerror( code ) ); \
+	} STMT_END
+
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
 
@@ -582,14 +589,14 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 		/* }}} */
 
 
-int
+void
 curl_easy_setopt( easy, option, value )
 	WWW::CurlOO::Easy easy
 	int option
 	SV *value
+	PREINIT:
+		CURLcode ret1 = CURLE_OK, ret2 = CURLE_OK;
 	CODE:
-		/* {{{ */
-		RETVAL = CURLE_OK;
 		switch( option ) {
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
 			case CURLOPT_FILE:
@@ -598,23 +605,26 @@ curl_easy_setopt( easy, option, value )
 					&( easy->cb[ callback_index( option ) ].data ), value );
 				break;
 			case CURLOPT_WRITEHEADER:
-				curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION,
+				ret1 = curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION,
 					SvOK( value ) ? cb_easy_header : NULL );
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? easy : NULL );
+				ret2 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].data ), value );
 				break;
 			case CURLOPT_PROGRESSDATA:
-				curl_easy_setopt( easy->handle, CURLOPT_PROGRESSFUNCTION,
+				ret1 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSFUNCTION,
 					SvOK( value ) ? cb_easy_progress : NULL );
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? easy : NULL );
+				ret2 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].data ), value );
 				break;
 			case CURLOPT_DEBUGDATA:
-				curl_easy_setopt( easy->handle, CURLOPT_DEBUGFUNCTION,
+				ret1 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGFUNCTION,
 					SvOK( value ) ? cb_easy_debug : NULL );
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? easy : NULL );
+				ret2 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].data ), value );
 				break;
@@ -626,20 +636,26 @@ curl_easy_setopt( easy, option, value )
 					&( easy->cb[ callback_index( option ) ].func ), value );
 				break;
 			case CURLOPT_HEADERFUNCTION:
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? cb_easy_header : NULL );
-				curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, SvOK( value ) ? easy : NULL );
+				ret1 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? cb_easy_header : NULL );
+				ret2 = curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].func ), value );
 				break;
 			case CURLOPT_PROGRESSFUNCTION:
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? cb_easy_progress : NULL );
-				curl_easy_setopt( easy->handle, CURLOPT_PROGRESSDATA, SvOK( value ) ? easy : NULL );
+				ret1 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? cb_easy_progress : NULL );
+				ret2 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSDATA,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].func ), value );
 				break;
 			case CURLOPT_DEBUGFUNCTION:
-				curl_easy_setopt( easy->handle, option, SvOK( value ) ? cb_easy_debug : NULL );
-				curl_easy_setopt( easy->handle, CURLOPT_DEBUGDATA, SvOK( value ) ? easy : NULL );
+				ret1 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? cb_easy_debug : NULL );
+				ret2 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGDATA,
+					SvOK( value ) ? easy : NULL );
 				perl_curl_easy_register_callback( aTHX_ easy,
 					&( easy->cb[ callback_index( option ) ].func ), value );
 				break;
@@ -657,9 +673,7 @@ curl_easy_setopt( easy, option, value )
 			case CURLOPT_RESOLVE:
 #endif
 			case CURLOPT_TELNETOPTIONS:
-				RETVAL = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 1 );
-				if ( RETVAL == -1 )
-					croak( "Specified option does not accept slists" );
+				ret1 = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 1 );
 				break;
 
 			/* Pass in variable name for storing error messages. Yuck. */
@@ -675,7 +689,7 @@ curl_easy_setopt( easy, option, value )
 
 			/* tell curl to redirect STDERR - value should be a glob */
 			case CURLOPT_STDERR:
-				RETVAL = curl_easy_setopt( easy->handle, option,
+				ret1 = curl_easy_setopt( easy->handle, option,
 					PerlIO_findFILE( IoOFP( sv_2io( value ) ) ) );
 				break;
 
@@ -685,8 +699,8 @@ curl_easy_setopt( easy, option, value )
 				if ( sv_derived_from( value, "WWW::CurlOO::Form" ) ) {
 					WWW__CurlOO__Form form;
 					form = perl_curl_getptr( aTHX_ value );
-					RETVAL = curl_easy_setopt( easy->handle, option, form->post );
-					if ( RETVAL == CURLE_OK )
+					ret1 = curl_easy_setopt( easy->handle, option, form->post );
+					if ( ret1 == CURLE_OK )
 						easy->form_sv = newSVsv( value );
 				} else
 					croak( "value is not of type WWW::CurlOO::Form" );
@@ -698,8 +712,8 @@ curl_easy_setopt( easy, option, value )
 				if ( sv_derived_from( value, "WWW::CurlOO::Share" ) ) {
 					WWW__CurlOO__Share share;
 					share = perl_curl_getptr( aTHX_ value );
-					RETVAL = curl_easy_setopt( easy->handle, option, share->handle );
-					if ( RETVAL == CURLE_OK )
+					ret1 = curl_easy_setopt( easy->handle, option, share->handle );
+					if ( ret1 == CURLE_OK )
 						easy->share_sv = newSVsv( value );
 				} else
 					croak( "value is not of type WWW::CurlOO::Share" );
@@ -713,7 +727,7 @@ curl_easy_setopt( easy, option, value )
 			default:
 				if ( option < CURLOPTTYPE_OBJECTPOINT ) {
 					/* A long (integer) value */
-					RETVAL = curl_easy_setopt( easy->handle, option, (long) SvIV( value ) );
+					ret1 = curl_easy_setopt( easy->handle, option, (long) SvIV( value ) );
 				}
 				else if ( option < CURLOPTTYPE_FUNCTIONPOINT ) {
 					/* An objectpoint - string */
@@ -730,7 +744,7 @@ curl_easy_setopt( easy, option, value )
 							Safefree( pv );
 						pv = NULL;
 					}
-					RETVAL = curl_easy_setopt( easy->handle, option, pv );
+					ret1 = curl_easy_setopt( easy->handle, option, pv );
 				}
 				else if ( option < CURLOPTTYPE_OFF_T ) { /* A function - notreached? */
 					croak( "Unknown curl option of type function" );
@@ -740,30 +754,25 @@ curl_easy_setopt( easy, option, value )
 						STRLEN dummy = 0;
 						char* pv = SvPV( value, dummy );
 						char* pdummy;
-						RETVAL = curl_easy_setopt( easy->handle, option,
+						ret1 = curl_easy_setopt( easy->handle, option,
 							(curl_off_t) strtoll( pv, &pdummy, 10 ) );
-					} else {
-						RETVAL = 0;
 					}
 				};
 				break;
 		};
-		/* }}} */
-	OUTPUT:
-		RETVAL
+		EASY_DIE( ret1 ? ret1 : ret2 );
 
 
-int
+void
 curl_easy_pushopt( easy, option, value )
 	WWW::CurlOO::Easy easy
 	int option
 	SV *value
+	PREINIT:
+		CURLcode ret;
 	CODE:
-		RETVAL = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
-		if ( RETVAL == -1 )
-			croak( "Specified option does not accept slists" );
-	OUTPUT:
-		RETVAL
+		ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
+		EASY_DIE( ret );
 
 
 void
@@ -780,36 +789,36 @@ curl_easy_perform( easy )
 		if ( SvTRUE( ERRSV ) )
 			Perl_die_where( aTHX_ NULL );
 
-		if ( ret != CURLE_OK )
-			croak( "curl_easy_perform() failed: %d: %s\n", ret,
-				curl_easy_strerror( ret ) );
+		EASY_DIE( ret );
 
 
 SV *
 curl_easy_getinfo( easy, option )
 	WWW::CurlOO::Easy easy
 	int option
+	PREINIT:
+		CURLcode ret = CURLE_OK;
 	CODE:
 		/* {{{ */
 		switch( option & CURLINFO_TYPEMASK ) {
 			case CURLINFO_STRING:
 			{
 				char * vchar;
-				curl_easy_getinfo( easy->handle, option, &vchar );
+				ret = curl_easy_getinfo( easy->handle, option, &vchar );
 				RETVAL = newSVpv( vchar, 0 );
 				break;
 			}
 			case CURLINFO_LONG:
 			{
 				long vlong;
-				curl_easy_getinfo( easy->handle, option, &vlong );
+				ret = curl_easy_getinfo( easy->handle, option, &vlong );
 				RETVAL = newSViv( vlong );
 				break;
 			}
 			case CURLINFO_DOUBLE:
 			{
 				double vdouble;
-				curl_easy_getinfo( easy->handle, option, &vdouble );
+				ret = curl_easy_getinfo( easy->handle, option, &vdouble );
 				RETVAL = newSVnv( vdouble );
 				break;
 			}
@@ -817,7 +826,7 @@ curl_easy_getinfo( easy, option )
 			{
 				struct curl_slist *vlist, *entry;
 				AV *items = newAV();
-				curl_easy_getinfo( easy->handle, option, &vlist );
+				ret = curl_easy_getinfo( easy->handle, option, &vlist );
 				if ( vlist != NULL ) {
 					entry = vlist;
 					while ( entry ) {
@@ -833,6 +842,10 @@ curl_easy_getinfo( easy, option )
 				croak( "invalid getinfo option" );
 				break;
 			}
+		}
+		if ( ret != CURLE_OK ) {
+			sv_2mortal( RETVAL );
+			EASY_DIE( ret );
 		}
 		/* }}} */
 	OUTPUT:
@@ -863,8 +876,7 @@ curl_easy_send( easy, buffer )
 
 		pv = SvPV( buffer, len );
 		ret = curl_easy_send( easy->handle, pv, len, &out_len );
-		if ( ret != CURLE_OK )
-			croak( "curl_easy_send() didn't return CURLE_OK\n" );
+		EASY_DIE( ret );
 
 		RETVAL = out_len;
 #else
@@ -875,13 +887,13 @@ curl_easy_send( easy, buffer )
 	OUTPUT:
 		RETVAL
 
-int
+
+void
 curl_easy_recv( easy, buffer, length )
 	WWW::CurlOO::Easy easy
 	SV *buffer
 	size_t length
 	CODE:
-		/* {{{ */
 #if LIBCURL_VERSION_NUM >= 0x071202
 		CURLcode ret;
 		size_t out_len;
@@ -889,20 +901,14 @@ curl_easy_recv( easy, buffer, length )
 
 		Newx( tmpbuf, length, char );
 		ret = curl_easy_recv( easy->handle, tmpbuf, length, &out_len );
-		if ( ret != CURLE_OK )
-			sv_setsv( buffer, &PL_sv_undef );
-		else
-			sv_setpvn( buffer, tmpbuf, out_len );
+		EASY_DIE( ret );
+
+		sv_setpvn( buffer, tmpbuf, out_len );
 
 		Safefree( tmpbuf );
-		RETVAL = ret;
 #else
 		croak( "curl_easy_recv() not available in curl before 7.18.2\n" );
-		RETVAL = 0;
 #endif
-		/* }}} */
-	OUTPUT:
-		RETVAL
 
 
 void
