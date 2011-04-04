@@ -81,20 +81,16 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 	multi = (perl_curl_multi_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	/* $easy, $socket, $what, $userdata */
+	/* $easy, $socket, $what, [$socketdata = undef], $userdata */
 	/* XXX: add $socketdata */
 	SV *args[] = {
 		newSVsv( easy->perl_self ),
 		newSVuv( s ),
 		newSViv( what ),
-		NULL
+		newSVsv( &PL_sv_undef ) /* XXX: socketdata, unsupported */
 	};
-	int argn = 3;
 
-	if ( multi->cb[CB_MULTI_SOCKET].data )
-		args[ argn++ ] = newSVsv( multi->cb[CB_MULTI_SOCKET].data );
-
-	return perl_curl_call( aTHX_ multi->cb[CB_MULTI_SOCKET].func, argn, args );
+	return PERL_CURL_CALL( &multi->cb[ CB_MULTI_SOCKET ], args );
 } /*}}}*/
 
 static int
@@ -108,15 +104,10 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 	/* $multi, $timeout, $userdata */
 	SV *args[] = {
 		newSVsv( multi->perl_self ),
-		newSViv( timeout_ms ),
-		NULL
+		newSViv( timeout_ms )
 	};
-	int argn = 2;
 
-	if ( multi->cb[CB_MULTI_TIMER].data )
-		args[ argn++ ] = newSVsv( multi->cb[CB_MULTI_TIMER].data );
-
-	return perl_curl_call( aTHX_ multi->cb[CB_MULTI_TIMER].func, argn, args );
+	return PERL_CURL_CALL( &multi->cb[ CB_MULTI_TIMER ], args );
 } /*}}}*/
 
 

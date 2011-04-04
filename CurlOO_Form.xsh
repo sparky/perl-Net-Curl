@@ -64,18 +64,13 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 
 	perl_curl_form_t *form = arg;
 
-	/* $form, $buffer, $userdata */
+	/* $form, $buffer, [$userdata] */
 	SV *args[] = {
 		newSVsv( form->perl_self ),
-		newSVpvn( buf, len ),
-		NULL
+		newSVpvn( buf, len )
 	};
-	int argn = 2;
 
-	if ( form->cb[ CB_FORM_GET ].data )
-		args[ argn++ ] = newSVsv( form->cb[ CB_FORM_GET ].data );
-
-	return perl_curl_call( aTHX_ form->cb[ CB_FORM_GET ].func, argn, args );
+	return PERL_CURL_CALL( &form->cb[ CB_FORM_GET ], args );
 }
 
 

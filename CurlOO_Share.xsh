@@ -82,19 +82,14 @@ cb_share_lock( CURL *easy_handle, curl_lock_data data, curl_lock_access locktype
 	share = (perl_curl_share_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	/* $easy, $data, $locktype, $userdata */
+	/* $easy, $data, $locktype, [$userdata] */
 	SV *args[] = {
 		newSVsv( easy->perl_self ),
 		newSViv( data ),
-		newSViv( locktype ),
-		NULL
+		newSViv( locktype )
 	};
-	int argn = 3;
 
-	if ( share->cb[CB_SHARE_LOCK].data )
-		args[ argn++ ] = newSVsv( share->cb[CB_SHARE_LOCK].data );
-
-	perl_curl_call( aTHX_ share->cb[CB_SHARE_LOCK].func, argn, args );
+	PERL_CURL_CALL( &share->cb[ CB_SHARE_LOCK ], args );
 	return;
 }
 
@@ -105,22 +100,19 @@ cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 
 	perl_curl_share_t *share;
 	perl_curl_easy_t *easy;
+	callback_t *cb;
 
 	share = (perl_curl_share_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
+	cb = &share->cb[ CB_SHARE_UNLOCK ];
 
-	/* $easy, $data, $userdata */
+	/* $easy, $data, [$userdata] */
 	SV *args[] = {
 		newSVsv( easy->perl_self ),
-		newSViv( data ),
-		NULL,
+		newSViv( data )
 	};
-	int argn = 2;
 
-	if ( share->cb[CB_SHARE_LOCK].data )
-		args[ argn++ ] = newSVsv( share->cb[CB_SHARE_LOCK].data );
-
-	perl_curl_call( aTHX_ share->cb[CB_SHARE_UNLOCK].data, argn, args );
+	PERL_CURL_CALL( &share->cb[ CB_SHARE_UNLOCK ], args );
 	return;
 }
 
@@ -187,6 +179,8 @@ curl_share_setopt( share, option, value )
 			case CURLSHOPT_USERDATA:
 				perl_curl_share_register_callback( aTHX_ share,
 					&(share->cb[CB_SHARE_LOCK].data), value );
+				perl_curl_share_register_callback( aTHX_ share,
+					&(share->cb[CB_SHARE_UNLOCK].data), value );
 				break;
 			case CURLSHOPT_SHARE:
 			case CURLSHOPT_UNSHARE:
