@@ -50,6 +50,7 @@ eval {
 };
 ok( !$@, "received data" );
 
+alarm 2;
 eval {
 	1 while $c->recv( $buffer, 1024 * 16 );
 };
