@@ -1,7 +1,6 @@
 use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
-use ExtUtils::Constant 0.11 'WriteConstants';
 use ExtUtils::PkgConfig;
 use File::Path qw(make_path);
 
@@ -66,9 +65,9 @@ if ( $@ ) {
 }
 my @constant_types = divide_constants();
 
-# WriteConstants does not honour enums, so we define those symbols
 write_defenums( "const-defenums-h.inc" );
 
+write_constants( "", $constant_types[ 0 ] );
 write_constants( "Easy", $constant_types[ 1 ] );
 write_constants( "Form", $constant_types[ 2 ] );
 write_constants( "Multi", $constant_types[ 3 ] );
@@ -77,17 +76,6 @@ split_xs( "Easy" );
 split_xs( "Form" );
 split_xs( "Multi" );
 split_xs( "Share" );
-
-WriteConstants(
-	PROXYSUBS => { croak_on_read => 1 },
-	NAME => 'WWW::CurlOO',
-	NAMES => [ map { name => $_, type => 'IV', value => $_, macro => 1 },
-		@{ $constant_types[ 0 ] } ],
-	C_FILE => 'const-c.inc',
-	XS_FILE => 'const-curl-xs.inc',
-	XS_SUBNAME => 'curl_constant',
-	C_SUBNAME => 'curl_constant',
-);
 
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
@@ -110,7 +98,6 @@ WriteMakefile(
 	CONFIGURE_REQUIRES => {
 		"ExtUtils::MakeMaker" => 0,
 		"ExtUtils::MakeMaker::Config" => 0,
-		"ExtUtils::Constant" => 0.11,
 		"ExtUtils::PkgConfig" => 0,
 	},
 	PREREQ_PM => {
@@ -279,19 +266,38 @@ sub write_constants
 	my $name = shift;
 	my $constants = shift;
 
-	my $lname = lc $name;
+	my $lname = $name ? lc $name : 'curl';
 	my $out = "const-$lname-xs.inc";
 	print "Writing $out\n";
 
-	WriteConstants(
-		PROXYSUBS => { croak_on_read => 1 },
-		NAME => "WWW::CurlOO::$name",
-		NAMES => [ map { name => $_, type => 'IV', value => $_, macro => 1 }, @$constants ],
-		C_FILE => 'const-c.inc',
-		XS_FILE => $out,
-		XS_SUBNAME => "curl_${lname}_constant",
-		C_SUBNAME => 'curl_constant',
-	);
+	open my $foutxs, '>', $out
+		or die "Can't create $out: $!\n";
+
+	$name .= '::' if $name;
+	my $symbol_table = "WWW::CurlOO::$name";
+	print $foutxs <<"EOBOOT";
+BOOT:
+	{
+		dTHX;
+		HV *symbol_table = get_hv( "$symbol_table", GV_ADD );
+		static const struct iv_s values_for_iv[] = {
+EOBOOT
+	foreach my $c ( sort @$constants ) {
+		printf $foutxs qq[\t\t\t{ "%s", %d, %s },\n], $c, length $c, $c;
+	}
+	print $foutxs <<'EOBOOT';
+			{ NULL, 0, 0 }
+		};
+		const struct iv_s *value_for_iv = values_for_iv;
+		while ( value_for_iv->name ) {
+			perl_curl_constant_add(aTHX_ symbol_table, value_for_iv->name,
+				value_for_iv->namelen, newSViv( value_for_iv->value ) );
+			++value_for_iv;
+		}
+
+		++PL_sub_generation;
+	}
+EOBOOT
 
 }
 

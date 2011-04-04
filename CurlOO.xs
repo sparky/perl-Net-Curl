@@ -21,7 +21,6 @@
 #include <curl/easy.h>
 #include <curl/multi.h>
 #include "const-defenums-h.inc"
-#include "const-c.inc"
 
 #ifndef Newx
 # define Newx(v,n,t)    New(0,v,n,t)
@@ -204,7 +203,7 @@ perl_curl_call( pTHX_ SV *func, int argnum, SV **args )
 }
 
 
-static const MGVTBL perl_curl_vtbl = { NULL };
+static MGVTBL perl_curl_vtbl = { NULL };
 
 static void
 perl_curl_setptr( pTHX_ SV *self, void *ptr )
@@ -240,6 +239,35 @@ perl_curl_getptr( pTHX_ SV *self )
 
 	croak( "object does not have required pointer" );
 }
+
+/* code shamelessly stolen from ExtUtils::Constant */
+static void
+perl_curl_constant_add( pTHX_ HV *hash, const char *name, I32 namelen,
+		SV *value )
+{
+#if PERL_REVISION == 5 && PERL_VERSION >= 9
+	SV **sv = hv_fetch( hash, name, namelen, TRUE );
+	if ( !sv )
+		croak( "Could not add key '%s' to %%WWW::CurlOO::", name );
+
+	if ( SvOK( *sv ) || SvTYPE( *sv ) == SVt_PVGV ) {
+		newCONSTSUB( hash, name, value );
+	} else {
+		SvUPGRADE( *sv, SVt_RV );
+		SvRV_set( *sv, value );
+		SvROK_on( *sv );
+		SvREADONLY_on( value );
+	}
+#else
+	newCONSTSUB( hash, (char *)name, value );
+#endif
+}
+
+struct iv_s {
+	const char *name;
+	I32 namelen;
+	IV value;
+};
 
 typedef perl_curl_easy_t *WWW__CurlOO__Easy;
 typedef perl_curl_form_t *WWW__CurlOO__Form;
