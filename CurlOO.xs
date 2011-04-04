@@ -39,7 +39,7 @@
 		sv_setpv( ERRSV, str );			\
 		SvPOK_only( ERRSV );			\
 		SvIOK_on( ERRSV );				\
-		Perl_die_where( aTHX_ NULL );	\
+		croak( NULL );					\
 	} STMT_END
 
 typedef struct {

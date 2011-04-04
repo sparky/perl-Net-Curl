@@ -212,7 +212,7 @@ curl_form_get( form, ... )
 
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
-				Perl_die_where( aTHX_ NULL );
+				croak( NULL );
 
 			ST(0) = output;
 			XSRETURN(1);
@@ -234,7 +234,7 @@ curl_form_get( form, ... )
 
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
-				Perl_die_where( aTHX_ NULL );
+				croak( NULL );
 
 			XSRETURN(0);
 
@@ -245,7 +245,7 @@ curl_form_get( form, ... )
 
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
-				Perl_die_where( aTHX_ NULL );
+				croak( NULL );
 
 			XSRETURN(0);
 		}

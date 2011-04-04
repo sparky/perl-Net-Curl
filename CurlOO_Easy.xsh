@@ -787,7 +787,7 @@ curl_easy_perform( easy )
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
-			Perl_die_where( aTHX_ NULL );
+			croak( NULL );
 
 		EASY_DIE( ret );
 

@@ -183,7 +183,7 @@ curl_multi_remove_handle( multi, easy )
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
-			Perl_die_where( aTHX_ NULL );
+			croak( NULL );
 
 		MULTI_DIE( ret );
 
@@ -219,7 +219,7 @@ curl_multi_info_read( multi )
 
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
-				Perl_die_where( aTHX_ NULL );
+				croak( NULL );
 
 			mXPUSHs( easy->perl_self );
 			easy->perl_self = NULL;
@@ -228,7 +228,7 @@ curl_multi_info_read( multi )
 		} else {
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
-				Perl_die_where( aTHX_ NULL );
+				croak( NULL );
 			XSRETURN_EMPTY;
 		}
 
@@ -351,7 +351,7 @@ curl_multi_perform( multi )
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
-			Perl_die_where( aTHX_ NULL );
+			croak( NULL );
 
 		MULTI_DIE( ret );
 
@@ -378,7 +378,7 @@ curl_multi_socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
-			Perl_die_where( aTHX_ NULL );
+			croak( NULL );
 
 		MULTI_DIE( ret );
 
