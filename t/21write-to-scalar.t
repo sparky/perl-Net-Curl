@@ -5,7 +5,7 @@ use Test::More 'no_plan';
 
 use WWW::CurlOO::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 # Init the curl session
 my $curl = WWW::CurlOO::Easy->new();
@@ -26,7 +26,7 @@ ok(! $curl->setopt(CURLOPT_WRITEDATA, \$body), "Setting CURLOPT_WRITEDATA");
 ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
 
 eval { $curl->perform(); };
-
+diag( "Not ok: $@: " . $curl->errbuf . "\n" ) if $@;
 ok( !$@, "Curl return code ok");
 
 my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
@@ -36,6 +36,6 @@ ok( $realurl, "getinfo returns CURLINFO_EFFECTIVE_URL");
 my $httpcode = $curl->getinfo(CURLINFO_HTTP_CODE);
 ok( $httpcode, "getinfo returns CURLINFO_HTTP_CODE");
 
-note("Bytes: $bytes");
-note("realurl: $realurl");
-note("httpcode: $httpcode");
+#note("Bytes: $bytes");
+#note("realurl: $realurl");
+#note("httpcode: $httpcode");

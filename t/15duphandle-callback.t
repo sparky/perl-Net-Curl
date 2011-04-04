@@ -9,7 +9,7 @@ use Test::More tests => 25;
 use File::Temp qw/tempfile/;
 use WWW::CurlOO::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 my $other_handle;
 my $head = tempfile();
 my $hcall;

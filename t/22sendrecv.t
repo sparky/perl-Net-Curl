@@ -10,7 +10,7 @@ plan skip_all => "curl $vi->{version} does not support send and recv"
 plan tests => 7;
 
 # host must support keep-alive connections
-my $url = $ENV{CURL_TEST_URL} || "http://google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 ( my $host = $url ) =~ s#^.*?://##;
 
@@ -46,13 +46,13 @@ ok( $cnt, "ready to read" );
 my $buffer;
 
 eval {
-	$c->recv( $buffer, 102400 );
+	$c->recv( $buffer, 1024 * 16 );
 };
 ok( !$@, "received data" );
 
 eval {
-	$c->recv( $buffer, 102400 );
+	1 while $c->recv( $buffer, 1024 * 16 );
 };
-ok( $@ == CURLE_AGAIN || $@ == CURLE_UNSUPPORTED_PROTOCOL,
+ok( $@ && ( $@ == CURLE_AGAIN || $@ == CURLE_UNSUPPORTED_PROTOCOL ),
 	"no more data to read" );
 

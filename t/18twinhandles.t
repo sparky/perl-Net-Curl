@@ -7,7 +7,7 @@ use Test::More tests => 12;
 BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
 use WWW::CurlOO::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 my $header_called = 0;
 sub header_callback { $header_called++; return length($_[1]) };

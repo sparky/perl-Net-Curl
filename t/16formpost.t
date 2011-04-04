@@ -19,7 +19,7 @@ my $count=0;
 use ExtUtils::MakeMaker qw(prompt);
 
 # Read URL to get, defaulting to environment variable if supplied
-my $defurl=$ENV{CURL_TEST_URL} || "http://www.google.com/";
+my $defurl=$ENV{CURL_TEST_URL} || "http://rsget.pl/";
 my $url = prompt("# Please enter an URL to fetch",$defurl);
 if (!$url) {
     print "1..0 # No test URL supplied - skipping test\n";

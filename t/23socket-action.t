@@ -12,7 +12,7 @@ open my $_body1, ">", \$body1;
 open my $_head2, ">", \$head2;
 open my $_body2, ">", \$body2;
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 my $sock_read = 0;
 my $sock_write = 0;

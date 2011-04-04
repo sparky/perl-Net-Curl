@@ -11,7 +11,7 @@ use File::Temp qw/tempfile/;
 BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
 use WWW::CurlOO::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 {
 my $other_handle;

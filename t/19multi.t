@@ -12,7 +12,7 @@ my $header2 = tempfile();
 my $body = tempfile();
 my $body2 = tempfile();
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 
 sub action_wait {
@@ -48,13 +48,17 @@ sub action_wait {
     ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform and add_handle");
     $curlm->perform;
     @fds = $curlm->fdset;
-    ok( unpack( "%b*", $fds[0].$fds[1] ) == 1, "The read or write fdset contains one fd");
+    my $cnt;
+    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    ok( $cnt == 1, "The read or write fdset contains one fd (is $cnt)");
     $curlm->add_handle($curl2);
     @fds = $curlm->fdset;
-    ok( unpack( "%b*", $fds[0].$fds[1] ) == 1, "The read or write fdset still only contains one fd");
+    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    ok( $cnt == 1, "The read or write fdset still only contains one fd (is $cnt)");
     $curlm->perform;
     @fds = $curlm->fdset;
-    ok( unpack( "%b*", $fds[0].$fds[1] ) == 2, "The read or write fdset contains two fds");
+    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    ok( $cnt == 2, "The read or write fdset contains two fds (is $cnt)");
     my $active = 2;
     while ($active != 0) {
 	my $ret = $curlm->perform;

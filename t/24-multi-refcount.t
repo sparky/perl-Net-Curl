@@ -8,7 +8,7 @@ use WWW::CurlOO::Multi qw(:constants);
 use Scalar::Util qw(weaken);
 
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 sub action_wait {
 	my $curlm = shift;

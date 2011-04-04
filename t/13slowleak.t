@@ -8,7 +8,7 @@ use Test::More skip_all => "Not performing slow leakage regression test";
 BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
 use WWW::CurlOO::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 # There was a slow leak per curl handle init/cleanup. Hopefully fixed.
 
