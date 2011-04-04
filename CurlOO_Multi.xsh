@@ -240,9 +240,10 @@ curl_multi_fdset( multi )
 					excepset[ i / 8 ] |= 1 << ( i % 8 );
 			}
 		}
-		XPUSHs( sv_2mortal( newSVpvn( (char *) readset, vecsize ) ) );
-		XPUSHs( sv_2mortal( newSVpvn( (char *) writeset, vecsize ) ) );
-		XPUSHs( sv_2mortal( newSVpvn( (char *) excepset, vecsize ) ) );
+		EXTEND( SP, 3 );
+		PUSHs( sv_2mortal( newSVpvn( (char *) readset, vecsize ) ) );
+		PUSHs( sv_2mortal( newSVpvn( (char *) writeset, vecsize ) ) );
+		PUSHs( sv_2mortal( newSVpvn( (char *) excepset, vecsize ) ) );
 		/* }}} */
 
 
