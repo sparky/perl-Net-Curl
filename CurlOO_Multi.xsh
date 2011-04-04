@@ -175,7 +175,7 @@ curl_multi_remove_handle( multi, easy )
 		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		sv_setsv( ERRSV, &PL_sv_undef );
+		CLEAR_ERRSV();
 		ret = curl_multi_remove_handle( multi->handle, easy->handle );
 		sv_2mortal( easy->perl_self );
 		easy->perl_self = NULL;
@@ -200,7 +200,7 @@ curl_multi_info_read( multi )
 	PPCODE:
 		/* {{{ */
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		sv_setsv( ERRSV, &PL_sv_undef );
+		CLEAR_ERRSV();
 		while ( (msg = curl_multi_info_read( multi->handle, &queue ) ) ) {
 			if ( msg->msg == CURLMSG_DONE ) {
 				easy_handle = msg->easy_handle;
@@ -344,7 +344,7 @@ curl_multi_perform( multi )
 		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		sv_setsv( ERRSV, &PL_sv_undef );
+		CLEAR_ERRSV();
 		do {
 			ret = curl_multi_perform( multi->handle, &remaining );
 		} while ( ret == CURLM_CALL_MULTI_PERFORM );
@@ -370,7 +370,7 @@ curl_multi_socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 		CURLMcode ret;
 	CODE:
 		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		sv_setsv( ERRSV, &PL_sv_undef );
+		CLEAR_ERRSV();
 		do {
 			ret = curl_multi_socket_action( multi->handle,
 				(curl_socket_t) sockfd, ev_bitmask, &remaining );

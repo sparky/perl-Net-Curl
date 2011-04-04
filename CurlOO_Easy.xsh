@@ -782,7 +782,7 @@ curl_easy_perform( easy )
 		CURLcode ret;
 	CODE:
 		perl_curl_easy_update( easy, sv_2mortal( newSVsv( ST(0) ) ) );
-		sv_setsv( ERRSV, &PL_sv_undef );
+		CLEAR_ERRSV();
 		ret = curl_easy_perform( easy->handle );
 
 		/* rethrow errors */

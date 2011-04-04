@@ -32,6 +32,16 @@
 # define hv_stores(hv,key,val) hv_store( hv, key, sizeof( key ) - 1, val, 0 )
 #endif
 
+#ifndef CLEAR_ERRSV
+# define CLEAR_ERRSV()					\
+	STMT_START {						\
+		sv_setpvs( ERRSV, "" );			\
+		if ( SvMAGICAL( ERRSV ) )		\
+			mg_free( ERRSV );			\
+		SvPOK_only( ERRSV );			\
+	} STMT_END
+#endif
+
 #define die_dual( num, str ) 			\
 	STMT_START {						\
 		sv_setsv( ERRSV, &PL_sv_undef ); \
