@@ -25,25 +25,6 @@ struct perl_curl_share_s {
 };
 
 
-static void
-perl_curl_share_register_callback( pTHX_ perl_curl_share_t *share, SV **callback,
-		SV *function )
-{
-	if ( function && SvOK( function ) ) {
-		/* FIXME: need to check the ref-counts here */
-		if ( *callback == NULL ) {
-			*callback = newSVsv( function );
-		} else {
-			SvSetSV( *callback, function );
-		}
-	} else {
-		if ( *callback != NULL ) {
-			sv_2mortal( *callback );
-			*callback = NULL;
-		}
-	}
-}
-
 /* make a new share */
 static perl_curl_share_t *
 perl_curl_share_new( void )
@@ -164,23 +145,19 @@ curl_share_setopt( share, option, value )
 				ret1 = curl_share_setopt( share->handle,
 					CURLSHOPT_LOCKFUNC, SvOK( value ) ? cb_share_lock : NULL );
 				ret2 = curl_share_setopt( share->handle,
-					CURLSHOPT_USERDATA, SvOK( value ) ? share : NULL );
-				perl_curl_share_register_callback( aTHX_ share,
-					&(share->cb[CB_SHARE_LOCK].func), value );
+					CURLSHOPT_USERDATA, share );
+				SvREPLACE( share->cb[ CB_SHARE_LOCK ].func, value );
 				break;
 			case CURLSHOPT_UNLOCKFUNC:
 				ret1 = curl_share_setopt( share->handle,
 					CURLSHOPT_UNLOCKFUNC, SvOK( value ) ? cb_share_unlock : NULL );
 				ret2 = curl_share_setopt( share->handle,
-					CURLSHOPT_USERDATA, SvOK( value ) ? share : NULL );
-				perl_curl_share_register_callback( aTHX_ share,
-					&(share->cb[CB_SHARE_UNLOCK].func), value );
+					CURLSHOPT_USERDATA, share );
+				SvREPLACE( share->cb[ CB_SHARE_UNLOCK ].func, value );
 				break;
 			case CURLSHOPT_USERDATA:
-				perl_curl_share_register_callback( aTHX_ share,
-					&(share->cb[CB_SHARE_LOCK].data), value );
-				perl_curl_share_register_callback( aTHX_ share,
-					&(share->cb[CB_SHARE_UNLOCK].data), value );
+				SvREPLACE( share->cb[ CB_SHARE_LOCK ].data, value );
+				SvREPLACE( share->cb[ CB_SHARE_UNLOCK ].data, value );
 				break;
 			case CURLSHOPT_SHARE:
 			case CURLSHOPT_UNSHARE:

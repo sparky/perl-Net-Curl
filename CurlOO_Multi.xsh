@@ -24,24 +24,6 @@ struct perl_curl_multi_s {
 	callback_t cb[ CB_MULTI_LAST ];
 };
 
-static void
-perl_curl_multi_register_callback( pTHX_ perl_curl_multi_t *multi, SV **callback, SV *function )
-/*{{{*/ {
-	if ( function && SvOK( function ) ) {
-		/* FIXME: need to check the ref-counts here */
-		if ( *callback == NULL ) {
-			*callback = newSVsv( function );
-		} else {
-			SvSetSV( *callback, function );
-		}
-	} else {
-		if ( *callback != NULL ) {
-			sv_2mortal( *callback );
-			*callback = NULL;
-		}
-	}
-} /*}}}*/
-
 /* make a new multi */
 static perl_curl_multi_t *
 perl_curl_multi_new( void )
@@ -287,29 +269,26 @@ curl_multi_setopt( multi, option, value )
 		CURLMcode ret1, ret2 = CURLM_OK;
 	CODE:
 		switch ( option ) {
-			case CURLMOPT_SOCKETFUNCTION:
 			case CURLMOPT_SOCKETDATA:
+				SvREPLACE( multi->cb[ CB_MULTI_SOCKET ].data, value );
+				break;
+
+			case CURLMOPT_SOCKETFUNCTION:
+				SvREPLACE( multi->cb[ CB_MULTI_SOCKET ].func, value );
 				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION,
 					SvOK( value ) ? cb_multi_socket : NULL );
-				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA,
-					SvOK( value ) ? multi : NULL );
-				perl_curl_multi_register_callback( aTHX_ multi,
-					option == CURLMOPT_SOCKETDATA ?
-						&( multi->cb[CB_MULTI_SOCKET].data ) :
-						&( multi->cb[CB_MULTI_SOCKET].func ),
-					value );
+				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA, multi );
 				break;
-			case CURLMOPT_TIMERFUNCTION:
+
 			case CURLMOPT_TIMERDATA:
+				SvREPLACE( multi->cb[ CB_MULTI_TIMER ].data, value );
+				break;
+
+			case CURLMOPT_TIMERFUNCTION:
+				SvREPLACE( multi->cb[ CB_MULTI_TIMER ].func, value );
 				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION,
 					SvOK( value ) ? cb_multi_timer : NULL );
-				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA,
-					SvOK( value ) ? multi : NULL );
-				perl_curl_multi_register_callback( aTHX_ multi,
-					option == CURLMOPT_TIMERDATA ?
-						&( multi->cb[CB_MULTI_TIMER].data ) :
-						&( multi->cb[CB_MULTI_TIMER].func ),
-					value );
+				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA, multi );
 				break;
 
 			/* default cases */

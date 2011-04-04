@@ -56,6 +56,18 @@
 # define mXPUSHs( sv ) XPUSHs( sv_2mortal( sv ) )
 #endif
 
+#define SvREPLACE( dst, src ) \
+	STMT_START {						\
+		SV *src_ = (src);				\
+		if ( dst )						\
+			sv_2mortal( dst );			\
+		if ( (src_) && SvOK( src_ ) )	\
+			dst = newSVsv( src_ );		\
+		else							\
+			dst = NULL;					\
+	} STMT_END
+
+
 typedef struct {
 	/* function that will be called */
 	SV *func;

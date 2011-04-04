@@ -200,27 +200,6 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 
 } /*}}}*/
 
-/* Register a callback function */
-
-static void
-perl_curl_easy_register_callback( pTHX_ perl_curl_easy_t *easy, SV **callback,
-		SV *function )
-/*{{{*/ {
-	if ( function && SvOK( function ) ) {
-		/* FIXME: need to check the ref-counts here */
-		if ( *callback == NULL ) {
-			*callback = newSVsv( function );
-		} else {
-			SvSetSV( *callback, function );
-		}
-	} else {
-		if ( *callback != NULL ) {
-			sv_2mortal( *callback );
-			*callback = NULL;
-		}
-	}
-} /*}}}*/
-
 static size_t
 write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
 /*{{{*/ {
@@ -518,10 +497,8 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 		curl_easy_setopt( clone->handle, CURLOPT_ERRORBUFFER, clone->errbuf );
 
 		for( i = 0; i < CB_EASY_LAST; i++ ) {
-			perl_curl_easy_register_callback( aTHX_ clone,
-				&( clone->cb[i].func ), easy->cb[i].func );
-			perl_curl_easy_register_callback( aTHX_ clone,
-				&( clone->cb[i].data ), easy->cb[i].data );
+			SvREPLACE( clone->cb[i].func, easy->cb[i].func );
+			SvREPLACE( clone->cb[i].data, easy->cb[i].data );
 		};
 
 		/* clone strings and set */
@@ -586,63 +563,55 @@ curl_easy_setopt( easy, option, value )
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
 			case CURLOPT_FILE:
 			case CURLOPT_INFILE:
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].data ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
 				break;
 			case CURLOPT_WRITEHEADER:
 				ret1 = curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION,
 					SvOK( value ) ? cb_easy_header : NULL );
 				ret2 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].data ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
 				break;
 			case CURLOPT_PROGRESSDATA:
 				ret1 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSFUNCTION,
 					SvOK( value ) ? cb_easy_progress : NULL );
 				ret2 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].data ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
 				break;
 			case CURLOPT_DEBUGDATA:
 				ret1 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGFUNCTION,
 					SvOK( value ) ? cb_easy_debug : NULL );
 				ret2 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].data ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
 				break;
 
 			/* SV * to a subroutine ref */
 			case CURLOPT_WRITEFUNCTION:
 			case CURLOPT_READFUNCTION:
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].func ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
 				break;
 			case CURLOPT_HEADERFUNCTION:
 				ret1 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? cb_easy_header : NULL );
 				ret2 = curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].func ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
 				break;
 			case CURLOPT_PROGRESSFUNCTION:
 				ret1 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? cb_easy_progress : NULL );
 				ret2 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSDATA,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].func ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
 				break;
 			case CURLOPT_DEBUGFUNCTION:
 				ret1 = curl_easy_setopt( easy->handle, option,
 					SvOK( value ) ? cb_easy_debug : NULL );
 				ret2 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGDATA,
 					SvOK( value ) ? easy : NULL );
-				perl_curl_easy_register_callback( aTHX_ easy,
-					&( easy->cb[ callback_index( option ) ].func ), value );
+				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
 				break;
 
 			/* slist cases */
