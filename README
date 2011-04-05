@@ -6,7 +6,7 @@ This package is working, but still a lot has to change.
 Easy:
 - review !
 + delay deaths
-- test callback arguments just before perform
+- test callback arguments just before perform (maybe only for default writers)
 - implement pause (curl_easy_pause)
 - implement reset (curl_easy_reset)
 + allow calling strerror as function
@@ -20,8 +20,10 @@ Form:
 
 Multi:
 - remove all remaining easy handles when destroying multi
+- implement list_handles(), will be very easy since we need to store them
+  for above problem
 - implement assign (curl_multi_assign)
-- remove remove_handle from info_read
++ remove remove_handle from info_read
 + allow calling strerror as function
 - write documentation
 
