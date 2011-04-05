@@ -97,7 +97,7 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 	STMT_START {				\
 		CURLMcode code = (ret);	\
 		if ( code != CURLM_OK )	\
-			die_dual( code, curl_multi_strerror( code ) ); \
+			die_code( "Multi", code ); \
 	} STMT_END
 
 

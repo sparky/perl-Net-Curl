@@ -412,7 +412,7 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	STMT_START {				\
 		CURLcode code = (ret);	\
 		if ( code != CURLE_OK )	\
-			die_dual( code, curl_easy_strerror( code ) ); \
+			die_code( "Easy", code ); \
 	} STMT_END
 
 

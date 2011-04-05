@@ -168,7 +168,7 @@ curl_share_setopt( share, option, value )
 				break;
 		};
 		if ( ret1 != CURLSHE_OK || ( ret1 = ret2 ) != CURLSHE_OK )
-			die_dual( ret1, curl_share_strerror( ret1 ) );
+			die_code( "Share", ret1 );
 
 
 SV *

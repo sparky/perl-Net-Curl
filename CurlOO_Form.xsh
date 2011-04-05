@@ -189,7 +189,7 @@ case_datawithzero:
 		Safefree( farray );
 
 		if ( ret != CURL_FORMADD_OK )
-			die_dual( ret, "curl_formadd() failed\n" );
+			die_code( "Form", ret );
 
 
 void

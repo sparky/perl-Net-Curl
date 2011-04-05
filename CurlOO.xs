@@ -42,17 +42,25 @@
 	} STMT_END
 #endif
 
-#define die_dual( num, str )			\
+#ifndef croak_sv
+# define croak_sv( arg )		\
+	STMT_START {				\
+		SvSetSV( ERRSV, arg );	\
+		croak( NULL );			\
+	} STMT_END
+#endif
+
+#define die_code( pkg, num )			\
 	STMT_START {						\
-		SV *errsv = get_sv( "@", GV_ADD ); \
-		SvSetSV( errsv, &PL_sv_undef );	\
-		sv_setiv( errsv, num );			\
-		sv_setpv( errsv, str );			\
-		SvPOK_only( errsv );			\
-		SvIOK_on( errsv );				\
-		croak( NULL );					\
+		SV *errsv = sv_newmortal();		\
+		sv_setref_iv( errsv, "WWW::CurlOO::" pkg "Code", num ); \
+		croak_sv( errsv );				\
 	} STMT_END
 
+
+#ifndef mPUSHs
+# define mPUSHs( sv ) PUSHs( sv_2mortal( sv ) )
+#endif
 #ifndef mXPUSHs
 # define mXPUSHs( sv ) XPUSHs( sv_2mortal( sv ) )
 #endif
@@ -324,6 +332,7 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 /* default base object */
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *) newHV() ) )
 
+#include "curloo-Codes-c.inc"
 #include "curloo-Easy-c.inc"
 #include "curloo-Form-c.inc"
 #include "curloo-Multi-c.inc"
@@ -420,6 +429,7 @@ curl_version_info()
 		RETVAL
 
 
+INCLUDE: curloo-Codes-xs.inc
 INCLUDE: curloo-Easy-xs.inc
 INCLUDE: curloo-Form-xs.inc
 INCLUDE: curloo-Multi-xs.inc
