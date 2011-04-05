@@ -47,7 +47,7 @@ WWW::CurlOO::Form - Form builder for WWW::CurlOO
 
 =head1 WARNING
 
-THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.
+B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
 
 =head1 SYNOPSIS
 
@@ -74,6 +74,10 @@ THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.
 
 This module lets you build multipart/form-data HTTP POST. When finished it can
 be either supplied to WWW::CurlOO::Easy handle or serialized manually.
+WWW::CurlOO::Form does not export by default anything, but constants can be
+exported upon request.
+
+ use WWW::CurlOO::Form qw(:constants);
 
 =head1 METHODS
 
@@ -199,7 +203,24 @@ serialization will be aborted.
 
 =back
 
-See also L<curl_formget(3)>.
+Calls L<curl_formget(3)>.
+
+=item OBJECT->DESTROY( )
+
+Cleans up. It should not be called manually.
+
+Calls L<curl_formfree(3)>.
+
+=back
+
+=head1 FUNCTIONS
+
+=over
+
+=item strerror( [WHATEVER], CODE )
+
+Return a string for error code CODE.
+String is extracted from error constant name.
 
 =back
 

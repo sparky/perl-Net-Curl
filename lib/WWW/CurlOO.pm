@@ -35,25 +35,24 @@ B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
  use WWW::CurlOO;
  print $WWW::CurlOO::VERSION;
 
-
-=head1 DESCRIPTION
-
-WWW::CurlOO is a Perl interface for libcurl.
+ print WWW::CurlOO::version();
 
 =head1 DOCUMENTATION
 
-This module provides a Perl interface to libcurl. It is not intended to be a standalone module
-and because of this, the main libcurl documentation should be consulted for API details at
-L<http://curl.haxx.se>. The documentation you're reading right now only contains the Perl specific
-details, some sample code and the differences between the C API and the Perl one.
+WWW::CurlOO provides a Perl interface to libcurl created with object-oriented
+implementations in mind. This documentation contains Perl-specific details
+and quirks. For more information consult libcurl man pages and documentation
+at L<http://curl.haxx.se>.
 
-=head1 WWW::CurlOO
+=head1 DESCRIPTION
 
 This package contains some static functions and version-releated constants.
 It does not export by default anything, but constants can be exported upon
 request.
 
  use WWW::CurlOO qw(:constants);
+
+To perform any request you want L<WWW::CurlOO::Easy>.
 
 =head2 FUNCTIONS
 
