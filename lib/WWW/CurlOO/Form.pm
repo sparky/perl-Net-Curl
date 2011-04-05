@@ -11,6 +11,32 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Form::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
+sub strerror
+{
+	# first arg may be an object, package, or nothing
+	my $code = pop @_;
+
+	foreach my $c ( grep /^CURL_FORMADD_/, keys %{WWW::CurlOO::Form::} ) {
+		next unless WWW::CurlOO::Form->$c() == $code;
+		local $_ = $c;
+		s/^CURL_FORMADD_//;
+		tr/_/ /;
+		return ucfirst lc $_;
+	}
+	return "Invalid formadd error code";
+}
+
+package WWW::CurlOO::Form::Code;
+
+use overload
+	'0+' => sub {
+		return ${(shift)};
+	},
+	'""' => sub {
+		return WWW::CurlOO::Form::strerror( ${(shift)} );
+	},
+	fallback => 1;
+
 1;
 
 __END__

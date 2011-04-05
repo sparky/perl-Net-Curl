@@ -77,7 +77,6 @@ write_constants( "Easy", $constant_types[ 1 ] );
 write_constants( "Form", $constant_types[ 2 ] );
 write_constants( "Multi", $constant_types[ 3 ] );
 write_constants( "Share", $constant_types[ 4 ] );
-split_xs( "Codes" );
 split_xs( "Easy" );
 split_xs( "Form" );
 split_xs( "Multi" );
@@ -115,7 +114,7 @@ WriteMakefile(
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
-		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh CurlOO_Codes.xsh'
+		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
 		FILES => 'const-*.inc curloo-*.inc'

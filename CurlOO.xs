@@ -53,7 +53,7 @@
 #define die_code( pkg, num )			\
 	STMT_START {						\
 		SV *errsv = sv_newmortal();		\
-		sv_setref_iv( errsv, "WWW::CurlOO::" pkg "Code", num ); \
+		sv_setref_iv( errsv, "WWW::CurlOO::" pkg "::Code", num ); \
 		croak_sv( errsv );				\
 	} STMT_END
 
@@ -333,7 +333,6 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 /* default base object */
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *) newHV() ) )
 
-#include "curloo-Codes-c.inc"
 #include "curloo-Easy-c.inc"
 #include "curloo-Form-c.inc"
 #include "curloo-Multi-c.inc"
@@ -430,7 +429,6 @@ curl_version_info()
 		RETVAL
 
 
-INCLUDE: curloo-Codes-xs.inc
 INCLUDE: curloo-Easy-xs.inc
 INCLUDE: curloo-Form-xs.inc
 INCLUDE: curloo-Multi-xs.inc
