@@ -49,15 +49,15 @@ sub action_wait {
     $curlm->perform;
     @fds = $curlm->fdset;
     my $cnt;
-    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    $cnt = unpack( "%32b*", $fds[0].$fds[1] );
     ok( $cnt == 1, "The read or write fdset contains one fd (is $cnt)");
     $curlm->add_handle($curl2);
     @fds = $curlm->fdset;
-    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    $cnt = unpack( "%32b*", $fds[0].$fds[1] );
     ok( $cnt == 1, "The read or write fdset still only contains one fd (is $cnt)");
     $curlm->perform;
     @fds = $curlm->fdset;
-    $cnt = unpack( "%b*", $fds[0].$fds[1] );
+    $cnt = unpack( "%32b*", $fds[0].$fds[1] );
     ok( $cnt == 2, "The read or write fdset contains two fds (is $cnt)");
     my $active = 2;
     while ($active != 0) {
