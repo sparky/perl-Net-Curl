@@ -266,7 +266,7 @@ curl_multi_setopt( multi, option, value )
 	int option
 	SV *value
 	PREINIT:
-		CURLMcode ret1, ret2 = CURLM_OK;
+		CURLMcode ret1 = CURLM_OK, ret2 = CURLM_OK;
 	CODE:
 		switch ( option ) {
 			case CURLMOPT_SOCKETDATA:
