@@ -88,7 +88,7 @@ for my $test_list (@$url_list) {
     ok( (!!$@) == $result, "$url ssl test succeeds");
     if ( $@ and (!!$@) != $result ) {
 	    diag( "Error: $@" );
-	    diag( "errbuf: " . $curl->errbuf );
+	    diag( "errbuf: " . $curl->error );
     }
 }
 

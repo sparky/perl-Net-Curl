@@ -83,5 +83,5 @@ if (($code=$curl->perform()) == 0) {
     print "ok ".++$count." $bytes bytes transferred\n";
 } else {
     # We can acces the error message in $errbuf here
-    print "not ok ".++$count." ftpcode= $code, errbuf=".$curl->errbuf."\n";
+    print "not ok ".++$count." ftpcode= $code, errbuf=".$curl->error."\n";
 }

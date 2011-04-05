@@ -36,7 +36,7 @@ if ( not $@ ) {
 	my $realurl=$curl->getinfo(CURLINFO_EFFECTIVE_URL);
 	my $httpcode=$curl->getinfo(CURLINFO_HTTP_CODE);
 } else {
-	print "not ok $retcode / ".$curl->errbuf."\n";
+	print "not ok $retcode / ".$curl->error."\n";
 } 
 
 }

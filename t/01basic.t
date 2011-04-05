@@ -41,7 +41,7 @@ $curl->setopt(CURLOPT_COOKIEFILE, "");
 eval { $curl->perform(); };
 
 ok( !$@, "Curl return code ok");
-diag("An error happened: $@ -- ".$curl->errbuf."\n") if ($@);
+diag("An error happened: $@ -- ".$curl->error."\n") if ($@);
 my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
 ok( $bytes, "getinfo returns non-zero number of bytes");
 my $realurl = $curl->getinfo(CURLINFO_EFFECTIVE_URL);

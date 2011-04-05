@@ -83,7 +83,7 @@ if ( not $@ ) {
 	}
 } else {
    # We can acces the error message in $errbuf here
-#    print STDERR "$retcode / ".$curl->errbuf."\n";
+#    print STDERR "$retcode / ".$curl->error."\n";
     print "not ";
 }
 print "ok ".++$count."\n";
