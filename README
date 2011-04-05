@@ -3,6 +3,9 @@ This package is working, but still a lot has to change.
 
 ** TODO **
 
+CurlOO:
+- add version_build()
+
 Easy:
 - review !
 + delay deaths
@@ -10,13 +13,16 @@ Easy:
 - implement pause (curl_easy_pause)
 - implement reset (curl_easy_reset)
 + allow calling strerror as function
-- write documentation
++ write some documentation
+- write more documentation
 - multiple options in setopt
 
 Form:
 - test with Easy
 - implement buffer options
 - implement read callback
++ write some documentation
+- write more documentation
 
 Multi:
 - remove all remaining easy handles when destroying multi
@@ -25,12 +31,14 @@ Multi:
 - implement assign (curl_multi_assign)
 + remove remove_handle from info_read
 + allow calling strerror as function
-- write documentation
++ write some documentation
+- write more documentation
 
 Share:
 - test with Easy
 + allow calling strerror as function
-- write documentation
++ write some documentation
+- write more documentation
 
 tests:
 - use some pure-perl http server, should do for most tests
