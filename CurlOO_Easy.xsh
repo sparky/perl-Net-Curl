@@ -633,7 +633,7 @@ curl_easy_setopt( easy, option, value )
 
 			/* XXX: fix this */
 			case CURLOPT_ERRORBUFFER:
-				croak( "CURLOPT_ERRORBUFFER is not supported, use $easy->errbuf instead" );
+				croak( "CURLOPT_ERRORBUFFER is not supported, use $easy->error instead" );
 				break;
 
 			/* tell curl to redirect STDERR - value should be a glob */
@@ -801,7 +801,7 @@ curl_easy_getinfo( easy, option )
 		RETVAL
 
 char *
-curl_easy_errbuf( easy )
+curl_easy_error( easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		RETVAL = easy->errbuf;
