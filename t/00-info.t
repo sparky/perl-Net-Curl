@@ -4,11 +4,11 @@ use warnings;
 use Test::More tests => 2;
 use WWW::CurlOO;
 
-warn "libcurl\n";
-warn "version():\n\t" . WWW::CurlOO::version() . "\n";
+diag "libcurl\n";
+diag "version():\n\t" . WWW::CurlOO::version() . "\n";
 my $vi = WWW::CurlOO::version_info();
 
-warn "version_info():\n";
+diag "version_info():\n";
 foreach my $key ( sort keys %$vi ) {
 	my $value = $vi->{$key};
 	if ( $key eq 'features' ) {
@@ -22,7 +22,7 @@ foreach my $key ( sort keys %$vi ) {
 	} else {
 		$value = "'$value'";
 	}
-	warn "\t{$key} = $value;\n";
+	diag "\t{$key} = $value;\n";
 }
 
 sub print_features
@@ -43,8 +43,8 @@ sub print_features
 	}
 
 	local $" = "\n\t\t| ";
-	warn "\t{features} = @found;\n";
-	warn "\tmissing features = @missing;\n";
+	diag "\t{features} = @found;\n";
+	diag "\tmissing features = @missing;\n";
 }
 
 # older than this are not supported
