@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 14;
 use WWW::CurlOO::Easy qw(:constants);
 use WWW::CurlOO::Multi qw(:constants);
 
@@ -102,9 +102,6 @@ $curlm->add_handle( $curl2 );
 # init
 my $active = $curlm->socket_action();
 ok( defined $timeout, "timeout set" );
-ok( $timeout > 1, "timeout set: at least 1 second" );
-ok( $timer_change > 1, "timeout set: changed more than once" );
-$timer_change = 0;
 $sock_read_all = 0;
 
 #warn "main loop\n";
