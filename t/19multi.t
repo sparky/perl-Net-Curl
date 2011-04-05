@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 20;
+use Test::More tests => 22;
 use WWW::CurlOO::Easy qw(:constants);
 use WWW::CurlOO::Multi qw(:constants);
 use File::Temp qw/tempfile/;
@@ -63,7 +63,9 @@ sub action_wait {
     while ($active != 0) {
 	my $ret = $curlm->perform;
 	if ($ret != $active) {
-		while (my ($curl,$value) = $curlm->info_read) {
+		while (my ($curl, $result, $msg, $error) = $curlm->info_read) {
+			is( $msg, CURLMSG_DONE, "Message is CURLMSG_DONE" );
+			$curlm->remove_handle( $curl );
 			ok( $curl && ( $curl->{private} eq "foo" || $curl->{private}  == 42 ), "The stored private value matches what we set ($curl->{private})");
 		}
 		$active = $ret;
