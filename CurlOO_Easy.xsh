@@ -330,8 +330,9 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 		PUSHMARK( SP );
 
 		/* $easy, $maxsize, $userdata */
-		mXPUSHs( newSVsv( easy->perl_self ) );
-		mXPUSHs( newSViv( maxlen ) );
+		EXTEND( SP, 2 );
+		mPUSHs( newSVsv( easy->perl_self ) );
+		mPUSHs( newSViv( maxlen ) );
 		if ( cb->data )
 			mXPUSHs( newSVsv( cb->data ) );
 

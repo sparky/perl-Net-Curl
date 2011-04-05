@@ -194,10 +194,12 @@ curl_multi_info_read( multi )
 			if ( SvTRUE( ERRSV ) )
 				croak( NULL );
 
-			mXPUSHs( easy->perl_self );
+			EXTEND( SP, 2 );
+			mPUSHs( easy->perl_self );
+			mPUSHs( newSViv( res ) );
+
 			easy->perl_self = NULL;
 			easy->multi = NULL;
-			mXPUSHs( newSViv( res ) );
 		} else {
 			/* rethrow errors */
 			if ( SvTRUE( ERRSV ) )
@@ -241,9 +243,9 @@ curl_multi_fdset( multi )
 			}
 		}
 		EXTEND( SP, 3 );
-		PUSHs( sv_2mortal( newSVpvn( (char *) readset, vecsize ) ) );
-		PUSHs( sv_2mortal( newSVpvn( (char *) writeset, vecsize ) ) );
-		PUSHs( sv_2mortal( newSVpvn( (char *) excepset, vecsize ) ) );
+		mPUSHs( newSVpvn( (char *) readset, vecsize ) );
+		mPUSHs( newSVpvn( (char *) writeset, vecsize ) );
+		mPUSHs( newSVpvn( (char *) excepset, vecsize ) );
 		/* }}} */
 
 

@@ -206,8 +206,9 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 
 	PUSHMARK( SP );
 
+	EXTEND( SP, argnum );
 	for ( i = 0; i < argnum; i++ )
-		mXPUSHs( args[ i ] );
+		mPUSHs( args[ i ] );
 
 	if ( cb->data )
 		mXPUSHs( newSVsv( cb->data ) );
