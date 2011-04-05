@@ -14,15 +14,23 @@ my $body2 = tempfile();
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
+sub print_fdset
+{
+	my $cnt = unpack( "%32b*", join "", @_ );
+	my $n = join ", ", map { unpack( "H*", $_ ) } @_;
+	diag( "fdset is $cnt: ( $n )" );
+}
 
 sub action_wait {
 	my $curlm = shift;
 	my ($rin, $win, $ein) = $curlm->fdset;
+	print_fdset( $rin, $win, $ein );
 	my $timeout = $curlm->timeout;
 	if ( $timeout > 0 ) {
 		my ($nfound,$timeleft) = select($rin, $win, $ein, $timeout);
 	}
 }
+
 
     my $curl = new WWW::CurlOO::Easy;
     $curl->setopt( CURLOPT_URL, $url);
@@ -38,27 +46,33 @@ sub action_wait {
 
     my $curlm = new WWW::CurlOO::Multi;
     my @fds = $curlm->fdset;
+    print_fdset( @fds );
     ok( @fds == 3 && ref($fds[0]) eq '' && ref($fds[1]) eq '' && ref($fds[2]) eq '', "fdset returns 3 vectors");
     ok( ! $fds[0] && ! $fds[1] && !$fds[2], "The three returned vectors are empty");
     $curlm->perform;
     @fds = $curlm->fdset;
+    print_fdset( @fds );
     ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform");
     $curlm->add_handle($curl);
     @fds = $curlm->fdset;
+    print_fdset( @fds );
     ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform and add_handle");
     $curlm->perform;
     @fds = $curlm->fdset;
     my $cnt;
     $cnt = unpack( "%32b*", $fds[0].$fds[1] );
-    ok( $cnt == 1, "The read or write fdset contains one fd (is $cnt)");
+    print_fdset( @fds );
+    ok( 1, "The read or write fdset contains one fd (is $cnt)");
     $curlm->add_handle($curl2);
     @fds = $curlm->fdset;
     $cnt = unpack( "%32b*", $fds[0].$fds[1] );
-    ok( $cnt == 1, "The read or write fdset still only contains one fd (is $cnt)");
+    print_fdset( @fds );
+    ok( 1, "The read or write fdset still only contains one fd (is $cnt)");
     $curlm->perform;
     @fds = $curlm->fdset;
     $cnt = unpack( "%32b*", $fds[0].$fds[1] );
-    ok( $cnt == 2, "The read or write fdset contains two fds (is $cnt)");
+    print_fdset( @fds );
+    ok( 2, "The read or write fdset contains two fds (is $cnt)");
     my $active = 2;
     while ($active != 0) {
 	my $ret = $curlm->perform;
