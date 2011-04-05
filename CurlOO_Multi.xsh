@@ -206,7 +206,8 @@ curl_multi_fdset( multi )
 	PREINIT:
 		CURLMcode ret;
 		fd_set fdread, fdwrite, fdexcep;
-		int maxfd, i, vecsize;
+		int maxfd, i;
+		int readsize, writesize, excepsize;
 		unsigned char readset[ sizeof( fd_set ) ] = { 0 };
 		unsigned char writeset[ sizeof( fd_set ) ] = { 0 };
 		unsigned char excepset[ sizeof( fd_set ) ] = { 0 };
@@ -220,22 +221,28 @@ curl_multi_fdset( multi )
 			&fdread, &fdwrite, &fdexcep, &maxfd );
 		MULTI_DIE( ret );
 
-		vecsize = ( maxfd + 8 ) / 8;
+		readsize = writesize = excepsize = 0;
 
 		if ( maxfd != -1 ) {
 			for ( i = 0; i <= maxfd; i++ ) {
-				if ( FD_ISSET( i, &fdread ) )
+				if ( FD_ISSET( i, &fdread ) ) {
+					readsize = i / 8 + 1;
 					readset[ i / 8 ] |= 1 << ( i % 8 );
-				if ( FD_ISSET( i, &fdwrite ) )
+				}
+				if ( FD_ISSET( i, &fdwrite ) ) {
+					writesize = i / 8 + 1;
 					writeset[ i / 8 ] |= 1 << ( i % 8 );
-				if ( FD_ISSET( i, &fdexcep ) )
+				}
+				if ( FD_ISSET( i, &fdexcep ) ) {
+					excepsize = i / 8 + 1;
 					excepset[ i / 8 ] |= 1 << ( i % 8 );
+				}
 			}
 		}
 		EXTEND( SP, 3 );
-		mPUSHs( newSVpvn( (char *) readset, vecsize ) );
-		mPUSHs( newSVpvn( (char *) writeset, vecsize ) );
-		mPUSHs( newSVpvn( (char *) excepset, vecsize ) );
+		mPUSHs( newSVpvn( (char *) readset, readsize ) );
+		mPUSHs( newSVpvn( (char *) writeset, writesize ) );
+		mPUSHs( newSVpvn( (char *) excepset, excepsize ) );
 		/* }}} */
 
 
