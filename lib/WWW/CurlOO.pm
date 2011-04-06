@@ -15,7 +15,7 @@ END {
 }
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::};
+our @EXPORT_OK = grep /^(:?LIB)?CURL/, keys %{WWW::CurlOO::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 1;
