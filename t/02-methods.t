@@ -20,7 +20,7 @@ my %methods = (
 );
 
 my $count = map { @$_ } values %methods;
-diag "there are $count functions to test\n";
+note "there are $count functions to test\n";
 
 while ( my ($pkg, $methods) = each %methods ) {
 	can_ok( $pkg, @$methods );
