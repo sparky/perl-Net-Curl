@@ -178,6 +178,7 @@ CURLOPT_WRITEDATA was set to. It must return number of data bytes.
  sub cb_write {
      my ( $easy, $data, $uservar ) = @_;
      # ... process ...
+     return CURL_WRITEFUNC_PAUSE if $want_pause;
      return length $data;
  }
 
