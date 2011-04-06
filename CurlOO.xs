@@ -349,7 +349,7 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 #include "curloo-Multi-c.inc"
 #include "curloo-Share-c.inc"
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO
 
 BOOT:
 	/* FIXME: does this need a mutex for ithreads? */
@@ -394,12 +394,12 @@ PROTOTYPES: ENABLE
 INCLUDE: const-curl-xs.inc
 
 void
-curl__global_cleanup()
+_global_cleanup()
 	CODE:
 		curl_global_cleanup();
 
 time_t
-curl_getdate( timedate )
+getdate( timedate )
 	char *timedate
 	CODE:
 		RETVAL = curl_getdate( timedate, NULL );
@@ -407,7 +407,7 @@ curl_getdate( timedate )
 		RETVAL
 
 char *
-curl_version()
+version()
 	CODE:
 		RETVAL = curl_version();
 	OUTPUT:
@@ -415,7 +415,7 @@ curl_version()
 
 
 SV *
-curl_version_info()
+version_info()
 	PREINIT:
 		const curl_version_info_data *vi;
 		HV *ret;

@@ -417,14 +417,14 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	} STMT_END
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy	PREFIX = curl_easy_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy
 
 INCLUDE: const-easy-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-curl_easy_new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
+new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -455,7 +455,7 @@ curl_easy_new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 
 
 void
-curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
+duphandle( easy, base=HASHREF_BY_DEFAULT )
 	WWW::CurlOO::Easy easy
 	SV *base
 	PREINIT:
@@ -553,7 +553,7 @@ curl_easy_duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 
 void
-curl_easy_setopt( easy, option, value )
+setopt( easy, option, value )
 	WWW::CurlOO::Easy easy
 	int option
 	SV *value
@@ -713,7 +713,7 @@ curl_easy_setopt( easy, option, value )
 
 
 void
-curl_easy_pushopt( easy, option, value )
+pushopt( easy, option, value )
 	WWW::CurlOO::Easy easy
 	int option
 	SV *value
@@ -725,7 +725,7 @@ curl_easy_pushopt( easy, option, value )
 
 
 void
-curl_easy_perform( easy )
+perform( easy )
 	WWW::CurlOO::Easy easy
 	PREINIT:
 		CURLcode ret;
@@ -742,7 +742,7 @@ curl_easy_perform( easy )
 
 
 SV *
-curl_easy_getinfo( easy, option )
+getinfo( easy, option )
 	WWW::CurlOO::Easy easy
 	int option
 	PREINIT:
@@ -801,7 +801,7 @@ curl_easy_getinfo( easy, option )
 		RETVAL
 
 char *
-curl_easy_error( easy )
+error( easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		RETVAL = easy->errbuf;
@@ -812,7 +812,7 @@ curl_easy_error( easy )
 #if LIBCURL_VERSION_NUM >= 0x071202
 
 size_t
-curl_easy_send( easy, buffer )
+send( easy, buffer )
 	WWW::CurlOO::Easy easy
 	SV *buffer
 	CODE:
@@ -834,7 +834,7 @@ curl_easy_send( easy, buffer )
 
 
 size_t
-curl_easy_recv( easy, buffer, length )
+recv( easy, buffer, length )
 	WWW::CurlOO::Easy easy
 	SV *buffer
 	size_t length
@@ -858,14 +858,14 @@ curl_easy_recv( easy, buffer, length )
 
 
 void
-curl_easy_DESTROY( easy )
+DESTROY( easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		perl_curl_easy_delete( aTHX_ easy );
 
 
 SV *
-curl_easy_strerror( ... )
+strerror( ... )
 	PROTOTYPE: $;$
 	PREINIT:
 		const char *errstr;

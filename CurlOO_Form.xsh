@@ -75,14 +75,14 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form	PREFIX = curl_form_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form
 
 INCLUDE: const-form-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-curl_form_new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
+new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -102,7 +102,7 @@ curl_form_new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 
 
 void
-curl_form_add( form, ... )
+add( form, ... )
 	WWW::CurlOO::Form form
 	PROTOTYPE: $%
 	PREINIT:
@@ -193,7 +193,7 @@ case_datawithzero:
 
 
 void
-curl_form_get( form, ... )
+get( form, ... )
 	WWW::CurlOO::Form form
 	PROTOTYPE: $;$&
 	PREINIT:
@@ -247,7 +247,7 @@ curl_form_get( form, ... )
 
 
 void
-curl_form_DESTROY( form )
+DESTROY( form )
 	WWW::CurlOO::Form form
 	CODE:
 		perl_curl_form_delete( form );

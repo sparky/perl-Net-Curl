@@ -99,14 +99,14 @@ cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share	PREFIX = curl_share_
+MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share
 
 INCLUDE: const-share-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-curl_share_new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
+new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -126,14 +126,7 @@ curl_share_new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
 
 
 void
-curl_share_DESTROY( share )
-	WWW::CurlOO::Share share
-	CODE:
-		perl_curl_share_delete( aTHX_ share );
-
-
-void
-curl_share_setopt( share, option, value )
+setopt( share, option, value )
 	WWW::CurlOO::Share share
 	int option
 	SV * value
@@ -171,8 +164,15 @@ curl_share_setopt( share, option, value )
 			die_code( "Share", ret1 );
 
 
+void
+DESTROY( share )
+	WWW::CurlOO::Share share
+	CODE:
+		perl_curl_share_delete( aTHX_ share );
+
+
 SV *
-curl_share_strerror( ... )
+strerror( ... )
 	PROTOTYPE: $;$
 	PREINIT:
 		const char *errstr;
