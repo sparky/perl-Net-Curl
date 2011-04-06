@@ -3,7 +3,7 @@ package WWW::CurlOO;
 use strict;
 use warnings;
 use XSLoader ();
-use Exporter ();
+use Exporter 'import';
 
 our $VERSION;
 BEGIN {
@@ -14,7 +14,6 @@ END {
 	_global_cleanup();
 }
 
-our @ISA = qw(Exporter);
 our @EXPORT_OK = grep /^(?:LIB)?CURL/, keys %{WWW::CurlOO::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
