@@ -357,7 +357,7 @@ cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
 		} else {
 			/* TODO: allow only scalar *refs* as output values */
 			/* if value is not a ref, check for
-			 * CURL_READFUNC_ABORT or CURL_READFUNC_PAUSE
+			 * CURL_READFUNC_ABORT or CUR#_READFUNC_PAUSE
 			 */
 			sv = POPs;
 			data = SvPV( sv, len );
