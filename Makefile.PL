@@ -82,6 +82,7 @@ split_xs( "Form" );
 split_xs( "Multi" );
 split_xs( "Share" );
 
+write_examples_pod( 'lib/WWW/CurlOO/examples.pod' );
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
 my $l_ = $] >= 5.010 ? "ł" : "l";
@@ -117,7 +118,7 @@ WriteMakefile(
 		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
 	},
 	clean		=> {
-		FILES => 'const-*.inc curloo-*.inc'
+		FILES => 'const-*.inc curloo-*.inc lib/WWW/CurlOO/examples.pod'
 	},
 );
 
@@ -319,6 +320,49 @@ sub write_defenums
 		print $o "#endif\n";
 	}
 	close $o;
+}
+
+
+sub write_examples_pod
+{
+	my $out = shift;
+
+	print "Writing $out\n";
+	open my $o, ">", $out;
+
+	foreach my $script ( sort glob "examples/*.pl" ) {
+
+		my $nopod = 0;
+		my $code = 1;
+
+		print "<- $script\n";
+
+		open my $fin, '<', $script
+			or die "Cannot open $script: $!\n";
+
+		while ( <$fin> ) {
+			if ( /^=cut/ ) {
+				$code = 1;
+				next;
+			} elsif ( /^=/ ) {
+				$code = 0;
+			} elsif ( /^#nopod/ ) {
+				$nopod = 1;
+				next;
+			} elsif ( /^#endnopod/ ) {
+				$nopod = 0;
+				next;
+			} elsif ( $nopod ) {
+				next;
+			}
+			$_ = " " . $_ if $code;
+			s/^\t/ /;
+			s/\t/    /g;
+			s/ +$//;
+			print $o $_;
+		}
+
+	}
 }
 
 # vim: ts=4:sw=4
