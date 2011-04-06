@@ -280,6 +280,9 @@ curl_multi_setopt( multi, option, value )
 				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA, multi );
 				break;
 
+			/* introduced in 7.16.0 */
+#ifdef CURLMOPT_TIMERDATA
+#ifdef CURLMOPT_TIMERFUNCTION
 			case CURLMOPT_TIMERDATA:
 				SvREPLACE( multi->cb[ CB_MULTI_TIMER ].data, value );
 				break;
@@ -290,6 +293,8 @@ curl_multi_setopt( multi, option, value )
 					SvOK( value ) ? cb_multi_timer : NULL );
 				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA, multi );
 				break;
+#endif
+#endif
 
 			/* default cases */
 			default:
