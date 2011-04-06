@@ -117,7 +117,10 @@ Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
 
 =item OBJECT->recv( BUFFER, MAXLENGTH )
 
-Receive raw data.
+B<THIS MAY CHANGE YET>
+
+Receive raw data. Will receive at most MAXLENGTH bytes. New data will be
+concatenated to BUFFER.
 
 Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
 
