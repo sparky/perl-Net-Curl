@@ -35,9 +35,43 @@ my @check;
 	}
 }
 
-plan tests => scalar @check;
+push @check, qw(
+	LIBCURL_VERSION_NUM
+	LIBCURL_VERSION_MAJOR
+	LIBCURL_VERSION_MINOR
+	LIBCURL_VERSION_PATCH
+);
+
+
+plan tests => 10 + 3 * scalar @check;
+cmp_ok( scalar ( @check ), '>=', 300, 'at least 300 symbols' );
+
 foreach my $sym ( @check ) {
 	my $value;
 	eval "\$value = $sym();";
-	ok(!$@ && defined($value), "$sym is defined - $@");
+	is( $@, "", "$sym constant can be retrieved" );
+	ok( defined( $value ), "$sym is defined");
+	like( $value, qr/^-?\d+$/, "$sym value is an integer" );
+}
+
+{
+	my $value;
+	eval { $value = LIBCURL_COPYRIGHT() };
+	is( $@, "", 'LIBCURL_COPYRIGHT constant can be retrieved' );
+	ok( defined( $value ), "LIBCURL_COPYRIGHT is defined");
+	like( $value, qr/[a-z]/i, 'LIBCURL_COPYRIGHT is a string' );
+}
+{
+	my $value;
+	eval { $value = LIBCURL_TIMESTAMP() };
+	is( $@, "", 'LIBCURL_TIMESTAMP constant can be retrieved' );
+	ok( defined( $value ), "LIBCURL_TIMESTAMP is defined");
+	like( $value, qr/[a-z]/i, 'LIBCURL_TIMESTAMP is a string' );
+}
+{
+	my $value;
+	eval { $value = LIBCURL_VERSION() };
+	is( $@, "", 'LIBCURL_VERSION constant can be retrieved' );
+	ok( defined( $value ), "LIBCURL_VERSION is defined");
+	like( $value, qr/^7\.\d{2}\.\d{1,2}$/, 'LIBCURL_VERSION is correct' );
 }
