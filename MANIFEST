@@ -15,6 +15,7 @@ lib/WWW/CurlOO/Share.pm
 inc/symbols-in-versions
 t/00-info.t
 t/01-constants.t
+t/02-methods.t
 t/old-02-form.t
 t/old-01basic.t
 t/old-02callbacks.t
