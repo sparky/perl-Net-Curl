@@ -324,6 +324,17 @@ struct iv_s {
 	I32 namelen;
 	IV value;
 };
+#define IV_CONST( c ) \
+	{ #c, sizeof( #c ) - 1, c }
+struct pv_s {
+	const char *name;
+	I32 namelen;
+	const char *value;
+	I32 valuelen;
+};
+#define PV_CONST( c ) \
+	{ #c, sizeof( #c ) - 1, c, sizeof( c ) - 1 }
+
 
 typedef perl_curl_easy_t *WWW__CurlOO__Easy;
 typedef perl_curl_form_t *WWW__CurlOO__Form;
@@ -343,6 +354,40 @@ MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO		PREFIX = curl_
 BOOT:
 	/* FIXME: does this need a mutex for ithreads? */
 	curl_global_init( CURL_GLOBAL_ALL );
+	{
+		dTHX;
+		HV *symbol_table = get_hv( "WWW::CurlOO::", GV_ADD );
+		static const struct iv_s values_for_iv[] = {
+			IV_CONST( LIBCURL_VERSION_MAJOR ),
+			IV_CONST( LIBCURL_VERSION_MINOR ),
+			IV_CONST( LIBCURL_VERSION_PATCH ),
+			IV_CONST( LIBCURL_VERSION_NUM ),
+			{ NULL, 0, 0 }
+		};
+		static const struct pv_s values_for_pv[] = {
+			PV_CONST( LIBCURL_COPYRIGHT ),
+			PV_CONST( LIBCURL_VERSION ),
+			PV_CONST( LIBCURL_TIMESTAMP ),
+			{ NULL, 0, NULL, 0 }
+		};
+		const struct iv_s *value_for_iv = values_for_iv;
+		const struct pv_s *value_for_pv = values_for_pv;
+		while ( value_for_iv->name ) {
+			perl_curl_constant_add( aTHX_ symbol_table,
+				value_for_iv->name, value_for_iv->namelen,
+				newSViv( value_for_iv->value ) );
+			++value_for_iv;
+		}
+		while ( value_for_pv->name ) {
+			perl_curl_constant_add( aTHX_ symbol_table,
+				value_for_pv->name, value_for_pv->namelen,
+				newSVpvn( value_for_pv->value, value_for_pv->valuelen ) );
+			++value_for_pv;
+		}
+
+
+		++PL_sub_generation;
+	}
 
 PROTOTYPES: ENABLE
 
