@@ -55,6 +55,8 @@ use constant {
 	B_READBUF => 3,
 };
 
+
+# new( URL ) -- get new object
 sub new
 {
 	my $class = shift;
@@ -81,6 +83,8 @@ sub new
 	return $self;
 }
 
+# send( DATA ) -- send some data, wait for socket availability if it cannot
+# be sent all at once
 sub send($$)
 {
 	my $self = shift;
@@ -104,6 +108,7 @@ sub send($$)
 	};
 }
 
+# read( SIZE ) -- read SIZE bytes, wait for more data if there wasn't enough
 sub read($$)
 {
 	my $self = shift;
@@ -140,7 +145,7 @@ sub read($$)
 	return substr $self->[ B_READBUF ], 0, $size, '';
 }
 
-
+# readline() -- read until $/
 sub readline($)
 {
 	my $self = shift;
@@ -189,7 +194,6 @@ Sample application using this module could look like this:
 	use strict;
 	use warnings;
 	use Curl::Transport;
-
 #nopod
 =cut
 package main;
@@ -197,7 +201,6 @@ package main;
 use strict;
 use warnings;
 #endnopod
-
 
 my $host = shift @ARGV || "example.com";
 
@@ -236,4 +239,3 @@ if ( defined $length ) {
 }
 
 printf "Last error: %s\n", $t->error();
-
