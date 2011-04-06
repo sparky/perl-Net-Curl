@@ -808,13 +808,14 @@ curl_easy_error( easy )
 	OUTPUT:
 		RETVAL
 
+
+#if LIBCURL_VERSION_NUM >= 0x071202
+
 size_t
 curl_easy_send( easy, buffer )
 	WWW::CurlOO::Easy easy
 	SV *buffer
 	CODE:
-		/* {{{ */
-#if LIBCURL_VERSION_NUM >= 0x071202
 		CURLcode ret;
 		STRLEN len;
 		const char *pv;
@@ -828,11 +829,6 @@ curl_easy_send( easy, buffer )
 		EASY_DIE( ret );
 
 		RETVAL = out_len;
-#else
-		croak( "curl_easy_send() not available in curl before 7.18.2\n" );
-		RETVAL = 0;
-#endif
-		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -843,7 +839,6 @@ curl_easy_recv( easy, buffer, length )
 	SV *buffer
 	size_t length
 	CODE:
-#if LIBCURL_VERSION_NUM >= 0x071202
 		CURLcode ret;
 		size_t out_len;
 		char *tmpbuf;
@@ -856,11 +851,10 @@ curl_easy_recv( easy, buffer, length )
 
 		Safefree( tmpbuf );
 		RETVAL = out_len;
-#else
-		croak( "curl_easy_recv() not available in curl before 7.18.2\n" );
-#endif
 	OUTPUT:
 		RETVAL
+
+#endif
 
 
 void
