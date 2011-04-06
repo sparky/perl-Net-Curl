@@ -64,7 +64,7 @@ exported upon request.
 
  use WWW::CurlOO::Multi qw(:constants);
 
-=head1 METHODS
+=head2 METHODS
 
 =over
 
@@ -135,7 +135,9 @@ Calls L<curl_multi_cleanup(3)>.
 
 =back
 
-=head1 FUNCTIONS
+=head2 FUNCTIONS
+
+None of those functions are exported, you must use fully qualified names.
 
 =over
 
@@ -146,6 +148,67 @@ Return a string for error code CODE.
 See L<curl_multi_strerror(3)> for more info.
 
 =back
+
+=head2 CONSTANTS
+
+=over
+
+=item CURLM_*
+
+If any method fails, it will return one of those values.
+
+=item CURLMSG_*
+
+Message type from info_read().
+
+=item CURLMOPT_*
+
+Option values for setopt().
+
+=item CURL_POLL_*
+
+Poll action information for socket callback.
+
+=item CURL_CSELECT_*
+
+Select bits for socket_action() method.
+
+=item CURL_SOCKET_TIMEOUT
+
+Special socket value for socket_action() method.
+
+=back
+
+=head2 CALLBACKS
+
+=over
+
+=item CURLMOPT_SOCKETFUNCTION ( CURLMOPT_SOCKETDATA )
+
+Socket callback will be called only if socket_action() method is being used.
+It receives 5 arguments: easy handle, socket file number, poll action, an
+undefined value (for now), and CURLMOPT_SOCKETDATA value. It must return 0.
+For more information reffer to L<curl_multi_socket_action(3)>.
+
+ sub cb_socket {
+     my ( $easy, $socketfn, $action, $undef, $uservar ) = @_;
+     # ... register or deregister socket actions ...
+     return 0;
+ }
+
+=item CURLMOPT_TIMERFUNCTION ( CURLMOPT_TIMERDATA ) 7.16.0+
+
+Timer callback receives 3 arguments: multi object, timeout in ms, and
+CURLMOPT_TIMERDATA value. Should return 0.
+
+ sub cb_timer {
+     my ( $multi, $timeout_ms, $uservar ) = @_;
+     # ... update timeout ...
+     return 0;
+ }
+
+=back
+
 
 =head1 SEE ALSO
 

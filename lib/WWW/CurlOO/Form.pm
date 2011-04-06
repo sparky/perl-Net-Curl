@@ -79,7 +79,7 @@ exported upon request.
 
  use WWW::CurlOO::Form qw(:constants);
 
-=head1 METHODS
+=head2 METHODS
 
 =over
 
@@ -193,7 +193,7 @@ serialization will be aborted.
 
  sub cb_serial
  {
-     my ( $form, $data, $userdata ) = @_;
+     my ( $form, $data, $uservar ) = @_;
 
      # do anything you want
 
@@ -213,7 +213,9 @@ Calls L<curl_formfree(3)>.
 
 =back
 
-=head1 FUNCTIONS
+=head2 FUNCTIONS
+
+None of those functions are exported, you must use fully qualified names.
 
 =over
 
@@ -223,6 +225,24 @@ Return a string for error code CODE.
 String is extracted from error constant name.
 
 =back
+
+=head2 CONSTANTS
+
+=over
+
+=item CURLFORM_*
+
+Most of those constants can be used in add() method.
+
+=item CURL_FORMADD_*
+
+If add() fails it will return one of those values.
+
+=back
+
+=head2 CALLBACKS
+
+Callback for get() is described already in L</"use a callback"> subsection.
 
 =head1 SEE ALSO
 

@@ -56,6 +56,8 @@ To perform any request you want L<WWW::CurlOO::Easy>.
 
 =head2 FUNCTIONS
 
+None of those functions are exported, you must use fully qualified names.
+
 =over
 
 =item version
@@ -110,6 +112,22 @@ Decodes date string returning its numerical value, in seconds.
  # Sun Nov  6 08:49:37 1994
 
 See L<curl_getdate(3)> for more info on supported input formats.
+
+=back
+
+=head2 CONSTANTS
+
+=over
+
+=item CURL_VERSION_* and CURLVERSION_*
+
+Can be used for decoding version_info() values. L<curl_version_info(3)>
+
+=item LIBCURL_*
+
+Can be used for determining buildtime libcurl version. Some WWW::CurlOO
+features will not be available if it was built with older libcurl, even if
+runtime libcurl version has necessary features.
 
 =back
 

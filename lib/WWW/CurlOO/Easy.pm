@@ -51,7 +51,7 @@ exported upon request.
 
  use WWW::CurlOO::Easy qw(:constants);
 
-=head1 METHODS
+=head2 METHODS
 
 =over
 
@@ -130,7 +130,9 @@ Calls L<curl_easy_cleanup(3)>.
 
 =back
 
-=head1 FUNCTIONS
+=head2 FUNCTIONS
+
+None of those functions are exported, you must use fully qualified names.
 
 =over
 
@@ -139,6 +141,117 @@ Calls L<curl_easy_cleanup(3)>.
 Return a string for error code CODE.
 
 Calls L<curl_easy_strerror(3)>.
+
+=back
+
+=head2 CONSTANTS
+
+WWW::CurlOO::Easy contains all the constants that do not form part of any
+other WWW::CurlOO modules. List below describes only the ones that behave
+differently than their C counterparts.
+
+=over
+
+=item CURLOPT_PRIVATE
+
+setopt() does not allow to use this constant. Hide any private data in your
+base object.
+
+=item CURLOPT_ERRORBUFFER
+
+setopt() does not allow to use this constant. You can always retrieve latest
+error message with OBJECT->error() method.
+
+=back
+
+=head2 CALLBACKS
+
+Reffer to libcurl documentation for more detailed info on each of those.
+
+=over
+
+=item CURLOPT_WRITEFUNCTION ( CURLOPT_WRITEDATA )
+
+write callback receives 3 arguments: easy object, data to write, and whatever
+CURLOPT_WRITEDATA was set to. It must return number of data bytes.
+
+ sub cb_write {
+     my ( $easy, $data, $uservar ) = @_;
+     # ... process ...
+     return length $data;
+ }
+
+=item CURLOPT_READFUNCTION ( CURLOPT_READDATA )
+
+B<THIS MAY CHANGE>, because support for CURL_READFUNC_ABORT and
+CURL_READFUNC_PAUSE is missing right now.
+
+read callback receives 3 arguments: easy object, maximum data length, and
+CURLOPT_READDATA value. It must return data read.
+
+ sub cb_read {
+     my ( $easy, $maxlen, $uservar ) = @_;
+     # ... read $data, $maxlen ...
+     return $data;
+ }
+
+=item CURLOPT_IOCTLFUNCTION ( CURLOPT_IOCTLDATA )
+
+Not supported yet.
+
+=item CURLOPT_SEEKFUNCTION ( CURLOPT_SEEKDATA ) 7.18.0+
+
+Not supported yet.
+
+=item CURLOPT_SOCKOPTFUNCTION ( CURLOPT_SOCKOPTDATA ) 7.15.6+
+
+Not supported yet.
+
+=item CURLOPT_OPENSOCKETFUNCTION ( CURLOPT_OPENSOCKETDATA ) 7.17.1+
+
+Not supported yet.
+
+=item CURLOPT_PROGRESSFUNCTION ( CURLOPT_PROGRESSDATA )
+
+Progress callback receives 6 arguments: easy object, dltotal, dlnow, ultotal,
+ulnow and CURLOPT_PROGRESSDATA value. It should return 0.
+
+ sub cb_progress {
+     my ( $easy, $dltotal, $dlnow, $ultotal, $ulnow, $uservar ) = @_;
+     # ... display progress ...
+     return 0;
+ }
+
+=item CURLOPT_HEADERFUNCTION ( CURLOPT_WRITEHEADER )
+
+Behaviour is the same as in write callback.
+
+=item CURLOPT_DEBUGFUNCTION ( CURLOPT_DEBUGDATA )
+
+Debug callback receives 4 arguments: easy object, message type, debug data
+and CURLOPT_DEBUGDATA value. Must return 0.
+
+ sub cb_debug {
+     my ( $easy, $type, $data, $uservar ) = @_;
+     # ... display debug info ...
+     return 0;
+ }
+
+=item CURLOPT_SSL_CTX_FUNCTION ( CURLOPT_SSL_CTX_DATA )
+
+Not supported, probably will never be.
+
+=item CURLOPT_INTERLEAVEFUNCTION ( CURLOPT_INTERLEAVEDATA ) 7.20.0+
+
+Not supported yet.
+
+=item CURLOPT_CHUNK_BGN_FUNCTION, CURLOPT_CHUNK_END_FUNCTION ( CURLOPT_CHUNK_DATA ) 7.21.0+
+
+Not supported yet.
+
+=item CURLOPT_FNMATCH_FUNCTION ( CURLOPT_FNMATCH_DATA ) 7.21.0+
+
+Not supported yet.
 
 =back
 

@@ -52,7 +52,7 @@ exported upon request.
 
  use WWW::CurlOO::Share qw(:constants);
 
-=head1 METHODS
+=head2 METHODS
 
 =over
 
@@ -80,7 +80,9 @@ Calls L<curl_share_cleanup(3)>.
 
 =back
 
-=head1 FUNCTIONS
+=head2 FUNCTIONS
+
+None of those functions are exported, you must use fully qualified names.
 
 =over
 
@@ -91,6 +93,53 @@ Return a string for error code CODE.
 See L<curl_share_strerror(3)> for more info.
 
 =back
+
+=head2 CONSTANTS
+
+=over
+
+=item CURLSHOPT_*
+
+Values for setopt().
+
+=item CURL_LOCK_ACCESS_*
+
+Values passed to lock callbacks.
+
+=item CURL_LOCK_DATA_*
+
+Values passed to lock and unlock callbacks.
+
+=back
+
+=head2 CALLBACKS
+
+Reffer to libcurl documentation for more detailed info on each of those.
+
+=over
+
+=item CURLSHOPT_LOCKFUNC ( CURLSHOPT_USERDATA )
+
+Lock callback receives 4 arguments: easy object, lock data, lock access,
+and CURLSHOPT_USERDATA value.
+
+ sub cb_lock {
+     my ( $easy, $data, $locktype, $uservar ) = @_;
+     # ... lock ...
+ }
+
+=item CURLSHOPT_UNLOCKFUNC ( CURLSHOPT_USERDATA )
+
+Unlock callback receives 3 arguments: easy object, lock data, and
+CURLSHOPT_USERDATA value.
+
+ sub cb_unlock {
+     my ( $easy, $data, $uservar ) = @_;
+     # ... unlock ...
+ }
+
+=back
+
 
 =head1 SEE ALSO
 
