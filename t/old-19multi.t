@@ -14,11 +14,27 @@ my $body2 = tempfile();
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
+my $last_fdset = "";
+my $last_cnt = 0;
 sub print_fdset
 {
 	my $cnt = unpack( "%32b*", join "", @_ );
 	my $n = join ", ", map { unpack( "H*", $_ ) } @_;
-	diag( "fdset is $cnt: ( $n )" );
+	my $diag = "fdset is $cnt: ( $n )";
+	if ( $diag eq $last_fdset ) {
+		$last_cnt++;
+	} else {
+		if ( $last_cnt ) {
+			if ( $last_cnt == 1 ) {
+				diag( $last_fdset );
+			} else {
+				diag( "... and $last_cnt more" );
+			}
+		}
+		$last_fdset = $diag;
+		$last_cnt = 0;
+		diag( $diag );
+	}
 }
 
 sub action_wait {
