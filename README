@@ -33,6 +33,7 @@ Multi:
 + allow calling strerror as function
 + write some documentation
 - write more documentation
+- info_read() should return result as ..::Easy::Code
 
 Share:
 - test with Easy
