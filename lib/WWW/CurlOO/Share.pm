@@ -62,9 +62,9 @@ as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
-Calls L<curl_share_init(3)>.
-
  my $share = WWW::CurlOO::Share->new( [qw(my very private data)] );
+
+Calls L<curl_share_init(3)>.
 
 =back
 
@@ -77,9 +77,9 @@ Calls L<curl_share_init(3)>.
 Set an option. OPTION is a numeric value, use one of CURLSHOPT_* constants.
 VALUE depends on whatever that option expects.
 
-Calls L<curl_share_setopt(3)>.
-
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
+
+Calls L<curl_share_setopt(3)>.
 
 =item DESTROY( )
 
@@ -99,9 +99,9 @@ None of those functions are exported, you must use fully qualified names.
 
 Return a string for error code CODE.
 
-See L<curl_share_strerror(3)> for more info.
-
  my $message = WWW::CurlOO::Share::strerror( CURLSHE_BAD_OPTION );
+
+See L<curl_share_strerror(3)> for more info.
 
 =back
 

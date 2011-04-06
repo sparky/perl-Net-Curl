@@ -61,9 +61,9 @@ as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
-Calls L<curl_easy_init(3)> and presets some defaults.
-
  my $easy = WWW::CurlOO::Easy->new( [qw(my very private data)] );
+
+Calls L<curl_easy_init(3)> and presets some defaults.
 
 =back
 
@@ -88,34 +88,34 @@ Calls L<curl_easy_duphandle(3)>.
 Set an option. OPTION is a numeric value, use one of CURLOPT_* constants.
 VALUE depends on whatever that option expects.
 
-Calls L<curl_easy_setopt(3)>.
-
  $easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL, $uri );
 
-=item pushopt( OPTION, ARRAY )
+Calls L<curl_easy_setopt(3)>.
+
+=item pushopt( OPTION, ARRAYREF )
 
 If option expects a slist, specified array will be appended instead of
 replacing the old slist.
 
-Calls L<curl_easy_setopt(3)>.
-
  $easy->pushopt( WWW::CurlOO::Easy::CURLOPT_HTTPHEADER, ['More: headers'] );
+
+Builds a slist and calls L<curl_easy_setopt(3)>.
 
 =item perform( )
 
 Perform upload and download process.
 
-Calls L<curl_easy_perform(3)>.
-
  $easy->perform();
+
+Calls L<curl_easy_perform(3)>.
 
 =item getinfo( OPTION )
 
 Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
 
-Calls L<curl_easy_getinfo(3)>.
-
  my $socket = $self->getinfo( WWW::CurlOO::Easy::CURLINFO_LASTSOCKET );
+
+Calls L<curl_easy_getinfo(3)>.
 
 =item error( )
 
@@ -131,9 +131,9 @@ a longer description.
 
 Send raw data.
 
-Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
-
  $easy->send( $data );
+
+Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
 
 =item recv( BUFFER, MAXLENGTH )
 
@@ -142,9 +142,9 @@ B<THIS MAY CHANGE YET>
 Receive raw data. Will receive at most MAXLENGTH bytes. New data will be
 concatenated to BUFFER.
 
-Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
-
  $easy->recv( $buffer, $len );
+
+Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
 
 =item DESTROY( )
 
@@ -164,11 +164,11 @@ None of those functions are exported, you must use fully qualified names.
 
 Return a string for error code CODE.
 
-Calls L<curl_easy_strerror(3)>.
-
  my $message = WWW::CurlOO::Easy::strerror(
      WWW::CurlOO::Easy::CURLE_OK
  );
+
+Calls L<curl_easy_strerror(3)>.
 
 =back
 

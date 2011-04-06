@@ -61,12 +61,14 @@ None of those functions are exported, you must use fully qualified names.
 
 =item version
 
-Returns libcurl version string. See L<curl_version(3)> for more info.
+Returns libcurl version string.
 
  my $libcurl_verstr = WWW::CurlOO::version();
  # prints something like:
  # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 libidn/1.20 libssh2/1.2.7 librtmp/2.3
  print $libcurl_verstr;
+
+Calls L<curl_version(3)> function.
 
 =item version_info
 
