@@ -847,7 +847,11 @@ recv( easy, buffer, length )
 		ret = curl_easy_recv( easy->handle, tmpbuf, length, &out_len );
 		EASY_DIE( ret );
 
-		sv_setpvn( buffer, tmpbuf, out_len );
+		if ( SvOK( buffer ) ) {
+			sv_catpvn( buffer, tmpbuf, out_len );
+		} else {
+			sv_setpvn( buffer, tmpbuf, out_len );
+		}
 
 		Safefree( tmpbuf );
 		RETVAL = out_len;
