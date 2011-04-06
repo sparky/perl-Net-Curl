@@ -5,8 +5,10 @@ use Test::More;
 use WWW::CurlOO::Easy qw(:constants);
 
 my $vi = WWW::CurlOO::version_info();
-plan skip_all => "curl $vi->{version} does not support send and recv"
-	if $vi->{version_num} < 0x071202;
+if ( WWW::CurlOO::LIBCURL_VERSION_NUM() < 0x071202 ) {
+	my $ver = WWW::CurlOO::LIBCURL_VERSION();
+	plan skip_all => "curl $ver does not support send and recv";
+}
 plan tests => 7;
 
 # host must support keep-alive connections
