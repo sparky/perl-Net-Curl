@@ -50,11 +50,11 @@ exported upon request.
 
  use WWW::CurlOO::Easy qw(:constants);
 
-=head2 METHODS
+=head2 CONSTRUCTOR
 
 =over
 
-=item CLASS->new( [BASE] )
+=item new( [BASE] )
 
 Creates new WWW::CurlOO::Easy object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
@@ -63,59 +63,79 @@ object.
 
 Calls L<curl_easy_init(3)> and presets some defaults.
 
-=item OBJECT->duphandle( [BASE] )
+ my $easy = WWW::CurlOO::Easy->new( [qw(my very private data)] );
+
+=back
+
+=head2 METHODS
+
+=over
+
+=item duphandle( [BASE] )
 
 Clone WWW::CurlOO::Easy object. It will not copy BASE from the source object.
 If you want it copied you must do it on your own.
 
- use WWW::CurlOO::Easy;
- use Storable qw(dclone);
+ my $hash_clone = $easy->duphandle( { %$easy } );
 
- my $shallow_clone = $easy->duphandle( { %$easy } );
+ use Storable qw(dclone);
  my $deep_clone = $easy->duphandle( dclone( $easy ) );
 
 Calls L<curl_easy_duphandle(3)>.
 
-=item OBJECT->setopt( OPTION, VALUE )
+=item setopt( OPTION, VALUE )
 
 Set an option. OPTION is a numeric value, use one of CURLOPT_* constants.
 VALUE depends on whatever that option expects.
 
 Calls L<curl_easy_setopt(3)>.
 
-=item OBJECT->pushopt( OPTION, ARRAY )
+ $easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL, $uri );
+
+=item pushopt( OPTION, ARRAY )
 
 If option expects a slist, specified array will be appended instead of
 replacing the old slist.
 
 Calls L<curl_easy_setopt(3)>.
 
-=item OBJECT->perform( )
+ $easy->pushopt( WWW::CurlOO::Easy::CURLOPT_HTTPHEADER, ['More: headers'] );
+
+=item perform( )
 
 Perform upload and download process.
 
 Calls L<curl_easy_perform(3)>.
 
-=item OBJECT->getinfo( OPTION )
+ $easy->perform();
+
+=item getinfo( OPTION )
 
 Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
 
 Calls L<curl_easy_getinfo(3)>.
 
-=item OBJECT->error( )
+ my $socket = $self->getinfo( WWW::CurlOO::Easy::CURLINFO_LASTSOCKET );
+
+=item error( )
 
 Get last error message.
 
 See information on C<CURLOPT_ERRORBUFFER> in L<curl_easy_setopt(3)> for
 a longer description.
 
-=item OBJECT->send( BUFFER )
+ my $error = $easy->error();
+ print "Last error: $error\n";
+
+=item send( BUFFER )
 
 Send raw data.
 
 Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
 
-=item OBJECT->recv( BUFFER, MAXLENGTH )
+ $easy->send( $data );
+
+=item recv( BUFFER, MAXLENGTH )
 
 B<THIS MAY CHANGE YET>
 
@@ -124,7 +144,9 @@ concatenated to BUFFER.
 
 Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
 
-=item OBJECT->DESTROY( )
+ $easy->recv( $buffer, $len );
+
+=item DESTROY( )
 
 Cleans up. It should not be called manually.
 
@@ -143,6 +165,10 @@ None of those functions are exported, you must use fully qualified names.
 Return a string for error code CODE.
 
 Calls L<curl_easy_strerror(3)>.
+
+ my $message = WWW::CurlOO::Easy::strerror(
+     WWW::CurlOO::Easy::CURLE_OK
+ );
 
 =back
 
@@ -169,6 +195,10 @@ error message with OBJECT->error() method.
 =head2 CALLBACKS
 
 Reffer to libcurl documentation for more detailed info on each of those.
+Callbacks can be set using setopt() method.
+
+ $easy->setopt( CURLOPT_somethingFUNCTION, \&something );
+ $easy->setopt( CURLOPT_somethingDATA, [qw(any additional data you want)] );
 
 =over
 
@@ -248,7 +278,8 @@ Not supported, probably will never be.
 
 Not supported yet.
 
-=item CURLOPT_CHUNK_BGN_FUNCTION, CURLOPT_CHUNK_END_FUNCTION ( CURLOPT_CHUNK_DATA ) 7.21.0+
+=item CURLOPT_CHUNK_BGN_FUNCTION, CURLOPT_CHUNK_END_FUNCTION
+    ( CURLOPT_CHUNK_DATA ) 7.21.0+
 
 Not supported yet.
 

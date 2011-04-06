@@ -78,18 +78,26 @@ exported upon request.
 
  use WWW::CurlOO::Form qw(:constants);
 
-=head2 METHODS
+=head2 CONSTRUCTOR
 
 =over
 
-=item CLASS->new( [BASE] )
+=item new( [BASE] )
 
 Creates new WWW::CurlOO::Form object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
-=item OBJECT->add( CURLFORM_option => DATA, ... )
+ my $form = WWW::CurlOO::Form->new( [qw(my very private data)] );
+
+=back
+
+=head2 METHODS
+
+=over
+
+=item add( CURLFORM_option => DATA, ... )
 
 Adds new section to form object. See L<curl_formadd(3)> for more info.
 B<WARNING: currently some option combination may crash your perl.>
@@ -146,7 +154,7 @@ an CURL_FORMADD_OPTION_TWICE exception will occur.
  );
 
 
-=item OBJECT->get( [BUFFER / FH / USERDATA], [CALLBACK] )
+=item get( [BUFFER / FH / USERDATA], [CALLBACK] )
 
 Use it to serialize the form object. Normally there is no need to use it
 because WWW::CurlOO::Easy will serialize it while uploading data.
@@ -204,7 +212,7 @@ serialization will be aborted.
 
 Calls L<curl_formget(3)>.
 
-=item OBJECT->DESTROY( )
+=item DESTROY( )
 
 Cleans up. It should not be called manually.
 
@@ -222,6 +230,10 @@ None of those functions are exported, you must use fully qualified names.
 
 Return a string for error code CODE.
 String is extracted from error constant name.
+
+ my $message = WWW::CurlOO::Form->strerror(
+     WWW::CurlOO::Form::CURL_FORMADD_OPTION_TWICE
+ );
 
 =back
 

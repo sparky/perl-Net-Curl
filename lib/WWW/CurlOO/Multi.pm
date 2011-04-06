@@ -63,11 +63,11 @@ exported upon request.
 
  use WWW::CurlOO::Multi qw(:constants);
 
-=head2 METHODS
+=head2 CONSTRUCTOR
 
 =over
 
-=item CLASS->new( [BASE] )
+=item new( [BASE] )
 
 Creates new WWW::CurlOO::Multi object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
@@ -76,57 +76,84 @@ object.
 
 Calls L<curl_multi_init(3)> and presets some defaults.
 
-=item OBJECT->add_handle( EASY )
+ my $multi = WWW::CurlOO::Multi->new( [qw(my very private data)] );
+
+=back
+
+=head2 METHODS
+
+=over
+
+=item add_handle( EASY )
 
 Add WWW::CurlOO::Easy to this WWW::CurlOO::Multi object.
 
 Calls L<curl_multi_add_handle(3)>.
 
-=item OBJECT->remove_handle( EASY )
+ $multi->add_handle( $easy );
+
+=item remove_handle( EASY )
 
 Remove WWW::CurlOO::Easy from this WWW::CurlOO::Multi object.
 
 Calls L<curl_multi_remove_handle(3)>.
 
-=item OBJECT->info_read( )
+ $multi->remove_handle( $easy );
+
+=item info_read( )
 
 Read last message from this Multi.
 
 Calls L<curl_multi_info_read(3)>.
 
-=item OBJECT->fdset( )
+ my ( $easy, $result, $msg ) = $multi->info_read();
+
+=item fdset( )
 
 Returns read, write and exception vectors suitable for
 L<select()|perlfunc/select> and L<vec()|perlfunc/vec> perl builtins.
 
 Calls L<curl_multi_fdset(3)>.
 
-=item OBJECT->timeout( )
+ my ( $rvec, $wvec, $evec ) = $multi->fdset();
+
+=item timeout( )
 
 Returns timeout value.
 
 Calls L<curl_multi_timeout(3)>.
 
-=item OBJECT->setopt( OPTION, VALUE )
+ my $timeout_ms = $multi->timeout();
+
+=item setopt( OPTION, VALUE )
 
 Set an option. OPTION is a numeric value, use one of CURLMOPT_* constants.
 VALUE depends on whatever that option expects.
 
 Calls L<curl_multi_setopt(3)>.
 
-=item OBJECT->perform( )
+ $multi->setopt( CURLMOPT_MAXCONNECTS, 10 );
+
+=item perform( )
 
 Perform.
 
 Calls L<curl_multi_perform(3)>.
 
-=item OBJECT->socket_action( [SOCKET], [BITMASK] )
+ my $active = $multi->perform();
+
+=item socket_action( [SOCKET], [BITMASK] )
 
 Signalize action on a socket.
 
 Calls L<curl_multi_socket_action(3)>.
 
-=item OBJECT->DESTROY( )
+ my $active = $multi->socket_action();
+
+ # there is data to read on socket:
+ my $active = $multi->socket_action( $socket, CURL_CSELECT_IN );
+
+=item DESTROY( )
 
 Cleans up. It should not be called manually.
 
@@ -145,6 +172,8 @@ None of those functions are exported, you must use fully qualified names.
 Return a string for error code CODE.
 
 See L<curl_multi_strerror(3)> for more info.
+
+ my $message = $multi->strerror( CURLM_BAD_EASY_HANDLE );
 
 =back
 

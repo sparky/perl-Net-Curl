@@ -51,11 +51,11 @@ exported upon request.
 
  use WWW::CurlOO::Share qw(:constants);
 
-=head2 METHODS
+=head2 CONSTRUCTOR
 
 =over
 
-=item CLASS->new( [BASE] )
+=item new( [BASE] )
 
 Creates new WWW::CurlOO::Share object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
@@ -64,14 +64,24 @@ object.
 
 Calls L<curl_share_init(3)>.
 
-=item OBJECT->setopt( OPTION, VALUE )
+ my $share = WWW::CurlOO::Share->new( [qw(my very private data)] );
+
+=back
+
+=head2 METHODS
+
+=over
+
+=item setopt( OPTION, VALUE )
 
 Set an option. OPTION is a numeric value, use one of CURLSHOPT_* constants.
 VALUE depends on whatever that option expects.
 
 Calls L<curl_share_setopt(3)>.
 
-=item OBJECT->DESTROY( )
+ $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
+
+=item DESTROY( )
 
 Cleans up. It should not be called manually.
 
@@ -90,6 +100,8 @@ None of those functions are exported, you must use fully qualified names.
 Return a string for error code CODE.
 
 See L<curl_share_strerror(3)> for more info.
+
+ my $message = WWW::CurlOO::Share::strerror( CURLSHE_BAD_OPTION );
 
 =back
 
