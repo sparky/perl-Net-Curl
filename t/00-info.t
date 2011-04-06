@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 2;
+use Test::More tests => 4;
 use WWW::CurlOO;
 
 diag "libcurl\n";
@@ -18,7 +18,7 @@ foreach my $key ( sort keys %$vi ) {
 		$value = join ', ', sort @$value;
 	} elsif ( $value =~ m/^\d+$/ ) {
 		$value = sprintf "0x%06x", $value
-			if $value > 15;
+			if $value > 255;
 	} else {
 		$value = "'$value'";
 	}
@@ -47,8 +47,38 @@ sub print_features
 	diag "\tmissing features = @missing;\n";
 }
 
+diag "build version:\n";
+my @buildtime = qw(
+	LIBCURL_COPYRIGHT
+	LIBCURL_VERSION
+	LIBCURL_VERSION_NUM
+	LIBCURL_VERSION_MAJOR
+	LIBCURL_VERSION_MINOR
+	LIBCURL_VERSION_PATCH
+	LIBCURL_TIMESTAMP
+);
+foreach my $key ( @buildtime ) {
+	my $value = WWW::CurlOO->$key();
+	if ( $value =~ m/^\d+$/ ) {
+		$value = sprintf "0x%06x", $value
+			if $value > 255;
+	} else {
+		$value = "'$value'";
+	}
+
+	diag "\t$key = $value\n";
+}
+
 # older than this are not supported
-ok( $vi->{age} >= WWW::CurlOO::CURLVERSION_THIRD, "age ($vi->{age}) >= WWW::CurlOO::CURLVERSION_THIRD" );
+cmp_ok( $vi->{age}, '>=', WWW::CurlOO::CURLVERSION_THIRD,
+	"{age} >= WWW::CurlOO::CURLVERSION_THIRD" );
 
 # has same version as the one we compiled with
-ok( $vi->{age} == WWW::CurlOO::CURLVERSION_NOW, "age ($vi->{age}) == WWW::CurlOO::CURLVERSION_NOW" );
+cmp_ok( $vi->{age}, '==', WWW::CurlOO::CURLVERSION_NOW,
+	"{age} == WWW::CurlOO::CURLVERSION_NOW" );
+
+is( $vi->{version}, WWW::CurlOO::LIBCURL_VERSION,
+	"{version} eq WWW::CurlOO::LIBCURL_VERSION" );
+
+cmp_ok( $vi->{version_num}, '==', WWW::CurlOO::LIBCURL_VERSION_NUM,
+	"{version_num} == WWW::CurlOO::LIBCURL_VERSION_NUM" );
