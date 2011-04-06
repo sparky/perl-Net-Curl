@@ -115,7 +115,9 @@ WriteMakefile(
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
-		'$(FIRST_MAKEFILE)' => 'CurlOO_Easy.xsh CurlOO_Form.xsh CurlOO_Multi.xsh CurlOO_Share.xsh'
+		'$(FIRST_MAKEFILE)' => join ( " ", qw(CurlOO_Easy.xsh CurlOO_Form.xsh
+			CurlOO_Multi.xsh CurlOO_Share.xsh),
+			glob "examples/*.pl" ),
 	},
 	clean		=> {
 		FILES => 'const-*.inc curloo-*.inc lib/WWW/CurlOO/examples.pod'
