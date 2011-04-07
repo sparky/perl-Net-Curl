@@ -239,3 +239,5 @@ if ( defined $length ) {
 }
 
 printf "Last error: %s\n", $t->error();
+#nopod
+# vim: ts=4:sw=4

@@ -121,3 +121,5 @@ while ( my ( $easy, $result, $msg ) = $multi->get_one() ) {
 }
 
 exit $ret;
+#nopod
+# vim: ts=4:sw=4

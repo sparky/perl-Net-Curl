@@ -8,6 +8,7 @@ MANIFEST
 Makefile.PL
 README
 examples/01-curl-transport.pl
+examples/02-multi-simple.pl
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm
