@@ -7,7 +7,7 @@ use Exporter 'import';
 
 our $VERSION;
 BEGIN {
-	$VERSION = '0.09';
+	$VERSION = '0.10';
 	XSLoader::load( __PACKAGE__, $VERSION );
 }
 END {
