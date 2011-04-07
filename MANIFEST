@@ -11,6 +11,7 @@ examples/01-curl-transport.pl
 examples/02-multi-simple.pl
 examples/03-multi-event.pl
 lib/WWW/CurlOO.pm
+lib/WWW/CurlOO/Compat.pm
 lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm
 lib/WWW/CurlOO/Multi.pm
