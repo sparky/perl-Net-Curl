@@ -31,8 +31,11 @@ sub new
 {
 	my $class = shift;
 
-	# no base object, we'll use the default hash
+	# no base object this time
+	# we'll use the default hash
+
 	my $multi = $class->SUPER::new();
+
 	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_SOCKETFUNCTION,
 		\&_cb_socket );
 	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_TIMERFUNCTION,
@@ -43,6 +46,9 @@ sub new
 	return $multi;
 }
 
+
+# socket callback:
+# will be called by curl any time events on some socket must be updated
 sub _cb_socket
 {
 	my ( $easy, $socket, $poll ) = @_;
@@ -82,6 +88,11 @@ sub _cb_socket
 	return 1;
 }
 
+
+# timer callback:
+# It triggers timeout update. Timeout value tells us how soon socket_action
+# must be called if there were no actions on sockets. This will allow
+# curl to trigger timeout events.
 sub _cb_timer
 {
 	my ( $multi, $timeout_ms ) = @_;
@@ -110,6 +121,7 @@ sub _cb_timer
 			$multi->{timer} = AE::timer 10, 10, $cb;
 		#}
 	} else {
+		# This will trigger timeouts if there are any.
 		$multi->{timer} = AE::timer $timeout_ms / 1000, 0, $cb;
 	}
 
@@ -125,15 +137,15 @@ sub add_handle($$)
 	die "easy cannot finish()\n"
 		unless $easy->can( 'finish' );
 
-	# calling socket_action with default arguments will trigger socket callback
-	# and register io
+	# Calling socket_action with default arguments will trigger socket callback
+	# and register IO events.
 	#
-	# It _must_ be called after add_handle(), AE will take care of that.
+	# It _must_ be called _after_ add_handle(); AE will take care of that.
 	#
 	# We are delaying the call because in some cases socket_action may finish
 	# inmediatelly (i.e. there was some error or we used persistent connections
 	# and server returned data right away) and it could confuse our
-	# application.
+	# application -- it would appear to have finished before it started.
 	AE::timer 0, 0, sub {
 		$multi->socket_action();
 	};
@@ -169,7 +181,7 @@ Multi::Event requires Easy object to provide finish() method.
 package Easy::Event;
 use strict;
 use warnings;
-use WWW::CurlOO::Easy;
+use WWW::CurlOO::Easy qw(/^CURLOPT_/);
 use base qw(WWW::CurlOO::Easy);
 
 sub new
@@ -179,9 +191,9 @@ sub new
 	my $cb = shift;
 
 	my $easy = $class->SUPER::new( { uri => $uri, body => '', cb => $cb } );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL(), $uri );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_WRITEHEADER(), \$easy->{headers} );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_FILE(), \$easy->{body} );
+	$easy->setopt( CURLOPT_URL, $uri );
+	$easy->setopt( CURLOPT_WRITEHEADER, \$easy->{headers} );
+	$easy->setopt( CURLOPT_FILE, \$easy->{body} );
 
 	return $easy;
 }
@@ -211,7 +223,7 @@ package main;
 #endnopod
 use AnyEvent;
 
-my $multie = Multi::Event->new();
+my $multi = Multi::Event->new();
 my $cv = AE::cv;
 
 
@@ -237,7 +249,7 @@ sub done
 my $timer;
 $timer = AE::timer 0, 0.1, sub {
 	my $uri = shift @uris;
-	$multie->add_handle( Easy::Event->new( $uri, \&done ) );
+	$multi->add_handle( Easy::Event->new( $uri, \&done ) );
 
 	unless ( @uris ) {
 		undef $timer;
