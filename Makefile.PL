@@ -22,7 +22,15 @@ if ( $curl{libs} and $curl{version} ) {
 		printf " %8s => %s\n", $k, $v;
 	}
 } else {
-	%curl = ExtUtils::PkgConfig->find( 'libcurl' );
+	eval {
+		%curl = ExtUtils::PkgConfig->find( 'libcurl' );
+	};
+	if ( $@ ) {
+		print STDERR "$@\n";
+		print STDERR "NA: Unable to build WWW::CurlOO on this platform.\n";
+		exit 0;
+	}
+
 	$curl{version} = $curl{modversion};
 
 	print "Found libcurl version $curl{version}\n";
@@ -30,8 +38,9 @@ if ( $curl{libs} and $curl{version} ) {
 	if ( eval "v$curl{version} lt v$minimum_libcurl_ver" ) {
 		print
 			"Your currently installed libcurl version - $curl{version} - is too old.\n".
-			"This module does not support libcurl older than $minimum_libcurl_ver\n";
-		exit 1;
+			"This module does not support libcurl older than $minimum_libcurl_ver\n\n";
+		print STDERR "NA: Unable to build WWW::CurlOO on this platform.\n";
+		exit 0;
 	}
 }
 
