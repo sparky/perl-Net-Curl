@@ -3,11 +3,6 @@
 This module shows how to use WWW::CurlOO::Multi interface with an event
 library, AnyEvent in this case.
 
-=head2 Problems
-
-AnyEvent does not allow registering io callbacks for both reading and writing,
-but it rarely is useful.
-
 =head2 Motivation
 
 This is the most efficient method for using WWW::CurlOO::Multi interface,
@@ -25,16 +20,19 @@ use AnyEvent;
 use WWW::CurlOO::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
 use base qw(WWW::CurlOO::Multi);
 
-# XXX: remove
-my $multi;
+BEGIN {
+	if ( not WWW::CurlOO::Multi->can( 'CURLMOPT_TIMERFUNCTION' ) ) {
+		die "WWW::CurlOO::Multi is missing timer callback,\n" .
+			"rebuild WWW::CurlOO with libcurl 7.16.0 or newer\n";
+	}
+}
 
 sub new
 {
 	my $class = shift;
 
 	# no base object, we'll use the default hash
-	#my
-	$multi = $class->SUPER::new();
+	my $multi = $class->SUPER::new();
 	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_SOCKETFUNCTION,
 		\&_cb_socket );
 	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_TIMERFUNCTION,
@@ -57,8 +55,7 @@ sub _cb_socket
 	# This is why we register socket events inside multi object
 	# and not $easy.
 
-	# XXX: this is missing yet
-	#my $multi = $easy->multi;
+	my $multi = $easy->multi;
 
 	# deregister old io events
 	delete $multi->{ "r$socket" };
