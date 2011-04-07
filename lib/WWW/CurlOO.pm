@@ -1,14 +1,32 @@
 package WWW::CurlOO;
 
 use strict;
-use warnings;
-use XSLoader ();
 use Exporter 'import';
 
+our @ISA;
 our $VERSION;
 BEGIN {
 	$VERSION = '0.10';
-	XSLoader::load( __PACKAGE__, $VERSION );
+
+	my $loaded = 0;
+
+	my $load_xs = sub {
+		require XSLoader;
+		XSLoader::load( __PACKAGE__, $VERSION );
+		$loaded = 1;
+	};
+	my $load_dyna = sub {
+		require DynaLoader;
+		@ISA = qw(DynaLoader);
+		DynaLoader::bootstrap( __PACKAGE__ );
+		$loaded = 1;
+	};
+	eval { $load_xs->() } if $INC{ "XSLoader.pm" };
+	eval { $load_dyna->() } if $INC{ "DynaLoader.pm" } and not $loaded;
+	unless ( $loaded ) {
+		eval { $load_xs->(); };
+		$load_dyna->() if $@;
+	}
 }
 END {
 	_global_cleanup();
