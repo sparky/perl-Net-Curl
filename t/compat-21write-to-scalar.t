@@ -37,6 +37,6 @@ ok( $realurl, "getinfo returns CURLINFO_EFFECTIVE_URL");
 my $httpcode = $curl->getinfo(CURLINFO_HTTP_CODE);
 ok( $httpcode, "getinfo returns CURLINFO_HTTP_CODE");
 
-note("Bytes: $bytes");
-note("realurl: $realurl");
-note("httpcode: $httpcode");
+#note("Bytes: $bytes");
+#note("realurl: $realurl");
+#note("httpcode: $httpcode");
