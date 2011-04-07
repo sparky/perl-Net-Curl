@@ -146,6 +146,13 @@ concatenated to BUFFER.
 
 Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
 
+=item multi( )
+
+If easy object is associated with any multi handles, it will return that
+multi handle.
+
+ my $multi = $easy->multi;
+
 =item DESTROY( )
 
 Cleans up. It should not be called manually.

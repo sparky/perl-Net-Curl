@@ -713,18 +713,6 @@ setopt( easy, option, value )
 
 
 void
-pushopt( easy, option, value )
-	WWW::CurlOO::Easy easy
-	int option
-	SV *value
-	PREINIT:
-		CURLcode ret;
-	CODE:
-		ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
-		EASY_DIE( ret );
-
-
-void
 perform( easy )
 	WWW::CurlOO::Easy easy
 	PREINIT:
@@ -882,5 +870,33 @@ strerror( ... )
 #endif
 		errstr = curl_easy_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
+	OUTPUT:
+		RETVAL
+
+
+=head1 Extensions
+
+Functions that do not have libcurl equivalents.
+
+=cut
+
+
+void
+pushopt( easy, option, value )
+	WWW::CurlOO::Easy easy
+	int option
+	SV *value
+	PREINIT:
+		CURLcode ret;
+	CODE:
+		ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
+		EASY_DIE( ret );
+
+
+SV *
+multi( easy )
+	WWW::CurlOO::Easy easy
+	CODE:
+		RETVAL = easy->multi ? newSVsv( easy->multi->perl_self ) : &PL_sv_undef;
 	OUTPUT:
 		RETVAL
