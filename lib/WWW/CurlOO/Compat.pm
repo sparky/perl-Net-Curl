@@ -29,7 +29,7 @@ my @packages = qw(
 sub _copy_constants
 {
 	my $EXPORT = shift;
-	my $dest = shift . "::";
+	my $dest = (shift) . "::";
 	my $source = shift;
 
 	no strict 'refs';
