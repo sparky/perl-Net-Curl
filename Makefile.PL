@@ -331,9 +331,9 @@ sub write_examples_pod
 
 	print "Writing $out\n";
 	open my $o, ">", $out;
+	print $o "=head1 WWW::CurlOO examples\n\n";
 
 	foreach my $script ( sort glob "examples/*.pl" ) {
-
 		my $nopod = 0;
 		my $code = 1;
 
@@ -362,8 +362,12 @@ sub write_examples_pod
 			s/\t/    /g;
 			s/ +$//;
 			print $o $_;
+			if ( /^=head1\s/ ) {
+				print $o "\n=head4 I<Extracted from C<$script>>\n";
+			}
 		}
 
+		print $o "\n\n";
 	}
 }
 
