@@ -16,6 +16,7 @@ Easy:
 + write some documentation
 - write more documentation
 - multiple options in setopt
+- duphandle must copy package name from source object
 
 Form:
 - test with Easy
