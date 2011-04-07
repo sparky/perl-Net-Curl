@@ -131,7 +131,7 @@ do {
 	}
 
 	if ( $active_now != $active ) {
-		while (my ($easy, $value, $msg, $error) = $curlm->info_read) {
+		while (my ($msg, $easy, $value) = $curlm->info_read) {
 			$curlm->remove_handle( $easy );
 			#warn "Reaped child: $id, $value\n";
 			ok( $value == 0, "child $easy->{name} exited correctly" );

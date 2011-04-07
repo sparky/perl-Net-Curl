@@ -45,7 +45,7 @@ sub get_one($)
 	my $self = shift;
 
 	if ( my @result = $self->info_read() ) {
-		$self->remove_handle( $result[ 0 ] );
+		$self->remove_handle( $result[ 1 ] );
 		return @result;
 	}
 
@@ -62,7 +62,7 @@ sub get_one($)
 		if ( $$self != $ret ) {
 			$$self = $ret;
 			if ( my @result = $self->info_read() ) {
-				$self->remove_handle( $result[ 0 ] );
+				$self->remove_handle( $result[ 1 ] );
 				return @result;
 			}
 		}
@@ -112,7 +112,7 @@ $multi->add_handle( easy( "http://example.com/5" ) );
 $multi->add_handle( easy( "http://example.com/6" ) );
 
 my $ret = 0;
-while ( my ( $easy, $result, $msg ) = $multi->get_one() ) {
+while ( my ( $msg, $easy, $result ) = $multi->get_one() ) {
 	print "\nFinished downloading $easy->{uri}: $result:\n";
 	print $easy->{headers};
 	printf "Body is %d bytes long\n", length $easy->{body};

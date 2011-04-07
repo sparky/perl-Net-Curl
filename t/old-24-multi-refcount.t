@@ -58,7 +58,7 @@ ok( $ref, "Ref alive $$ref" );
 ok( $$ref eq "foo", "Ref correct" );
 
 {
-	my ( $easy, $value, $msg, $error ) = $curlm->info_read;
+	my ( $msg, $easy, $value ) = $curlm->info_read;
 
 	$curlm->remove_handle( $easy );
 

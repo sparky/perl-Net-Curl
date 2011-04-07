@@ -163,11 +163,13 @@ sub socket_action
 
 	$multi->{active} = $active;
 
-	while ( my ( $easy, $result ) = $multi->info_read() ) {
-		#if ( $msg == CURLMSG_DONE ) {
-		$multi->remove_handle( $easy );
-		$easy->finish( $result );
-		#}
+	while ( my ( $msg, $easy, $result ) = $multi->info_read() ) {
+		if ( $msg == WWW::CurlOO::Multi::CURLMSG_DONE ) {
+			$multi->remove_handle( $easy );
+			$easy->finish( $result );
+		} else {
+			die "I don't know what to do with message $msg.\n";
+		}
 	}
 }
 
