@@ -48,7 +48,7 @@ B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
          if $timeout > 0;
 
      $running = $multi->perform();
-     while ( my ( $easy, $result, $msg ) = $multi->info_read() ) {
+     while ( my ( $msg, $easy, $result ) = $multi->info_read() ) {
          $multi->remove_handle( $easy );
 
          # process $easy
@@ -104,7 +104,7 @@ Calls L<curl_multi_remove_handle(3)>.
 
 Read last message from this Multi.
 
- my ( $easy, $result, $msg ) = $multi->info_read();
+ my ( $msg, $easy, $result ) = $multi->info_read();
 
 Calls L<curl_multi_info_read(3)>.
 

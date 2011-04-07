@@ -174,13 +174,19 @@ info_read( multi )
 			/* most likely CURLMSG_DONE */
 			if ( msg->msg != CURLMSG_NONE && msg->msg != CURLMSG_LAST ) {
 				WWW__CurlOO__Easy easy;
+				SV *errsv;
+
 				curl_easy_getinfo( msg->easy_handle,
 					CURLINFO_PRIVATE, (void *) &easy );
 
 				EXTEND( SP, 3 );
-				mPUSHs( newSVsv( easy->perl_self ) );
-				mPUSHs( newSViv( msg->data.result ) );
 				mPUSHs( newSViv( msg->msg ) );
+				mPUSHs( newSVsv( easy->perl_self ) );
+
+				errsv = sv_newmortal();
+				sv_setref_iv( errsv, "WWW::CurlOO::Easy::Code",
+					msg->data.result );
+				PUSHs( errsv );
 
 				/* cannot rethrow errors, because we want to make sure we
 				 * return the easy, but $@ should be set */
