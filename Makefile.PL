@@ -131,6 +131,7 @@ WriteMakefile(
 	clean		=> {
 		FILES => 'const-*.inc curloo-*.inc lib/WWW/CurlOO/examples.pod'
 	},
+	DIR			=> [], # no other Makefile.PL
 );
 
 exit 0;
