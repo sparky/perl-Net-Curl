@@ -14,6 +14,7 @@ lib/WWW/CurlOO/Easy.pm
 lib/WWW/CurlOO/Form.pm
 lib/WWW/CurlOO/Multi.pm
 lib/WWW/CurlOO/Share.pm
+lib/WWW/CurlOO/examples.pod
 inc/symbols-in-versions
 t/00-info.t
 t/01-constants.t
