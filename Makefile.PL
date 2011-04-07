@@ -27,7 +27,7 @@ if ( $curl{libs} and $curl{version} ) {
 	};
 	if ( $@ ) {
 		print STDERR "$@\n";
-		print STDERR "NA: Unable to build WWW::CurlOO on this platform.\n";
+		print STDERR "NA: Unable to build distribution on this platform.\n";
 		exit 0;
 	}
 
@@ -39,7 +39,7 @@ if ( $curl{libs} and $curl{version} ) {
 		print
 			"Your currently installed libcurl version - $curl{version} - is too old.\n".
 			"This module does not support libcurl older than $minimum_libcurl_ver\n\n";
-		print STDERR "NA: Unable to build WWW::CurlOO on this platform.\n";
+		print STDERR "NA: Unable to build distribution on this platform.\n";
 		exit 0;
 	}
 }
