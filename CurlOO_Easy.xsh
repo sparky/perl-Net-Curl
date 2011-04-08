@@ -686,7 +686,15 @@ setopt( easy, option, value )
 						ppv = perl_curl_optionll_add( aTHX_ &easy->strings, option );
 						if ( ppv )
 							Safefree( *ppv );
+#ifdef savesvpv
 						pv = *ppv = savesvpv( value );
+#else
+						{
+							STRLEN len;
+							char *src = SvPV( value, len );
+							pv = *ppv = savepvn( src, len );
+						}
+#endif
 					} else {
 						pv = perl_curl_optionll_del( aTHX_ &easy->strings, option );
 						if ( pv )
