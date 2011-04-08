@@ -61,14 +61,22 @@ cb_share_lock( CURL *easy_handle, curl_lock_data data, curl_lock_access locktype
 	perl_curl_easy_t *easy;
 
 	share = (perl_curl_share_t *) userptr;
-	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	/* $easy, $data, $locktype, [$userdata] */
+	/* $share, [$easy], $data, $locktype, [$userdata] */
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		newSVsv( share->perl_self ),
+		NULL,
 		newSViv( data ),
 		newSViv( locktype )
 	};
+
+	/* easy_handle may be NULL */
+	if ( easy_handle ) {
+		(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
+		args[1] = newSVsv( easy->perl_self );
+	} else {
+		args[1] = newSVsv( &PL_sv_undef );
+	}
 
 	PERL_CURL_CALL( &share->cb[ CB_SHARE_LOCK ], args );
 	return;
@@ -84,14 +92,22 @@ cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 	callback_t *cb;
 
 	share = (perl_curl_share_t *) userptr;
-	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 	cb = &share->cb[ CB_SHARE_UNLOCK ];
 
-	/* $easy, $data, [$userdata] */
+	/* $share, [$easy], $data, [$userdata] */
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		newSVsv( share->perl_self ),
+		NULL,
 		newSViv( data )
 	};
+
+	/* easy_handle may be NULL */
+	if ( easy_handle ) {
+		(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
+		args[1] = newSVsv( easy->perl_self );
+	} else {
+		args[1] = newSVsv( &PL_sv_undef );
+	}
 
 	PERL_CURL_CALL( &share->cb[ CB_SHARE_UNLOCK ], args );
 	return;
@@ -121,6 +137,7 @@ new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
 
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
+		share->perl_self = ST(0);
 
 		XSRETURN(1);
 
