@@ -69,12 +69,21 @@ BEGIN {
 	}
 }
 
+# what is that anyways ?
+$WWW::Curl::Easy::headers = "";
+$WWW::Curl::Easy::content = "";
+
 # for now new() behaves in a compatible manner,
 # on error in future versions
-#sub new {}
+sub new
+{
+	my $class = shift || __PACKAGE__;
+	return $class->SUPER::new();
+}
 
-*init = \&WWW::CurlOO::Easy::new;
+*init = \&new;
 *errbuf = \&WWW::CurlOO::Easy::error;
+*strerror = \&WWW::CurlOO::Easy::strerror;
 
 *version = \&WWW::CurlOO::version;
 
@@ -224,9 +233,13 @@ sub perform
 	if ( defined $self->{errorbuffer} ) {
 		my $error = $self->error();
 
-		# copy error message to specified global variable
 		no strict 'refs';
+
+		# copy error message to specified global variable
+		# not really sure where that should go
 		*{ "main::" . $self->{errorbuffer} } = \$error;
+		*{ "::" . $self->{errorbuffer} } = \$error;
+		*{ $self->{errorbuffer} } = \$error;
 	}
 	unless ( $@ ) {
 		return 0;
@@ -267,6 +280,12 @@ sub constant
 	return $value;
 }
 
+sub new
+{
+	my $class = shift || __PACKAGE__;
+	return $class->SUPER::new();
+}
+
 sub formadd
 {
 	my ( $self, $name, $value ) = @_;
@@ -291,6 +310,14 @@ package WWW::Curl::Multi;
 use WWW::CurlOO ();
 use WWW::CurlOO::Multi ();
 our @ISA = qw(WWW::CurlOO::Multi);
+
+*strerror = \&WWW::CurlOO::Multi::strerror;
+
+sub new
+{
+	my $class = shift || __PACKAGE__;
+	return $class->SUPER::new();
+}
 
 sub add_handle
 {
@@ -368,6 +395,14 @@ BEGIN {
 		\@EXPORT, __PACKAGE__, "WWW::CurlOO::Share::" );
 }
 
+*strerror = \&WWW::CurlOO::Share::strerror;
+
+sub new
+{
+	my $class = shift || __PACKAGE__;
+	return $class->SUPER::new();
+}
+
 # this thing is weird !
 sub constant
 {
@@ -380,6 +415,17 @@ sub constant
 		return undef;
 	}
 	return $value;
+}
+
+sub setopt
+{
+	my ($self, $option, $value) = @_;
+	eval {
+		$self->SUPER::setopt( $option, $value );
+	};
+	return 0 unless $@;
+	return 0+$@ if ref $@ eq "WWW::CurlOO::Form::Code";
+	die $@;
 }
 
 1;
