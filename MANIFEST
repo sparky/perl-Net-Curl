@@ -27,16 +27,11 @@ t/compat-01basic.t
 t/compat-02callbacks.t
 t/compat-04abort-test.t
 t/compat-05progress.t
-t/compat-06http-post.t
-t/compat-07ftp-upload.t
 t/compat-08ssl.t
 t/compat-09times.t
 t/compat-10errbuf.t
-t/compat-13slowleak.t
 t/compat-14duphandle.t
 t/compat-15duphandle-callback.t
-t/compat-16formpost.t
-t/compat-17slist.t
 t/compat-18twinhandles.t
 t/compat-19multi.t
 t/compat-20undefined_subs.t
