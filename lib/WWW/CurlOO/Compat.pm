@@ -5,9 +5,53 @@ WWW::CurlOO::Compat -- compatibility layer for WWW::Curl
 
 =head1 SYNOPSIS
 
+ --- old.pl
+ +++ new.pl
+ @@ -2,6 +2,8 @@
+  use strict;
+  use warnings;
+
+ +# support both WWW::CurlOO (default) and WWW::Curl
+ +BEGIN { eval { require WWW::CurlOO::Compat; } }
+  use WWW::Curl::Easy 4.15;
+  use WWW::Curl::Multi;
+
+=head1 DESCRIPTION
+
+WWW::CurlOO::Compat lets you use WWW::CurlOO in applications and modules
+that normally use WWW::Curl. There are several ways to accomplish it:
+
+=head2 EXECUTION
+
+Execute an application through perl with C<-MWWW::CurlOO::Compat> argument:
+
+ perl -MWWW::CurlOO::Compat APPLICATION [ARGUMENTS]
+
+=head2 CODE, use WWW::CurlOO by default
+
+Add this line before including any WWW::Curl modules:
+
  BEGIN { eval { require WWW::CurlOO::Compat; } }
 
- use WWW::Curl::Easy;
+This will try to preload WWW::CurlOO, but won't fail if it isn't available.
+
+=head2 CODE, use WWW::Curl by default
+
+Add those lines before all the others that use WWW::Curl:
+
+ BEGIN {
+     eval { require WWW::Curl; }
+     require WWW::CurlOO::Compat if $@;
+ }
+
+This will try WWW::Curl first, but will fallback to WWW::CurlOO if that fails.
+
+=head1 NOTE
+
+If you want to write compatible code, DO NOT USE WWW::CurlOO::Compat during
+development. This module hides all the incompatibilities, but does not disable
+any of the features that are unique to WWW::CurlOO. You could end up using
+methods that do not yet form part of official WWW::Curl distribution.
 
 =cut
 
@@ -73,8 +117,6 @@ BEGIN {
 $WWW::Curl::Easy::headers = "";
 $WWW::Curl::Easy::content = "";
 
-# for now new() behaves in a compatible manner,
-# on error in future versions
 sub new
 {
 	my $class = shift || __PACKAGE__;
@@ -91,7 +133,6 @@ sub cleanup { 0 };
 
 sub internal_setopt { die };
 
-# there is a bug in CurlOO duphandle - 
 sub duphandle
 {
 	my ( $source ) = @_;
@@ -173,12 +214,8 @@ sub setopt
 	eval {
 		$self->SUPER::setopt( $option, $value );
 	};
-	unless ( $@ ) {
-		return 0;
-	}
-	if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
-		return 0+$@;
-	}
+	return 0 unless $@;
+	return 0+$@ if ref $@ eq "WWW::CurlOO::Easy::Code";
 	die $@;
 }
 
@@ -188,9 +225,7 @@ sub pushopt
 	eval {
 		$self->SUPER::pushopt( $option, $value );
 	};
-	unless ( $@ ) {
-		return 0;
-	}
+	return 0 unless $@;
 	if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
 		# WWW::Curl allows to use pushopt on non-slist arguments
 		if ( $@ == CURLE_BAD_FUNCTION_ARGUMENT ) {
@@ -212,9 +247,8 @@ sub getinfo
 		eval {
 			$ret = $self->SUPER::getinfo( $option );
 		};
-		if ( $@ and ref $@ eq "WWW::CurlOO::Easy::Code" ) {
-			return undef;
-		} elsif ( $@ ) {
+		if ( $@ ) {
+			return undef if ref $@ eq "WWW::CurlOO::Easy::Code";
 			die $@;
 		}
 	}
@@ -241,12 +275,8 @@ sub perform
 		*{ "::" . $self->{errorbuffer} } = \$error;
 		*{ $self->{errorbuffer} } = \$error;
 	}
-	unless ( $@ ) {
-		return 0;
-	}
-	if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
-		return 0+$@;
-	}
+	return 0 unless $@;
+	return 0+$@ if ref $@ eq "WWW::CurlOO::Easy::Code";
 	die $@;
 }
 
@@ -289,20 +319,24 @@ sub new
 sub formadd
 {
 	my ( $self, $name, $value ) = @_;
-	return $self->add(
-		CURLFORM_COPYNAME, $name,
-		CURLFORM_COPYCONTENTS, $value
-	);
+	eval {
+		$self->add(
+			CURLFORM_COPYNAME, $name,
+			CURLFORM_COPYCONTENTS, $value
+		);
+	};
 }
 
 sub formaddfile
 {
 	my ( $self, $filename, $description, $type ) = @_;
-	return $self->add(
-		CURLFORM_FILE, $filename,
-		CURLFORM_COPYNAME, $description,
-		CURLFORM_CONTENTTYPE, $type,
-	);
+	eval {
+		$self->add(
+			CURLFORM_FILE, $filename,
+			CURLFORM_COPYNAME, $description,
+			CURLFORM_CONTENTTYPE, $type,
+		);
+	};
 }
 
 
