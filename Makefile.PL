@@ -1,7 +1,6 @@
 use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
-use ExtUtils::PkgConfig;
 
 # you can set those manually if curl-config is not working for you
 my %curl = (
@@ -23,20 +22,31 @@ if ( $curl{libs} and $curl{version} ) {
 	}
 } else {
 	eval {
+		require ExtUtils::PkgConfig;
 		%curl = ExtUtils::PkgConfig->find( 'libcurl' );
+		$curl{version} = $curl{modversion};
 	};
 	if ( $@ ) {
-		print STDERR "$@\n";
-		print STDERR "NA: Unable to build distribution on this platform.\n";
-		exit 0;
-	}
+		print STDERR "pkgconfig failed:\n$@\n";
 
-	$curl{version} = $curl{modversion};
+		eval {
+			%curl = get_curl_config();
+			$curl{version} =~ s/libcurl\s//;
+		};
+		if ( $@ ) {
+			print STDERR "curl-config failed:\n$@\n\n",
+				"libcurl development fils do not seem to be available\n",
+				"You must install libcurl $minimum_libcurl_ver or newer to\n",
+				"build this module\n\n";
+			print STDERR "NA: Unable to build distribution on this platform.\n";
+			exit 0;
+		}
+	}
 
 	print "Found libcurl version $curl{version}\n";
 
-	if ( eval "v$curl{version} lt v$minimum_libcurl_ver" ) {
-		print
+	if ( eval "v$curl{version} lt v$minimum_libcurl_ver" or $@ ) {
+		print STDERR
 			"Your currently installed libcurl version - $curl{version} - is too old.\n".
 			"This module does not support libcurl older than $minimum_libcurl_ver\n\n";
 		print STDERR "NA: Unable to build distribution on this platform.\n";
@@ -113,7 +123,7 @@ WriteMakefile(
 	CONFIGURE_REQUIRES => {
 		"ExtUtils::MakeMaker" => 0,
 		"ExtUtils::MakeMaker::Config" => 0,
-		"ExtUtils::PkgConfig" => 0,
+		#"ExtUtils::PkgConfig" => 0,
 	},
 	PREREQ_PM => {
 		"Test::More" => 0,
@@ -135,6 +145,24 @@ WriteMakefile(
 );
 
 exit 0;
+
+sub get_curl_config
+{
+	my $curl_config = $ENV{CURL_CONFIG} || 'curl-config';
+	print "Using $curl_config script.\n";
+	my %cc;
+	foreach my $opt ( qw(vernum version prefix cflags libs) ) {
+		my $ret = `${curl_config} --$opt`;
+		if ( $? ) {
+			die "Execution ${curl_config} --$opt failed.\n" .
+				"is your libcurl installed correctly ?\n";
+		}
+		chomp $ret;
+		$cc{ $opt } = $ret;
+		# print "${curl_config} --$opt: $ret\n";
+	}
+	return %cc;
+}
 
 sub get_curl_incdir
 {
