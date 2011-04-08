@@ -17,6 +17,10 @@ Easy:
 - write more documentation
 - multiple options in setopt
 - duphandle must copy package name from source object
+- allow calling duphandle as: CLASS->duphandle( $source_object, $newbase );
++ multi() getter
+- share() getter
+- maybe form() getter
 
 Form:
 - test with Easy
@@ -34,7 +38,7 @@ Multi:
 + allow calling strerror as function
 + write some documentation
 - write more documentation
-- info_read() should return result as ..::Easy::Code
++ info_read() should return result as ..::Easy::Code
 
 Share:
 - test with Easy
