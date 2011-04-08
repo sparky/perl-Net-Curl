@@ -6,7 +6,7 @@ use Exporter 'import';
 our @ISA;
 our $VERSION;
 BEGIN {
-	$VERSION = '0.10';
+	$VERSION = '0.11';
 
 	my $loaded = 0;
 
