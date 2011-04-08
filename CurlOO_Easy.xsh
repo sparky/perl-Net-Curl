@@ -460,14 +460,14 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 	SV *base
 	PREINIT:
 		perl_curl_easy_t *clone;
-		const char *sclass = "WWW::CurlOO::Easy";
+		const char *sclass;
 		perl_curl_easy_callback_code_t i;
 		HV *stash;
 	PPCODE:
-		/* {{{ */
 		if ( ! SvOK( base ) || ! SvROK( base ) )
 			croak( "object base must be a valid reference\n" );
 
+		sclass = sv_reftype( SvRV( ST(0) ), TRUE );
 		clone = perl_curl_easy_duphandle( easy );
 
 		/* configure curl to always callback to the XS interface layer */
@@ -549,7 +549,6 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 		ST(0) = sv_bless( base, stash );
 
 		XSRETURN(1);
-		/* }}} */
 
 
 void

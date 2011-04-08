@@ -16,7 +16,7 @@ Easy:
 + write some documentation
 - write more documentation
 - multiple options in setopt
-- duphandle must copy package name from source object
++ duphandle must copy package name from source object
 - allow calling duphandle as: CLASS->duphandle( $source_object, $newbase );
 + multi() getter
 - share() getter
