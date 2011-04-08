@@ -559,6 +559,9 @@ setopt( easy, option, value )
 	PREINIT:
 		CURLcode ret1 = CURLE_OK, ret2 = CURLE_OK;
 	CODE:
+		/* share can call a callback */
+		perl_curl_easy_update( easy, sv_2mortal( newSVsv( ST(0) ) ) );
+
 		switch( option ) {
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
 			case CURLOPT_FILE:
