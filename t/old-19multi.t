@@ -18,6 +18,7 @@ my $last_fdset = "";
 my $last_cnt = 0;
 sub print_fdset
 {
+	return;
 	my $cnt = unpack( "%32b*", join "", @_ );
 	my $n = join ", ", map { unpack( "H*", $_ ) } @_;
 	my $diag = "fdset is $cnt: ( $n )";
