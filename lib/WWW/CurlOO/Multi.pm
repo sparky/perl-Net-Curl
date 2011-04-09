@@ -242,6 +242,9 @@ CURLMOPT_TIMERDATA value. Should return 0.
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
+L<WWW::CurlOO::examples>
+L<libcurl-multi(3)>
+L<libcurl-errors(3)>
 
 =head1 COPYRIGHT
 

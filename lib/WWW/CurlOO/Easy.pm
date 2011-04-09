@@ -300,6 +300,9 @@ Not supported yet.
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Multi>
+L<WWW::CurlOO::examples>
+L<libcurl-easy(3)>
+L<libcurl-errors(3)>
 
 =head1 COPYRIGHT
 

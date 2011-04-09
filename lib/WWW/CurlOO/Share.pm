@@ -157,6 +157,8 @@ CURLSHOPT_USERDATA value.
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
 L<WWW::CurlOO::Multi>
+L<libcurl-share(3)>
+L<libcurl-errors(3)>
 
 =head1 COPYRIGHT
 
