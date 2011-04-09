@@ -131,21 +131,21 @@ Reffer to libcurl documentation for more detailed info on each of those.
 
 =item CURLSHOPT_LOCKFUNC ( CURLSHOPT_USERDATA )
 
-Lock callback receives 4 arguments: easy object, lock data, lock access,
-and CURLSHOPT_USERDATA value.
+Lock callback receives 5 arguments: share object, easy object, lock data,
+lock access, and CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
 
  sub cb_lock {
-     my ( $easy, $data, $locktype, $uservar ) = @_;
+     my ( $share, $easy, $data, $locktype, $uservar ) = @_;
      # ... lock ...
  }
 
 =item CURLSHOPT_UNLOCKFUNC ( CURLSHOPT_USERDATA )
 
-Unlock callback receives 3 arguments: easy object, lock data, and
-CURLSHOPT_USERDATA value.
+Unlock callback receives 4 arguments: share object, easy object, lock data, and
+CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
 
  sub cb_unlock {
-     my ( $easy, $data, $uservar ) = @_;
+     my ( $share, $easy, $data, $uservar ) = @_;
      # ... unlock ...
  }
 
