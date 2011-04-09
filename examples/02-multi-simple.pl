@@ -87,37 +87,49 @@ package main;
 use strict;
 use warnings;
 #endnopod
+use WWW::CurlOO::Share qw(:constants);
+
 
 sub easy
 {
 	my $uri = shift;
+	my $share = shift;
 
 	require WWW::CurlOO::Easy;
 
 	my $easy = WWW::CurlOO::Easy->new( { uri => $uri, body => '' } );
+	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_VERBOSE(), 1 );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL(), $uri );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_WRITEHEADER(), \$easy->{headers} );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_FILE(), \$easy->{body} );
+	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_SHARE(), $share );
 	return $easy;
 }
 
 my $multi = Multi::Simple->new();
 
-$multi->add_handle( easy( "http://www.google.com/search?q=perl" ) );
-$multi->add_handle( easy( "http://example.com/1" ) );
-$multi->add_handle( easy( "http://example.com/2" ) );
-$multi->add_handle( easy( "http://example.com/3" ) );
-$multi->add_handle( easy( "http://example.com/4" ) );
-$multi->add_handle( easy( "http://example.com/5" ) );
-$multi->add_handle( easy( "http://example.com/6" ) );
+my @uri = (
+	"http://www.google.com/search?q=perl",
+	"http://www.google.com/search?q=curl",
+	"http://www.google.com/search?q=perl+curl",
+);
+
+{
+	# share cookies between all handles
+	my $share = WWW::CurlOO::Share->new();
+	$share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
+	$multi->add_handle( easy( shift ( @uri ), $share ) );
+}
 
 my $ret = 0;
 while ( my ( $msg, $easy, $result ) = $multi->get_one() ) {
 	print "\nFinished downloading $easy->{uri}: $result:\n";
-	print $easy->{headers};
 	printf "Body is %d bytes long\n", length $easy->{body};
+	print "=" x 80 . "\n";
 
 	$ret = 1 if $result;
+
+	$multi->add_handle( easy( shift ( @uri ), $easy->share ) ) if @uri;
 }
 
 exit $ret;
