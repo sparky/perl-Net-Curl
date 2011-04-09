@@ -468,11 +468,7 @@ strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
-#ifdef croak_xs_usage
-			croak_xs_usage(cv, "[multi], errnum");
-#else
 			croak( "Usage: WWW::CurlOO::Multi::strerror( [multi], errnum )" );
-#endif
 		errstr = curl_multi_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:

@@ -193,11 +193,7 @@ strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
-#ifdef croak_xs_usage
-			croak_xs_usage(cv, "[share], errnum");
-#else
 			croak( "Usage: WWW::CurlOO::Share::strerror( [share], errnum )" );
-#endif
 		errstr = curl_share_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
