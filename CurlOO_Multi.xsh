@@ -124,6 +124,9 @@ new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
 
+		multi->perl_self = newSVsv( ST(0) );
+		sv_rvweaken( multi->perl_self );
+
 		XSRETURN(1);
 
 
@@ -134,10 +137,16 @@ add_handle( multi, easy )
 	PREINIT:
 		CURLMcode ret;
 	CODE:
-		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
-		perl_curl_easy_update( easy, newSVsv( ST(1) ) );
-		easy->multi = multi;
+		if ( easy->multi )
+			croak( "Specified easy handle is attached to %s multi handle already",
+				easy->multi == multi ? "this" : "another" );
+
 		ret = curl_multi_add_handle( multi->handle, easy->handle );
+		if ( !ret ) {
+			/* XXX: add to handle list */
+			easy->self_sv = newSVsv( easy->perl_self );
+			easy->multi = multi;
+		}
 		MULTI_DIE( ret );
 
 void
@@ -147,11 +156,15 @@ remove_handle( multi, easy )
 	PREINIT:
 		CURLMcode ret;
 	CODE:
-		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		CLEAR_ERRSV();
+		if ( easy->multi != multi )
+			croak( "Specified easy handle is not attached to %s multi handle",
+				easy->multi ? "this" : "any" );
+
 		ret = curl_multi_remove_handle( multi->handle, easy->handle );
-		sv_2mortal( easy->perl_self );
-		easy->perl_self = NULL;
+		/* XXX: remove from handle list */
+		sv_2mortal( easy->self_sv );
+		easy->self_sv = NULL;
 		easy->multi = NULL;
 
 		/* rethrow errors */
@@ -168,7 +181,6 @@ info_read( multi )
 		int queue;
 		CURLMsg *msg;
 	PPCODE:
-		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		CLEAR_ERRSV();
 		while ( (msg = curl_multi_info_read( multi->handle, &queue ) ) ) {
 			/* most likely CURLMSG_DONE */
@@ -324,7 +336,6 @@ perform( multi )
 		int remaining;
 		CURLMcode ret;
 	CODE:
-		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		CLEAR_ERRSV();
 		do {
 			ret = curl_multi_perform( multi->handle, &remaining );
@@ -350,7 +361,6 @@ socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 		int remaining;
 		CURLMcode ret;
 	CODE:
-		multi->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		CLEAR_ERRSV();
 		do {
 			ret = curl_multi_socket_action( multi->handle,
@@ -373,6 +383,7 @@ DESTROY( multi )
 	WWW::CurlOO::Multi multi
 	CODE:
 		/* TODO: remove all associated easy handles */
+		sv_2mortal( multi->perl_self );
 		perl_curl_multi_delete( aTHX_ multi );
 
 

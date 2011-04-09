@@ -98,6 +98,9 @@ new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
 
+		form->perl_self = newSVsv( ST(0) );
+		sv_rvweaken( form->perl_self );
+
 		XSRETURN(1);
 
 
@@ -199,8 +202,8 @@ get( form, ... )
 	PREINIT:
 		SV *output;
 	PPCODE:
-		form->perl_self = sv_2mortal( newSVsv( ST(0) ) );
 		CLEAR_ERRSV();
+
 		if ( items < 2 ) {
 			output = sv_2mortal( newSVpv( "", 0 ) );
 			curl_formget( form->post, output, cb_form_get_sv );
@@ -250,4 +253,5 @@ void
 DESTROY( form )
 	WWW::CurlOO::Form form
 	CODE:
+		sv_2mortal( form->perl_self );
 		perl_curl_form_delete( form );

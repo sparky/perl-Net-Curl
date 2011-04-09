@@ -33,34 +33,40 @@ static const CURLoption perl_curl_easy_option_slist[] = {
 #define perl_curl_easy_option_slist_num \
 	sizeof(perl_curl_easy_option_slist) / sizeof(perl_curl_easy_option_slist[0])
 
+
 struct perl_curl_easy_s {
-	/* last seen version of this object */
+	/* last seen perl object */
 	SV *perl_self;
 
-	/* The main curl handle */
+	/* easy handle */
 	CURL *handle;
 
 	/* list of callbacks */
 	callback_t cb[ CB_EASY_LAST ];
 
-	/* copy of error buffer var for caller*/
+	/* buffer for error string */
 	char errbuf[ CURL_ERROR_SIZE + 1 ];
 
+	/* copies of data for string options */
 	optionll_t *strings;
 
-	/* Lists that can be set via curl_easy_setopt() */
+	/* pointers to slists for slist options */
 	optionll_t *slists;
 
-	/* parent, if easy is attached to any multi object */
+	/* parent, if easy is attached to any multi handle */
 	perl_curl_multi_t *multi;
 
-	/* if easy is attached to any share object */
+	/* if easy is attached to any share object, this will
+	 * hold an immortal sv to prevent destruction of share */
 	SV *share_sv;
 
-	/* if easy is attached to any form object */
+	/* if form is attached to this easy form_sv will hold
+	 * an immortal sv to prevent destruction of from */
 	SV *form_sv;
-};
 
+	/* XXX: TEMPORARY: same as perl_self but immortal */
+	SV *self_sv;
+};
 
 
 /* switch from curl option codes to the relevant callback index */
@@ -153,16 +159,13 @@ perl_curl_easy_duphandle( perl_curl_easy_t *orig )
 } /*}}}*/
 
 static void
-perl_curl_easy_update( perl_curl_easy_t *easy, SV *perl_self )
-/*{{{*/{
-	easy->perl_self = perl_self;
-	curl_easy_setopt( easy->handle, CURLOPT_PRIVATE, (void *) easy );
-}/*}}}*/
-
-static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 /*{{{*/ {
 	perl_curl_easy_callback_code_t i;
+
+	/* this may trigger a callback,
+	 * we want it while easy handle is still alive */
+	curl_easy_setopt( easy->handle, CURLOPT_SHARE, NULL );
 
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );
@@ -195,6 +198,8 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 
 	if ( easy->share_sv )
 		sv_2mortal( easy->share_sv );
+
+	sv_2mortal( easy->perl_self );
 
 	Safefree( easy );
 
@@ -447,9 +452,14 @@ new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 		/* we always collect this, in case it's wanted */
 		curl_easy_setopt( easy->handle, CURLOPT_ERRORBUFFER, easy->errbuf );
 
+		curl_easy_setopt( easy->handle, CURLOPT_PRIVATE, (void *) easy );
+
 		perl_curl_setptr( aTHX_ base, easy );
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
+
+		easy->perl_self = newSVsv( ST(0) );
+		sv_rvweaken( easy->perl_self );
 
 		XSRETURN(1);
 
@@ -497,6 +507,8 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 		curl_easy_setopt( clone->handle, CURLOPT_INFILE, clone );
 		curl_easy_setopt( clone->handle, CURLOPT_ERRORBUFFER, clone->errbuf );
 
+		curl_easy_setopt( clone->handle, CURLOPT_PRIVATE, (void *) clone );
+
 		for( i = 0; i < CB_EASY_LAST; i++ ) {
 			SvREPLACE( clone->cb[i].func, easy->cb[i].func );
 			SvREPLACE( clone->cb[i].data, easy->cb[i].data );
@@ -543,10 +555,14 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 			} while ( in != NULL );
 		}
 
+		/* XXX: copy share and form */
 
 		perl_curl_setptr( aTHX_ base, clone );
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
+
+		clone->perl_self = newSVsv( ST(0) );
+		sv_rvweaken( clone->perl_self );
 
 		XSRETURN(1);
 
@@ -559,9 +575,6 @@ setopt( easy, option, value )
 	PREINIT:
 		CURLcode ret1 = CURLE_OK, ret2 = CURLE_OK;
 	CODE:
-		/* share can call a callback */
-		perl_curl_easy_update( easy, sv_2mortal( newSVsv( ST(0) ) ) );
-
 		switch( option ) {
 			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
 			case CURLOPT_FILE:
@@ -647,27 +660,38 @@ setopt( easy, option, value )
 			/* not working yet... */
 			/* XXX: finish this */
 			case CURLOPT_HTTPPOST:
-				if ( sv_derived_from( value, "WWW::CurlOO::Form" ) ) {
+				if ( easy->form_sv ) {
+					ret2 = curl_easy_setopt( easy->handle, option, NULL );
+					sv_2mortal( easy->form_sv );
+					easy->form_sv = NULL;
+				}
+
+				if ( SvOK( value ) ) {
 					WWW__CurlOO__Form form;
-					form = perl_curl_getptr( aTHX_ value );
+					form = perl_curl_getptr_fatal( aTHX_ value,
+						"CURLOPT_HTTPPOST", "WWW::CurlOO::Form" );
+
+					easy->form_sv = newSVsv( value );
 					ret1 = curl_easy_setopt( easy->handle, option, form->post );
-					if ( ret1 == CURLE_OK )
-						easy->form_sv = newSVsv( value );
-				} else
-					croak( "value is not of type WWW::CurlOO::Form" );
+				}
 				break;
 
-			/* Curl share support from Anton Fedorov */
-			/* XXX: and this */
 			case CURLOPT_SHARE:
-				if ( sv_derived_from( value, "WWW::CurlOO::Share" ) ) {
+				if ( easy->share_sv ) {
+					ret2 = curl_easy_setopt( easy->handle, option, NULL );
+					sv_2mortal( easy->share_sv );
+					easy->share_sv = NULL;
+				}
+
+				if ( SvOK( value ) ) {
 					WWW__CurlOO__Share share;
-					share = perl_curl_getptr( aTHX_ value );
+					share = perl_curl_getptr_fatal( aTHX_ value,
+						"CURLOPT_SHARE", "WWW::CurlOO::Share" );
+
+					/* copy sv before setopt because this may trigger a callback */
+					easy->share_sv = newSVsv( value );
 					ret1 = curl_easy_setopt( easy->handle, option, share->handle );
-					if ( ret1 == CURLE_OK )
-						easy->share_sv = newSVsv( value );
-				} else
-					croak( "value is not of type WWW::CurlOO::Share" );
+				}
 				break;
 
 			case CURLOPT_PRIVATE:
@@ -728,7 +752,6 @@ perform( easy )
 	PREINIT:
 		CURLcode ret;
 	CODE:
-		perl_curl_easy_update( easy, sv_2mortal( newSVsv( ST(0) ) ) );
 		CLEAR_ERRSV();
 		ret = curl_easy_perform( easy->handle );
 
@@ -746,7 +769,7 @@ getinfo( easy, option )
 	PREINIT:
 		CURLcode ret = CURLE_OK;
 	CODE:
-		/* {{{ */
+		/* XXX: die right away */
 		switch( option & CURLINFO_TYPEMASK ) {
 			case CURLINFO_STRING:
 			{
@@ -794,7 +817,6 @@ getinfo( easy, option )
 			sv_2mortal( RETVAL );
 			EASY_DIE( ret );
 		}
-		/* }}} */
 	OUTPUT:
 		RETVAL
 
@@ -908,5 +930,23 @@ multi( easy )
 	WWW::CurlOO::Easy easy
 	CODE:
 		RETVAL = easy->multi ? newSVsv( easy->multi->perl_self ) : &PL_sv_undef;
+	OUTPUT:
+		RETVAL
+
+
+SV *
+share( easy )
+	WWW::CurlOO::Easy easy
+	CODE:
+		RETVAL = easy->share_sv ? newSVsv( easy->share_sv ) : &PL_sv_undef;
+	OUTPUT:
+		RETVAL
+
+
+SV *
+form( easy )
+	WWW::CurlOO::Easy easy
+	CODE:
+		RETVAL = easy->form_sv ? newSVsv( easy->form_sv ) : &PL_sv_undef;
 	OUTPUT:
 		RETVAL
