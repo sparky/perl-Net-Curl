@@ -413,6 +413,10 @@ assign( multi, sockfd, value=NULL )
 				sv_2mortal( *valueptr );
 			sockptr = *valueptr = newSVsv( value );
 		} else {
+			SV *oldvalue;
+			oldvalue = perl_curl_simplell_del( aTHX_ &multi->socket_data, sockfd );
+			if ( oldvalue )
+				sv_2mortal( oldvalue );
 			sockptr = NULL;
 		}
 		ret = curl_multi_assign( multi->handle, sockfd, sockptr );
