@@ -506,6 +506,6 @@ handles( multi )
 			XSRETURN( 1 );
 		}
 		while ( now ) {
-			PUSHs( newSVsv( now->value ) );
+			XPUSHs( newSVsv( now->value ) );
 			now = now->next;
 		}
