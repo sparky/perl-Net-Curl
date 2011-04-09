@@ -4,14 +4,14 @@ This package is working, but still a lot has to change.
 ** TODO **
 
 CurlOO:
-- add version_build()
++ added LIBCURL_ constants
 
 Easy:
 - review !
 + delay deaths
 - test callback arguments just before perform (maybe only for default writers)
 + implement pause (curl_easy_pause)
-- implement reset (curl_easy_reset)
++ implement reset (curl_easy_reset)
 + allow calling strerror as function
 + write some documentation
 - write more documentation
@@ -44,6 +44,7 @@ Share:
 + allow calling strerror as function
 + write some documentation
 - write more documentation
+- test and fix multi-thread operation
 
 tests:
 - use some pure-perl http server, should do for most tests
