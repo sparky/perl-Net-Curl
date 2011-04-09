@@ -15,6 +15,10 @@ my %curl = (
 my $minimum_libcurl_ver = "7.15.4";
 my $constant_names;
 
+# XXX: some compilers may not support those flags
+my $devel_cflags = "-Wall ";
+$devel_cflags .= "-Werror " if -d ".git";
+
 if ( $curl{libs} and $curl{version} ) {
 	print "Using manually introduced curl options:\n";
 	while ( my ($k, $v) = each %curl ) {
@@ -115,7 +119,7 @@ WriteMakefile(
 			repository => 'https://github.com/sparky/perl-WWW-CurlOO'
 		},
 	},
-	CCFLAGS		=> $curl{cflags},
+	CCFLAGS		=> $devel_cflags . $curl{cflags},
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
