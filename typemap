@@ -2,22 +2,8 @@ INPUT
 T_PTROBJ_CURL
 	$var = ($type) perl_curl_getptr_fatal( aTHX_ $arg, \"$var\", \"$ntype\" );
 
-T_PTROBJ_CODE
-	if ( sv_derived_from( $arg, \"$ntype\" ) )
-		$var = SvIV( (SV*) SvRV( $arg ) );
-	else
-		croak( \"$var is not of type $ntype\" );
-
-OUTPUT
-T_PTROBJ_CODE
-	sv_setref_iv( $arg, \"$ntype\", $var );
-
 TYPEMAP
 WWW::CurlOO::Easy T_PTROBJ_CURL
 WWW::CurlOO::Form T_PTROBJ_CURL
 WWW::CurlOO::Multi T_PTROBJ_CURL
 WWW::CurlOO::Share T_PTROBJ_CURL
-WWW::CurlOO::EasyCode T_PTROBJ_CODE
-WWW::CurlOO::FormCode T_PTROBJ_CODE
-WWW::CurlOO::MultiCode T_PTROBJ_CODE
-WWW::CurlOO::ShareCode T_PTROBJ_CODE
