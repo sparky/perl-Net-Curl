@@ -281,6 +281,7 @@ static void *
 perl_curl_getptr_fatal( pTHX_ SV *self, const char *name, const char *type )
 {
 	void *ret;
+	SV **perl_self;
 
 	if ( ! sv_derived_from( self, type ) )
 		croak( "'%s' is not a %s object", name, type );
@@ -289,6 +290,13 @@ perl_curl_getptr_fatal( pTHX_ SV *self, const char *name, const char *type )
 
 	if ( ret == NULL )
 		croak( "'%s' is an invalid %s object", name, type );
+
+	/*
+	 * keep alive: this trick makes sure user will not destroy last
+	 * existing reference from inside of a callback.
+	 */
+	perl_self = ret;
+	sv_2mortal( newSVsv( *perl_self ) );
 
 	return ret;
 }
