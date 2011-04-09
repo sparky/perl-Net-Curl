@@ -884,17 +884,24 @@ recv( easy, buffer, length )
 		size_t out_len;
 		char *tmpbuf;
 
-		Newx( tmpbuf, length, char );
+		if ( !SvOK( buffer ) )
+			sv_setpvs( buffer, "" );
+
+		if ( !SvPOK( buffer ) ) {
+			SvPV_nolen( buffer );
+			if ( !SvPOK( buffer ) )
+				croak( "internal WWW::CurlOO error" );
+		}
+
+		Sv_Grow( buffer, SvCUR( buffer ) + length + 1 );
+
+		tmpbuf = SvEND( buffer );
+
 		ret = curl_easy_recv( easy->handle, tmpbuf, length, &out_len );
 		EASY_DIE( ret );
 
-		if ( SvOK( buffer ) ) {
-			sv_catpvn( buffer, tmpbuf, out_len );
-		} else {
-			sv_setpvn( buffer, tmpbuf, out_len );
-		}
+		SvCUR_set( buffer, SvCUR( buffer ) + out_len );
 
-		Safefree( tmpbuf );
 		RETVAL = out_len;
 	OUTPUT:
 		RETVAL
