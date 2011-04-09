@@ -885,7 +885,7 @@ recv( easy, buffer, length )
 		char *tmpbuf;
 
 		if ( !SvOK( buffer ) )
-			sv_setpvs( buffer, "" );
+			sv_setpvn( buffer, "", 0 );
 
 		if ( !SvPOK( buffer ) ) {
 			SvPV_nolen( buffer );
