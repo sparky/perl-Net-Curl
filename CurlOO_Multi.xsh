@@ -273,7 +273,6 @@ fdset( multi )
 		unsigned char writeset[ sizeof( fd_set ) ] = { 0 };
 		unsigned char excepset[ sizeof( fd_set ) ] = { 0 };
 	PPCODE:
-		/* {{{ */
 		FD_ZERO( &fdread );
 		FD_ZERO( &fdwrite );
 		FD_ZERO( &fdexcep );
@@ -284,6 +283,8 @@ fdset( multi )
 
 		readsize = writesize = excepsize = 0;
 
+		/* TODO: this is rather slow, should copy whole bytes instead, but
+		 * some fdset implementations may be hard to predict */
 		if ( maxfd != -1 ) {
 			for ( i = 0; i <= maxfd; i++ ) {
 				if ( FD_ISSET( i, &fdread ) ) {
@@ -300,11 +301,11 @@ fdset( multi )
 				}
 			}
 		}
+
 		EXTEND( SP, 3 );
 		mPUSHs( newSVpvn( (char *) readset, readsize ) );
 		mPUSHs( newSVpvn( (char *) writeset, writesize ) );
 		mPUSHs( newSVpvn( (char *) excepset, excepsize ) );
-		/* }}} */
 
 
 long
