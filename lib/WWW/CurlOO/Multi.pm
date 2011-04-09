@@ -214,12 +214,13 @@ Special socket value for socket_action() method.
 =item CURLMOPT_SOCKETFUNCTION ( CURLMOPT_SOCKETDATA )
 
 Socket callback will be called only if socket_action() method is being used.
-It receives 5 arguments: easy handle, socket file number, poll action, an
-undefined value (for now), and CURLMOPT_SOCKETDATA value. It must return 0.
+It receives 6 arguments: multi handle, easy handle, socket file number, poll
+action, an undefined value (for now), and CURLMOPT_SOCKETDATA value. It must
+return 0.
 For more information reffer to L<curl_multi_socket_action(3)>.
 
  sub cb_socket {
-     my ( $easy, $socketfn, $action, $undef, $uservar ) = @_;
+     my ( $multi, $easy, $socketfn, $action, $undef, $uservar ) = @_;
      # ... register or deregister socket actions ...
      return 0;
  }

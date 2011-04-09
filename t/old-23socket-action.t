@@ -30,7 +30,7 @@ my $timeout = undef;
 
 sub on_socket
 {
-	my ( $easy, $socket, $what, $socketdata_now_undef, $userdata ) = @_;
+	my ( $multi, $easy, $socket, $what, $socketdata_now_undef, $userdata ) = @_;
 	#warn "on_socket( $socket, $what )\n";
 
 	$sock_change = 0;

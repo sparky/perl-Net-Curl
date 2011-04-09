@@ -63,13 +63,14 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 	multi = (perl_curl_multi_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	/* $easy, $socket, $what, [$socketdata = undef], $userdata */
+	/* $multi, $easy, $socket, $what, [$socketdata = undef], $userdata */
 	/* XXX: add $socketdata */
 	SV *args[] = {
+		newSVsv( multi->perl_self ),
 		newSVsv( easy->perl_self ),
 		newSVuv( s ),
 		newSViv( what ),
-		newSVsv( &PL_sv_undef ) /* XXX: socketdata, unsupported */
+		&PL_sv_undef /* XXX: socketdata, unsupported */
 	};
 
 	return PERL_CURL_CALL( &multi->cb[ CB_MULTI_SOCKET ], args );

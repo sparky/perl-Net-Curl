@@ -51,17 +51,14 @@ sub new
 # will be called by curl any time events on some socket must be updated
 sub _cb_socket
 {
-	my ( $easy, $socket, $poll ) = @_;
+	my ( $multi, $easy, $socket, $poll ) = @_;
 	#warn "on_socket( $socket => $poll )\n";
 
-	# socket callback receives the $easy handle as first argument.
 	# Right now $socket belongs to that $easy, but it can be
 	# shared with another easy handle if server supports persistent
 	# connections.
 	# This is why we register socket events inside multi object
 	# and not $easy.
-
-	my $multi = $easy->multi;
 
 	# deregister old io events
 	delete $multi->{ "r$socket" };
