@@ -22,6 +22,9 @@ struct perl_curl_multi_s {
 
 	/* list of callbacks */
 	callback_t cb[ CB_MULTI_LAST ];
+
+	/* list of data assigned to sockets */
+	simplell_t *socket_data;
 };
 
 /* make a new multi */
@@ -43,6 +46,15 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 	if ( multi->handle )
 		curl_multi_cleanup( multi->handle );
 
+	if ( multi->socket_data ) {
+		simplell_t *next, *now = multi->socket_data;
+		do {
+			next = now->next;
+			sv_2mortal( (SV *) now->value );
+			Safefree( now );
+		} while ( ( now = next ) != NULL );
+	}
+
 	for( i = 0; i < CB_MULTI_LAST; i++ ) {
 		sv_2mortal( multi->cb[i].func );
 		sv_2mortal( multi->cb[i].data );
@@ -63,15 +75,16 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 	multi = (perl_curl_multi_t *) userptr;
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
-	/* $multi, $easy, $socket, $what, [$socketdata = undef], $userdata */
-	/* XXX: add $socketdata */
+	/* $multi, $easy, $socket, $what, $socketdata, $userdata */
 	SV *args[] = {
-		newSVsv( multi->perl_self ),
-		newSVsv( easy->perl_self ),
-		newSVuv( s ),
-		newSViv( what ),
-		&PL_sv_undef /* XXX: socketdata, unsupported */
+		/* 0 */ newSVsv( multi->perl_self ),
+		/* 1 */ newSVsv( easy->perl_self ),
+		/* 2 */ newSVuv( s ),
+		/* 3 */ newSViv( what ),
+		/* 4 */ &PL_sv_undef
 	};
+	if ( socketp )
+		args[4] = newSVsv( (SV *) socketp );
 
 	return PERL_CURL_CALL( &multi->cb[ CB_MULTI_SOCKET ], args );
 } /*}}}*/
@@ -377,6 +390,35 @@ socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 		RETVAL = remaining;
 	OUTPUT:
 		RETVAL
+
+
+#if LIBCURL_VERSION_NUM >= 0x070f05
+
+void
+assign( multi, sockfd, value=NULL )
+	WWW::CurlOO::Multi multi
+	unsigned long sockfd
+	SV *value
+	PREINIT:
+		CURLMcode ret;
+		void *sockptr;
+	CODE:
+		if ( value && SvOK( value ) ) {
+			SV **valueptr;
+			valueptr = perl_curl_simplell_add( aTHX_ &multi->socket_data,
+				sockfd );
+			if ( !valueptr )
+				croak( "internal WWW::CurlOO error" );
+			if ( *valueptr )
+				sv_2mortal( *valueptr );
+			sockptr = *valueptr = newSVsv( value );
+		} else {
+			sockptr = NULL;
+		}
+		ret = curl_multi_assign( multi->handle, sockfd, sockptr );
+		MULTI_DIE( ret );
+
+#endif
 
 
 void
