@@ -10,7 +10,7 @@ Easy:
 - review !
 + delay deaths
 - test callback arguments just before perform (maybe only for default writers)
-- implement pause (curl_easy_pause)
++ implement pause (curl_easy_pause)
 - implement reset (curl_easy_reset)
 + allow calling strerror as function
 + write some documentation
@@ -33,7 +33,7 @@ Multi:
 - remove all remaining easy handles when destroying multi
 - implement list_handles(), will be very easy since we need to store them
   for above problem
-- implement assign (curl_multi_assign)
++ implement assign (curl_multi_assign)
 + remove remove_handle from info_read
 + allow calling strerror as function
 + write some documentation
