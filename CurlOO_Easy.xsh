@@ -63,9 +63,6 @@ struct perl_curl_easy_s {
 	/* if form is attached to this easy form_sv will hold
 	 * an immortal sv to prevent destruction of from */
 	SV *form_sv;
-
-	/* XXX: TEMPORARY: same as perl_self but immortal */
-	SV *self_sv;
 };
 
 

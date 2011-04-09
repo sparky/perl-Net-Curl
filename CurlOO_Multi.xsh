@@ -25,6 +25,9 @@ struct perl_curl_multi_s {
 
 	/* list of data assigned to sockets */
 	simplell_t *socket_data;
+
+	/* list of easy handles attached to this multi */
+	simplell_t *easies;
 };
 
 /* make a new multi */
@@ -157,8 +160,10 @@ add_handle( multi, easy )
 
 		ret = curl_multi_add_handle( multi->handle, easy->handle );
 		if ( !ret ) {
-			/* XXX: add to handle list */
-			easy->self_sv = newSVsv( easy->perl_self );
+			SV **easysv_ptr;
+			easysv_ptr = perl_curl_simplell_add( aTHX_ &multi->easies,
+				PTR2nat( easy->handle ) );
+			*easysv_ptr = newSVsv( easy->perl_self );
 			easy->multi = multi;
 		}
 		MULTI_DIE( ret );
@@ -176,9 +181,14 @@ remove_handle( multi, easy )
 				easy->multi ? "this" : "any" );
 
 		ret = curl_multi_remove_handle( multi->handle, easy->handle );
-		/* XXX: remove from handle list */
-		sv_2mortal( easy->self_sv );
-		easy->self_sv = NULL;
+		{
+			SV *easysv;
+			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
+				PTR2nat( easy->handle ) );
+			if ( !easysv )
+				croak( "internal WWW::CurlOO error" );
+			sv_2mortal( easysv );
+		}
 		easy->multi = NULL;
 
 		/* rethrow errors */
