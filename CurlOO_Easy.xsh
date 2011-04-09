@@ -156,16 +156,9 @@ perl_curl_easy_duphandle( perl_curl_easy_t *orig )
 } /*}}}*/
 
 static void
-perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
+perl_curl_easy_delete_mostly( pTHX_ perl_curl_easy_t *easy )
 /*{{{*/ {
 	perl_curl_easy_callback_code_t i;
-
-	/* this may trigger a callback,
-	 * we want it while easy handle is still alive */
-	curl_easy_setopt( easy->handle, CURLOPT_SHARE, NULL );
-
-	if ( easy->handle )
-		curl_easy_cleanup( easy->handle );
 
 	for ( i = 0; i < CB_EASY_LAST; i++ ) {
 		sv_2mortal( easy->cb[i].func );
@@ -192,6 +185,21 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 
 	if ( easy->form_sv )
 		sv_2mortal( easy->form_sv );
+} /*}}}*/
+
+
+static void
+perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
+/*{{{*/ {
+
+	/* this may trigger a callback,
+	 * we want it while easy handle is still alive */
+	curl_easy_setopt( easy->handle, CURLOPT_SHARE, NULL );
+
+	if ( easy->handle )
+		curl_easy_cleanup( easy->handle );
+
+	perl_curl_easy_delete_mostly( aTHX_ easy );
 
 	if ( easy->share_sv )
 		sv_2mortal( easy->share_sv );
@@ -410,6 +418,22 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	return PERL_CURL_CALL( cb, args );
 } /*}}}*/
 
+static void
+perl_curl_easy_preset( perl_curl_easy_t *easy )
+{
+	/* configure curl to always callback to the XS interface layer */
+	curl_easy_setopt( easy->handle, CURLOPT_WRITEFUNCTION, cb_easy_write );
+	curl_easy_setopt( easy->handle, CURLOPT_READFUNCTION, cb_easy_read );
+
+	/* set our own object as the context for all curl callbacks */
+	curl_easy_setopt( easy->handle, CURLOPT_FILE, easy );
+	curl_easy_setopt( easy->handle, CURLOPT_INFILE, easy );
+
+	/* we always collect this, in case it's wanted */
+	curl_easy_setopt( easy->handle, CURLOPT_ERRORBUFFER, easy->errbuf );
+
+	curl_easy_setopt( easy->handle, CURLOPT_PRIVATE, (void *) easy );
+}
 
 #define EASY_DIE( ret )			\
 	STMT_START {				\
@@ -437,19 +461,7 @@ new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 			croak( "object base must be a valid reference\n" );
 
 		easy = perl_curl_easy_new();
-
-		/* configure curl to always callback to the XS interface layer */
-		curl_easy_setopt( easy->handle, CURLOPT_WRITEFUNCTION, cb_easy_write );
-		curl_easy_setopt( easy->handle, CURLOPT_READFUNCTION, cb_easy_read );
-
-		/* set our own object as the context for all curl callbacks */
-		curl_easy_setopt( easy->handle, CURLOPT_FILE, easy );
-		curl_easy_setopt( easy->handle, CURLOPT_INFILE, easy );
-
-		/* we always collect this, in case it's wanted */
-		curl_easy_setopt( easy->handle, CURLOPT_ERRORBUFFER, easy->errbuf );
-
-		curl_easy_setopt( easy->handle, CURLOPT_PRIVATE, (void *) easy );
+		perl_curl_easy_preset( easy );
 
 		perl_curl_setptr( aTHX_ base, easy );
 		stash = gv_stashpv( sclass, 0 );
@@ -477,10 +489,8 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 		sclass = sv_reftype( SvRV( ST(0) ), TRUE );
 		clone = perl_curl_easy_duphandle( easy );
 
-		/* configure curl to always callback to the XS interface layer */
+		perl_curl_easy_preset( clone );
 
-		curl_easy_setopt( clone->handle, CURLOPT_WRITEFUNCTION, cb_easy_write );
-		curl_easy_setopt( clone->handle, CURLOPT_READFUNCTION, cb_easy_read );
 		if ( easy->cb[ callback_index( CURLOPT_HEADERFUNCTION ) ].func
 				|| easy->cb[ callback_index( CURLOPT_WRITEHEADER ) ].data ) {
 			curl_easy_setopt( clone->handle, CURLOPT_HEADERFUNCTION, cb_easy_header );
@@ -498,13 +508,6 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGFUNCTION, cb_easy_debug );
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGDATA, clone );
 		}
-
-		/* set our own object as the context for all curl callbacks */
-		curl_easy_setopt( clone->handle, CURLOPT_FILE, clone );
-		curl_easy_setopt( clone->handle, CURLOPT_INFILE, clone );
-		curl_easy_setopt( clone->handle, CURLOPT_ERRORBUFFER, clone->errbuf );
-
-		curl_easy_setopt( clone->handle, CURLOPT_PRIVATE, (void *) clone );
 
 		for( i = 0; i < CB_EASY_LAST; i++ ) {
 			SvREPLACE( clone->cb[i].func, easy->cb[i].func );
@@ -562,6 +565,14 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 		sv_rvweaken( clone->perl_self );
 
 		XSRETURN(1);
+
+
+void
+reset( easy )
+	WWW::CurlOO::Easy easy
+	CODE:
+		perl_curl_easy_delete_mostly( aTHX_ easy );
+		perl_curl_easy_preset( easy );
 
 
 void
