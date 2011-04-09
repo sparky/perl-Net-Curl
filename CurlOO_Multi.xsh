@@ -24,9 +24,11 @@ struct perl_curl_multi_s {
 	callback_t cb[ CB_MULTI_LAST ];
 
 	/* list of data assigned to sockets */
+	/* key: socket fd; value: user sv */
 	simplell_t *socket_data;
 
 	/* list of easy handles attached to this multi */
+	/* key: our easy pointer, value: easy SV */
 	simplell_t *easies;
 };
 
@@ -46,6 +48,21 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 /*{{{*/ {
 	perl_curl_multi_callback_code_t i;
 
+	/* remove and mortalize all easy handles */
+	if ( multi->easies ) {
+		simplell_t *next, *now = multi->easies;
+		do {
+			perl_curl_easy_t *easy;
+			easy = INT2PTR( perl_curl_easy_t *, now->key );
+			curl_multi_remove_handle( multi->handle, easy->handle );
+			easy->multi = NULL;
+
+			next = now->next;
+			sv_2mortal( (SV *) now->value );
+			Safefree( now );
+		} while ( ( now = next ) != NULL );
+	}
+
 	if ( multi->handle )
 		curl_multi_cleanup( multi->handle );
 
@@ -62,6 +79,8 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 		sv_2mortal( multi->cb[i].func );
 		sv_2mortal( multi->cb[i].data );
 	}
+
+	sv_2mortal( multi->perl_self );
 
 	Safefree( multi );
 } /*}}}*/
@@ -162,7 +181,7 @@ add_handle( multi, easy )
 		if ( !ret ) {
 			SV **easysv_ptr;
 			easysv_ptr = perl_curl_simplell_add( aTHX_ &multi->easies,
-				PTR2nat( easy->handle ) );
+				PTR2nat( easy ) );
 			*easysv_ptr = newSVsv( easy->perl_self );
 			easy->multi = multi;
 		}
@@ -184,7 +203,7 @@ remove_handle( multi, easy )
 		{
 			SV *easysv;
 			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
-				PTR2nat( easy->handle ) );
+				PTR2nat( easy ) );
 			if ( !easysv )
 				croak( "internal WWW::CurlOO error" );
 			sv_2mortal( easysv );
@@ -439,8 +458,6 @@ void
 DESTROY( multi )
 	WWW::CurlOO::Multi multi
 	CODE:
-		/* TODO: remove all associated easy handles */
-		sv_2mortal( multi->perl_self );
 		perl_curl_multi_delete( aTHX_ multi );
 
 

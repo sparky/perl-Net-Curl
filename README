@@ -30,7 +30,7 @@ Form:
 - write more documentation
 
 Multi:
-- remove all remaining easy handles when destroying multi
++ remove all remaining easy handles when destroying multi
 - implement list_handles(), will be very easy since we need to store them
   for above problem
 + implement assign (curl_multi_assign)
