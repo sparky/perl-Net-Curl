@@ -65,6 +65,9 @@
 # define mXPUSHs( sv ) XPUSHs( sv_2mortal( sv ) )
 #endif
 
+/*
+ * Convenient way to copy SVs
+ */
 #define SvREPLACE( dst, src ) \
 	STMT_START {						\
 		SV *src_ = (src);				\
@@ -273,14 +276,23 @@ perl_curl_getptr( pTHX_ SV *self )
 	return NULL;
 }
 
+
 static void *
 perl_curl_getptr_fatal( pTHX_ SV *self, const char *name, const char *type )
 {
-	void *ptr = perl_curl_getptr( aTHX_ self );
-	if ( ptr == NULL || ! sv_derived_from( self, type ) )
-		croak( "'%s' is not a valid %s object", name, type );
-	return ptr;
+	void *ret;
+
+	if ( ! sv_derived_from( self, type ) )
+		croak( "'%s' is not a %s object", name, type );
+
+	ret = perl_curl_getptr( aTHX_ self );
+
+	if ( ret == NULL )
+		croak( "'%s' is an invalid %s object", name, type );
+
+	return ret;
 }
+
 
 static void
 perl_curl_setptr( pTHX_ SV *self, void *ptr )
@@ -292,7 +304,6 @@ perl_curl_setptr( pTHX_ SV *self, void *ptr )
 
 	mg = sv_magicext( SvRV( self ), 0, PERL_MAGIC_ext,
 		&perl_curl_vtbl, (const char *) ptr, 0 );
-	mg->mg_flags |= MGf_DUP;
 }
 
 
