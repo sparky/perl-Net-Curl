@@ -119,31 +119,31 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 	return slist;
 }
 
-typedef struct optionll_s optionll_t;
-struct optionll_s {
+typedef struct simplell_s simplell_t;
+struct simplell_s {
 	/* next in the linked list */
-	optionll_t *next;
+	simplell_t *next;
 
 	/* curl option it belongs to */
-	long option;
+	PTRV key;
 
 	/* the actual data */
-	void *data;
+	void *value;
 };
 
 #if 0
 static void *
-perl_curl_optionll_get( pTHX_ optionll_t *start, long option )
+perl_curl_simplell_get( pTHX_ simplell_t *start, PTRV key )
 {
-	optionll_t *now = start;
+	simplell_t *now = start;
 
 	if ( now == NULL )
 		return NULL;
 
 	while ( now ) {
-		if ( now->option == option )
-			return &(now->data);
-		if ( now->option > option )
+		if ( now->key == key )
+			return &(now->value);
+		if ( now->key > key )
 			return NULL;
 		now = now->next;
 	}
@@ -154,42 +154,42 @@ perl_curl_optionll_get( pTHX_ optionll_t *start, long option )
 
 
 static void *
-perl_curl_optionll_add( pTHX_ optionll_t **start, long option )
+perl_curl_simplell_add( pTHX_ simplell_t **start, PTRV key )
 {
-	optionll_t **now = start;
-	optionll_t *tmp = NULL;
+	simplell_t **now = start;
+	simplell_t *tmp = NULL;
 
 	while ( *now ) {
-		if ( (*now)->option == option )
-			return &( (*now)->data );
-		if ( (*now)->option > option )
+		if ( (*now)->key == key )
+			return &( (*now)->value );
+		if ( (*now)->key > key )
 			break;
 		now = &( (*now)->next );
 	}
 
 	tmp = *now;
-	Newx( *now, 1, optionll_t );
+	Newx( *now, 1, simplell_t );
 	(*now)->next = tmp;
-	(*now)->option = option;
-	(*now)->data = NULL;
+	(*now)->key = key;
+	(*now)->value = NULL;
 
-	return &( (*now)->data );
+	return &( (*now)->value );
 }
 
 static void *
-perl_curl_optionll_del( pTHX_ optionll_t **start, long option )
+perl_curl_simplell_del( pTHX_ simplell_t **start, PTRV key )
 {
-	optionll_t **now = start;
+	simplell_t **now = start;
 
 	while ( *now ) {
-		if ( (*now)->option == option ) {
-			void *ret = (*now)->data;
-			optionll_t *tmp = *now;
+		if ( (*now)->key == key ) {
+			void *ret = (*now)->value;
+			simplell_t *tmp = *now;
 			*now = (*now)->next;
 			Safefree( tmp );
 			return ret;
 		}
-		if ( (*now)->option > option )
+		if ( (*now)->key > key )
 			return NULL;
 		now = &( (*now)->next );
 	}

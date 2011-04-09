@@ -48,10 +48,10 @@ struct perl_curl_easy_s {
 	char errbuf[ CURL_ERROR_SIZE + 1 ];
 
 	/* copies of data for string options */
-	optionll_t *strings;
+	simplell_t *strings;
 
 	/* pointers to slists for slist options */
-	optionll_t *slists;
+	simplell_t *slists;
 
 	/* parent, if easy is attached to any multi handle */
 	perl_curl_multi_t *multi;
@@ -125,7 +125,7 @@ found:
 	array_len = av_len( array );
 
 	/* We have to find out which list to use... */
-	pslist = perl_curl_optionll_add( aTHX_ &easy->slists, option );
+	pslist = perl_curl_simplell_add( aTHX_ &easy->slists, option );
 	slist = *pslist;
 
 	if ( slist && clear ) {
@@ -176,19 +176,19 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	}
 
 	if ( easy->strings ) {
-		optionll_t *next, *now = easy->strings;
+		simplell_t *next, *now = easy->strings;
 		do {
 			next = now->next;
-			Safefree( now->data );
+			Safefree( now->value );
 			Safefree( now );
 		} while ( ( now = next ) != NULL );
 	}
 
 	if ( easy->slists ) {
-		optionll_t *next, *now = easy->slists;
+		simplell_t *next, *now = easy->slists;
 		do {
 			next = now->next;
-			curl_slist_free_all( now->data );
+			curl_slist_free_all( now->value );
 			Safefree( now );
 		} while ( ( now = next ) != NULL );
 	}
@@ -516,16 +516,16 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 		/* clone strings and set */
 		if ( easy->strings ) {
-			optionll_t *in, **out;
+			simplell_t *in, **out;
 			in = easy->strings;
 			out = &clone->strings;
 			do {
-				Newx( *out, 1, optionll_t );
+				Newx( *out, 1, simplell_t );
 				(*out)->next = NULL;
-				(*out)->option = in->option;
-				(*out)->data = savepv( in->data );
+				(*out)->key = in->key;
+				(*out)->value = savepv( in->value );
 
-				curl_easy_setopt( clone->handle, in->option, (*out)->data );
+				curl_easy_setopt( clone->handle, in->key, (*out)->value );
 				out = &(*out)->next;
 				in = in->next;
 			} while ( in != NULL );
@@ -533,23 +533,23 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 		/* clone slists and set */
 		if ( easy->slists ) {
-			optionll_t *in, **out;
+			simplell_t *in, **out;
 			struct curl_slist *sin, *sout;
 			in = easy->slists;
 			out = &clone->slists;
 			do {
-				Newx( *out, 1, optionll_t );
+				Newx( *out, 1, simplell_t );
 				sout = NULL;
-				sin = in->data;
+				sin = in->value;
 				do {
 					sout = curl_slist_append( sout, sin->data );
 				} while ( ( sin = sin->next ) != NULL );
 
 				(*out)->next = NULL;
-				(*out)->option = in->option;
-				(*out)->data = sout;
+				(*out)->key = in->key;
+				(*out)->value = sout;
 
-				curl_easy_setopt( clone->handle, in->option, (*out)->data );
+				curl_easy_setopt( clone->handle, in->key, (*out)->value );
 				out = &(*out)->next;
 				in = in->next;
 			} while ( in != NULL );
@@ -709,7 +709,7 @@ setopt( easy, option, value )
 					char *pv;
 					if ( SvOK( value ) ) {
 						char **ppv;
-						ppv = perl_curl_optionll_add( aTHX_ &easy->strings, option );
+						ppv = perl_curl_simplell_add( aTHX_ &easy->strings, option );
 						if ( ppv )
 							Safefree( *ppv );
 #ifdef savesvpv
@@ -722,7 +722,7 @@ setopt( easy, option, value )
 						}
 #endif
 					} else {
-						pv = perl_curl_optionll_del( aTHX_ &easy->strings, option );
+						pv = perl_curl_simplell_del( aTHX_ &easy->strings, option );
 						if ( pv )
 							Safefree( pv );
 						pv = NULL;
