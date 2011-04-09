@@ -829,6 +829,19 @@ error( easy )
 		RETVAL
 
 
+#if LIBCURL_VERSION_NUM >= 0x071200
+
+void
+pause( easy, bitmask )
+	WWW::CurlOO::Easy easy
+	int bitmask
+	CODE:
+		CURLcode ret;
+		ret = curl_easy_pause( easy, bitmask );
+		EASY_DIE( ret );
+
+#endif
+
 #if LIBCURL_VERSION_NUM >= 0x071202
 
 size_t
