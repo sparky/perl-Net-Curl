@@ -477,3 +477,35 @@ strerror( ... )
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
 		RETVAL
+
+
+=head1 Extensions
+
+Functions that do not have libcurl equivalents.
+
+=cut
+
+void
+handles( multi )
+	WWW::CurlOO::Multi multi
+	PREINIT:
+			simplell_t *now;
+	PPCODE:
+		if ( GIMME_V == G_VOID )
+			XSRETURN( 0 );
+
+		now = multi->easies;
+
+		if ( GIMME_V == G_SCALAR ) {
+			IV i = 0;
+			while ( now ) {
+				i++;
+				now = now->next;
+			}
+			ST(0) = newSViv( i );
+			XSRETURN( 1 );
+		}
+		while ( now ) {
+			PUSHs( newSVsv( now->value ) );
+			now = now->next;
+		}
