@@ -139,7 +139,8 @@ WriteMakefile(
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
 		'$(FIRST_MAKEFILE)' => join ( " ", qw(CurlOO_Easy.xsh CurlOO_Form.xsh
-			CurlOO_Multi.xsh CurlOO_Share.xsh CurlOO_Easy_setopt.c),
+			CurlOO_Multi.xsh CurlOO_Share.xsh CurlOO_Easy_setopt.c
+			CurlOO_Easy_callbacks.c),
 			glob "examples/*.pl" ),
 	},
 	clean		=> {
