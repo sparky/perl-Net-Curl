@@ -9,7 +9,7 @@
 
 static size_t
 write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
-/*{{{*/ {
+{
 	PerlIO *handle;
 	SV* out_str;
 	if ( call_ctx ) { /* a GLOB or a SCALAR ref */
@@ -31,88 +31,82 @@ write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
 		handle = PerlIO_stdout();
 	}
 	return PerlIO_write( handle, ptr, n );
-} /*}}}*/
+}
 
 /* generic fwrite callback, which decides which callback to call */
 static size_t
 fwrite_wrapper( const void *ptr, size_t size, size_t nmemb,
 		perl_curl_easy_t *easy, callback_t *cb )
-/*{{{*/ {
+{
 	dTHX;
 	if ( cb->func ) { /* We are doing a callback to perl */
 		SV *args[] = {
 			newSVsv( easy->perl_self ),
-			ptr
-				? newSVpvn( (char *) ptr, (STRLEN) (size * nmemb) )
-				: newSVsv( &PL_sv_undef )
+			&PL_sv_undef
 		};
+		if ( ptr )
+			args[1] = newSVpvn( ptr, (STRLEN) (size * nmemb) );
 
 		return PERL_CURL_CALL( cb, args );
 	} else {
 		return write_to_ctx( aTHX_ cb->data, ptr, size * nmemb );
 	}
-} /*}}}*/
+}
 
-/* debug fwrite callback */
-static size_t
-fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *easy,
-		callback_t *cb, curl_infotype type )
-/*{{{*/ {
-	dTHX;
-
-	if ( cb->func ) { /* We are doing a callback to perl */
-		SV *args[] = {
-			newSVsv( easy->perl_self ),
-			newSViv( type ),
-			ptr
-				? newSVpvn( (char *) ptr, (STRLEN) (size) )
-				: newSVsv( &PL_sv_undef )
-		};
-
-		return PERL_CURL_CALL( cb, args );
-	} else {
-		return write_to_ctx( aTHX_ cb->data, ptr, size );
-	}
-} /*}}}*/
 
 /* Write callback for calling a perl callback */
 static size_t
 cb_easy_write( char *buffer, size_t size, size_t nitems, void *userptr )
-/*{{{*/ {
+{
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
 	return fwrite_wrapper( buffer, size, nitems, easy,
 			&easy->cb[ CB_EASY_WRITE ] );
-} /*}}}*/
+}
 
 /* header callback for calling a perl callback */
 static size_t
 cb_easy_header( const void *ptr, size_t size, size_t nmemb,
 		void *userptr )
-/*{{{*/ {
+{
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
 
 	return fwrite_wrapper( ptr, size, nmemb, easy,
 			&easy->cb[ CB_EASY_HEADER ] );
-} /*}}}*/
+}
 
 /* debug callback for calling a perl callback */
 static int
-cb_easy_debug( CURL* handle, curl_infotype type, char *ptr, size_t size,
+cb_easy_debug( CURL *easy_handle, curl_infotype type, char *ptr, size_t size,
 		void *userptr )
-/*{{{*/ {
+{
+	dTHX;
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
+	callback_t *cb = easy->cb[ CB_EASY_DEBUG ];
 
-	return fwrite_wrapper2( ptr, size, easy,
-			&easy->cb[ CB_EASY_DEBUG ], type );
-} /*}}}*/
+	if ( cb->func ) {
+		/* We are doing a callback to perl */
+		SV *args[] = {
+			newSVsv( easy->perl_self ),
+			newSViv( type ),
+			&PL_sv_undef
+		};
+		if ( ptr )
+			args[2] = newSVpvn( ptr, (STRLEN) (size) );
+
+		return PERL_CURL_CALL( cb, args );
+	} else {
+		return write_to_ctx( aTHX_ cb->data, ptr, size );
+	}
+
+}
 
 /* read callback for calling a perl callback */
 static size_t
 cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
-/*{{{*/ {
+{
 	dTHX;
 	dSP;
 
@@ -206,14 +200,14 @@ cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
 		}
 		return PerlIO_read( f, ptr, maxlen );
 	}
-} /*}}}*/
+}
 
 /* Progress callback for calling a perl callback */
 
 static int
 cb_easy_progress( void *userptr, double dltotal, double dlnow,
 		double ultotal, double ulnow )
-/*{{{*/ {
+{
 	dTHX;
 
 	perl_curl_easy_t *easy;
@@ -229,11 +223,11 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	};
 
 	return PERL_CURL_CALL( cb, args );
-} /*}}}*/
+}
 
 /* IOCTLFUNCTION -- IOCTLDATA */
 static curlioerr
-cb_easy_ioctl( CURL *handle, int cmd, void *userptr )
+cb_easy_ioctl( CURL *easy_handle, int cmd, void *userptr )
 {
 	dTHX;
 
