@@ -308,7 +308,8 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
 	callback_t *cb = &easy->cb[ CB_EASY_OPENSOCKET ];
-
+	curl_socket_t ret;
+	HV *ah;
 
 	SV *args[] = {
 		newSVsv( easy->perl_self ),
@@ -316,7 +317,6 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 		&PL_sv_undef,
 	};
 	if ( address ) {
-		HV *ah;
 		ah = newHV();
 		(void) hv_stores( ah, "family", newSViv( address->family ) );
 		(void) hv_stores( ah, "socktype", newSViv( address->socktype ) );
@@ -328,7 +328,13 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 		args[2] = newRV( sv_2mortal( (SV *) ah ) );
 	}
 
-	return PERL_CURL_CALL( cb, args );
+	ret = PERL_CURL_CALL( cb, args );
+
+	if ( address ) {
+		/* TODO: finish this - callback is allowed to overwrite address values */
+	}
+
+	return ret;
 }
 #endif
 
@@ -338,33 +344,23 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 static size_t
 cb_easy_interleave( void *ptr, size_t size, size_t nmemb, void *userptr )
 {
-	/*
-    Function  pointer that should match the following prototype: size_t
-    function( void *ptr, size_t size, size_t  nmemb,  void  *userdata).
-    This  function  gets  called  by libcurl as soon as it has received
-    interleaved RTP data. This function gets called for  each  $  block
-    and  therefore contains exactly one upper-layer protocol unit (e.g.
-    one RTP packet). Curl writes the interleaved header as well as  the
-    included data for each call. The first byte is always an ASCII dol-
-    lar sign. The dollar sign is followed by a one byte channel identi-
-    fier  and  then  a 2 byte integer length in network byte order. See
-    RFC 2326 Section 10.12 for more information on how RTP interleaving
-    behaves.  If  unset or set to NULL, curl will use the default write
-    function.
+	dTHX;
+	perl_curl_easy_t *easy;
+	easy = (perl_curl_easy_t *) userptr;
+	callback_t *cb = &easy->cb[ CB_EASY_INTERLEAVE ];
 
-    Interleaved RTP poses some challeneges for the client  application.
-    Since the stream data is sharing the RTSP control connection, it is
-    critical to service the RTP in a timely fashion. If the RTP data is
-    not  handled  quickly,  subsequent  response  processing may become
-    unreasonably delayed and the connection may close. The  application
-    may  use  CURL/RTSPREQ_RECEIVE to service RTP data when no requests
-    are  desired.  If  the   application   makes   a   request,   (e.g.
-    CURL/RTSPREQ_PAUSE)  then  the  response  handler  will process any
-    pending RTP data before marking the request as finished.  (Added in
-    7.20.0)
-	*/
+	if ( cb->func ) {
+		SV *args[] = {
+			newSVsv( easy->perl_self ),
+			&PL_sv_undef
+		};
+		if ( ptr )
+			args[1] = newSVpvn( ptr, (STRLEN) (size * nmemb) );
 
-	return -1;
+		return PERL_CURL_CALL( cb, args );
+	} else {
+		return write_to_ctx( aTHX_ cb->data, ptr, size * nmemb );
+	}
 }
 #endif
 
@@ -372,30 +368,62 @@ cb_easy_interleave( void *ptr, size_t size, size_t nmemb, void *userptr )
 #ifdef CURL_CHUNK_BGN_FUNC_FAIL
 /* CHUNK_BGN_FUNCTION -- CHUNK_DATA */
 static long
-cb_easy_chunk_bgn( const void *transfer_info, void *ptr, int remains )
+cb_easy_chunk_bgn( const void *transfer_info, void *userptr, int remains )
 {
-	/*
-    Function  pointer  that  should match the following prototype: long
-    function (const void *transfer_info, void *ptr, int remains).  This
-    function  gets  called  by  libcurl  before a part of the stream is
-    going to be transferred (if the transfer supports chunks).
+	dTHX;
+	perl_curl_easy_t *easy;
+	easy = (perl_curl_easy_t *) userptr;
+	callback_t *cb = &easy->cb[ CB_EASY_CHUNK_BGN ];
+	long ret;
 
-    This callback makes sense only when using the CURLOPT/WILDCARDMATCH
-    option for now.
+	SV *args[] = {
+		newSVsv( easy->perl_self ),
+		&PL_sv_undef,
+		newSViv( remains )
+	};
+	if ( transfer_info ) {
+		const struct curl_fileinfo *fi = transfer_info;
+		HV *h, *s;
 
-    The  target  of  transfer_info  parameter  is  a "feature depended"
-    structure. For the FTP wildcard download, the target is  curl_file-
-    info  structure  (see curl/curl.h).  The parameter ptr is a pointer
-    given by CURLOPT/CHUNK_DATA. The parameter remains contains  number
-    of  chunks remaining per the transfer. If the feature is not avail-
-    able, the parameter has zero value.
+		s = newHV();
+		if ( fi->strings.time )
+			(void) hv_stores( s, "time", newSVpv( fi->strings.time, 0 ) );
+		if ( fi->strings.perm )
+			(void) hv_stores( s, "perm", newSVpv( fi->strings.perm, 0 ) );
+		if ( fi->strings.user )
+			(void) hv_stores( s, "user", newSVpv( fi->strings.user, 0 ) );
+		if ( fi->strings.group )
+			(void) hv_stores( s, "group", newSVpv( fi->strings.group, 0 ) );
+		if ( fi->strings.target )
+			(void) hv_stores( s, "target", newSVpv( fi->strings.target, 0 ) );
 
-    Return    CURL/CHUNK_BGN_FUNC_OK    if    everything    is    fine,
-    CURL/CHUNK_BGN_FUNC_SKIP  if you want to skip the concrete chunk or
-    CURL/CHUNK_BGN_FUNC_FAIL to tell libcurl  to  stop  if  some  error
-    occurred.  (This was added in 7.21.0)
-	*/
+		h = newHV();
+		if ( fi->filename )
+			(void) hv_stores( h, "filename", newSVpv( fi->filename, 0 ) );
+		(void) hv_stores( h, "filetype", newSViv( fi->filetype ) );
+		(void) hv_stores( h, "time", newSViv( fi->time ) );
+		(void) hv_stores( h, "perm", newSVuv( fi->perm ) );
+		(void) hv_stores( h, "uid", newSViv( fi->uid ) );
+		(void) hv_stores( h, "gid", newSViv( fi->gid ) );
+		(void) hv_stores( h, "size", newSV( fi->size ) );
+		(void) hv_stores( h, "hardlinks", newSViv( fi->hardlinks ) );
+		(void) hv_stores( h, "strings", newRV( sv_2mortal( (SV *) s ) ) );
+		(void) hv_stores( h, "flags", newSVuv( fi->flags ) );
 
+		args[2] = newRV( sv_2mortal( (SV *) h ) );
+	}
+
+	ret = PERL_CURL_CALL( cb, args );
+
+	if ( 0
+# ifdef CURL_CHUNK_BGN_FUNC_OK
+			|| ret == CURL_CHUNK_BGN_FUNC_OK
+# endif
+# ifdef CURL_CHUNK_BGN_FUNC_SKIP
+			|| ret == CURL_CHUNK_BGN_FUNC_SKIP
+# endif
+		)
+		return ret;
 	return CURL_CHUNK_BGN_FUNC_FAIL;
 }
 #endif
