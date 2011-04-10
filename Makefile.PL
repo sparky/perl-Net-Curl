@@ -414,4 +414,18 @@ sub write_examples_pod
 	}
 }
 
+package ExtUtils::MM_Unix;
+
+sub all_target {
+	my $self = shift;
+	return <<'MAKE_EXT';
+all :: pure_all manifypods
+	$(NOECHO) echo "Module loads OK ?"
+	$(PERLRUNINST) -le 'use WWW::CurlOO; print WWW::CurlOO::LIBCURL_VERSION'
+	$(NOECHO) $(NOOP)
+MAKE_EXT
+
+}
+
+
 # vim: ts=4:sw=4
