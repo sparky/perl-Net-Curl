@@ -64,6 +64,9 @@
 #ifndef mXPUSHs
 # define mXPUSHs( sv ) XPUSHs( sv_2mortal( sv ) )
 #endif
+#ifndef PTR2nat
+# define PTR2nat(p)	(PTRV)(p)
+#endif
 
 /*
  * Convenient way to copy SVs
