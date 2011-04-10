@@ -196,7 +196,7 @@ sub setopt
 		my $sub = $value;
 		$value = sub {
 			my ( $easy, $maxlen, $uservar ) = @_;
-			return $sub->( $maxlen, $uservar );
+			return \( $sub->( $maxlen, $uservar ) );
 		};
 	} elsif ( $option == CURLOPT_PROGRESSFUNCTION ) {
 		my $sub = $value;

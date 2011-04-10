@@ -223,16 +223,16 @@ CURLOPT_WRITEDATA was set to. It must return number of data bytes.
 
 =item CURLOPT_READFUNCTION ( CURLOPT_READDATA )
 
-B<THIS MAY CHANGE>, because support for CURL_READFUNC_ABORT and
-CURL_READFUNC_PAUSE is missing right now.
-
 read callback receives 3 arguments: easy object, maximum data length, and
-CURLOPT_READDATA value. It must return data read.
+CURLOPT_READDATA value. It must return either a reference to data read or
+one of numeric values: 0 - transfer completed, CURL_READFUNC_ABORT - abort
+upload, CURL_READFUNC_PAUSE - pause upload. Reference to any value that
+is zero in length ("", undef) will also signalize completed transfer.
 
  sub cb_read {
      my ( $easy, $maxlen, $uservar ) = @_;
      # ... read $data, $maxlen ...
-     return $data;
+     return \$data;
  }
 
 =item CURLOPT_IOCTLFUNCTION ( CURLOPT_IOCTLDATA )
