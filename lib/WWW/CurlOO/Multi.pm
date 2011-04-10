@@ -153,6 +153,20 @@ Signalize action on a socket.
 
 Calls L<curl_multi_socket_action(3)>.
 
+=item assign( SOCKET, [VALUE] )
+
+Assigns some value to a socket file descriptor. Removes it is value is not
+specified.
+
+Calls L<curl_multi_assign(3)>.
+
+=item handles( )
+
+In list context returns easy handles attached to this multi.
+In scalar context returns number of easy handles attached.
+
+There is no libcurl equivalent.
+
 =item DESTROY( )
 
 Cleans up. It should not be called manually.
@@ -243,7 +257,7 @@ CURLMOPT_TIMERDATA value. Should return 0.
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
-L<WWW::CurlOO::examples>
+L<WWW::CurlOO::examples(3pm)>
 L<libcurl-multi(3)>
 L<libcurl-errors(3)>
 

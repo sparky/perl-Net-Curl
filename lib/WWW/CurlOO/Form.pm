@@ -100,7 +100,6 @@ object.
 =item add( CURLFORM_option => DATA, ... )
 
 Adds new section to form object. See L<curl_formadd(3)> for more info.
-B<WARNING: currently some option combination may crash your perl.>
 
 Working options include: CURLFORM_COPYNAME, CURLFORM_NAMELENGTH,
 CURLFORM_COPYCONTENTS, CURLFORM_CONTENTSLENGTH, CURLFORM_FILECONTENT,

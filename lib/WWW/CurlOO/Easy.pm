@@ -137,8 +137,6 @@ Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
 
 =item recv( BUFFER, MAXLENGTH )
 
-B<THIS MAY CHANGE YET>
-
 Receive raw data. Will receive at most MAXLENGTH bytes. New data will be
 concatenated to BUFFER.
 
@@ -152,6 +150,20 @@ If easy object is associated with any multi handles, it will return that
 multi handle.
 
  my $multi = $easy->multi;
+
+=item share( )
+
+If share object is attached to this easy handle, this method will return that
+share object.
+
+ my $share = $easy->share;
+
+=item form( )
+
+If form object is attached to this easy handle, this method will return that
+form object.
+
+ my $form = $easy->form;
 
 =item DESTROY( )
 
@@ -237,19 +249,69 @@ is zero in length ("", undef) will also signalize completed transfer.
 
 =item CURLOPT_IOCTLFUNCTION ( CURLOPT_IOCTLDATA )
 
-Not supported yet.
+ioctl callback receives 3 arguments: easy object, ioctl command, and
+CURLOPT_IOCTLDATA value. It must return a curlioerr value.
+
+ sub cb_ioctl {
+     my ( $easy, $command, $uservar ) = @_;
+
+     if ( $command == CURLIOCMD_RESTARTREAD ) {
+         if ( restart_read() ) {
+             return CURLIOE_OK;
+         } else {
+             return CURLIOE_FAILRESTART;
+         }
+     }
+     return CURLIOE_UNKNOWNCMD;
+ }
 
 =item CURLOPT_SEEKFUNCTION ( CURLOPT_SEEKDATA ) 7.18.0+
 
-Not supported yet.
+seek callback receives 4 arguments: easy object, offset / position,
+origin / whence, and CURLOPT_SEEKDATA value. Must return one of
+CURL_SEEKFUNC_* values.
+
+ use Fcntl qw(:seek);
+ sub cb_seek {
+     my ( $easy, $offset, $origin, $uservar ) = @_;
+     if ( $origin = SEEK_SET ) {
+         if ( seek SOMETHING, $offset, SEEK_SET ) {
+             return CURL_SEEKFUNC_OK;
+         }
+         return CURL_SEEKFUNC_CANTSEEK;
+     }
+     return CURL_SEEKFUNC_FAIL
+ }
 
 =item CURLOPT_SOCKOPTFUNCTION ( CURLOPT_SOCKOPTDATA ) 7.15.6+
 
-Not supported yet.
+sockopt callback receives 4 arguments: easy object, socket fd, socket purpose,
+and CURLOPT_SOCKOPTDATA value. Should return 0 on success.
+
+ sub cb_sockopt {
+     my ( $easy, $socket, $purpose, $uservar ) = @_;
+     # ... do something with the socket ...
+     return 0;
+ }
 
 =item CURLOPT_OPENSOCKETFUNCTION ( CURLOPT_OPENSOCKETDATA ) 7.17.1+
 
-Not supported yet.
+opensocket callback receives 4 arguments: easy object, socket purpose,
+address structure (in form of a hashref), and CURLOPT_OPENSOCKETDATA value.
+The address structure has following numeric values: "family", "socktype",
+"protocol", "addrlen"; and "addr" in binary form. Use Socket CPAN module to
+decode "addr" field.
+
+ use Socket;
+ sub cb_opensocket {
+     my ( $easy, $purpose, $address, $uservar ) = @_;
+     my $addr = unpack_sockaddr_in( $address->{addr} );
+     # ... open ...
+     return $socket;
+ }
+
+Currently WWW::CurlOO does not honour any changes made to $address, this
+may be fixed some day.
 
 =item CURLOPT_PROGRESSFUNCTION ( CURLOPT_PROGRESSDATA )
 
@@ -283,16 +345,53 @@ Not supported, probably will never be.
 
 =item CURLOPT_INTERLEAVEFUNCTION ( CURLOPT_INTERLEAVEDATA ) 7.20.0+
 
-Not supported yet.
+Behaviour is the same as in write callback.
 
-=item CURLOPT_CHUNK_BGN_FUNCTION, CURLOPT_CHUNK_END_FUNCTION
-    ( CURLOPT_CHUNK_DATA ) 7.21.0+
+=item CURLOPT_CHUNK_BGN_FUNCTION ( CURLOPT_CHUNK_DATA ) 7.21.0+
 
-Not supported yet.
+chunk_bgn callback receives 4 arguments: easy object, fileinfo structure (in
+form of a hashref), number of remaining chunks, and CURLOPT_CHUNK_DATA value.
+It must return one of CURL_CHUNK_BGN_FUNC_* values.
+
+ sub cb_chunk_bgn {
+     my ( $easy, $fileinfo, $remaining, $uservar ) = @_;
+
+     if ( exists $fileinfo->{filetype} and
+             $fileinfo->{filetype} != CURLFILETYPE_FILE ) {
+         # download regular files only
+         return CURL_CHUNK_BGN_FUNC_SKIP;
+     }
+     my $filename = "unknown." . $remaining;
+     $filename = $fileinfo->{filename} if defined $fileinfo->{filename};
+
+     open $easy->{myfile}, '>', $filename
+         or return CURL_CHUNK_BGN_FUNC_FAIL;
+
+     return CURL_CHUNK_BGN_FUNC_OK;
+ }
+
+=item CURLOPT_CHUNK_END_FUNCTION ( CURLOPT_CHUNK_DATA ) 7.21.0+
+
+chunk_end callback receives 2 arguments: easy object and CURLOPT_CHUNK_DATA
+value. Must return one of CURL_CHUNK_END_FUNC_* values.
+
+ sub cb_chunk_end {
+     my ( $easy, $uservar ) = @_;
+     # ... close $easy-{myfile} ...
+     return CURL_CHUNK_END_FUNC_OK;
+ }
 
 =item CURLOPT_FNMATCH_FUNCTION ( CURLOPT_FNMATCH_DATA ) 7.21.0+
 
-Not supported yet.
+fnmatch callback receives 4 arguments: easy object, pattern, string, and
+CURLOPT_FNMATCH_DATA value. Must return one of CURL_FNMATCHFUNC_* values.
+
+ sub cb_fnmatch {
+     my ( $easy, $pattern, $string, $uservar ) = @_;
+     return ( $string =~ m/$pattern/i
+         ? CURL_FNMATCHFUNC_MATCH
+         : CURL_FNMATCHFUNC_NOMATCH );
+ }
 
 =back
 
@@ -300,7 +399,7 @@ Not supported yet.
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Multi>
-L<WWW::CurlOO::examples>
+L<WWW::CurlOO::examples(3pm)>
 L<libcurl-easy(3)>
 L<libcurl-errors(3)>
 
