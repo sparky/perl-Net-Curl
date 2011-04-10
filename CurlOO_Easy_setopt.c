@@ -189,6 +189,19 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 #endif
 #ifdef CURLOPT_INTERLEAVEDATA
 		case CURLOPT_INTERLEAVEDATA:
+# ifdef CURLOPT_INTERLEAVEFUNCTION
+			/* cb_easy_interleave has default writer function,
+			 * but no default destination */
+			{
+				CURLcode ret2;
+				ret = curl_easy_setopt( easy->handle, CURLOPT_INTERLEAVEFUNCTION,
+					SvOK( value ) ? cb_easy_interleave : NULL );
+				ret2 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? easy : NULL );
+				if ( ret == CURLE_OK )
+					ret = ret2;
+			}
+# endif
 			cbnum = CB_EASY_INTERLEAVE;
 			break;
 #endif
