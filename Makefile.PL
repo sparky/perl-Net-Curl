@@ -415,6 +415,7 @@ sub write_examples_pod
 	}
 }
 
+__END__
 package ExtUtils::MM_Unix;
 
 sub all_target {
