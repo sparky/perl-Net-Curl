@@ -12,6 +12,8 @@ my $cver = v7.15.4;
 my @files = qw(
 CurlOO.xs
 CurlOO_Easy.xsh
+CurlOO_Easy_setopt.c
+CurlOO_Easy_callbacks.c
 CurlOO_Form.xsh
 CurlOO_Multi.xsh
 CurlOO_Share.xsh
