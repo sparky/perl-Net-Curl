@@ -7,6 +7,12 @@ use File::Temp qw/tempfile/;
 use WWW::CurlOO::Compat;
 use WWW::Curl::Easy;
 
+unless ( $ENV{'TEST_EXTENDED'} ) {
+	my $msg = 'Not that useful test. ' .
+		' Set $ENV{TEST_EXTENDED} to a true value to run.';
+	plan skip_all => $msg;
+}
+
 # list of tests
 #         site-url, verifypeer(0,1), verifyhost(0,2), result(0=ok, 1=fail), result-openssl0.9.5
 my $url_list=[
