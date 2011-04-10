@@ -77,11 +77,11 @@ fwrite_wrapper2( const void *ptr, size_t size, perl_curl_easy_t *easy,
 
 /* Write callback for calling a perl callback */
 static size_t
-cb_easy_write( const void *ptr, size_t size, size_t nmemb, void *userptr )
+cb_easy_write( char *buffer, size_t size, size_t nitems, void *userptr )
 /*{{{*/ {
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
-	return fwrite_wrapper( ptr, size, nmemb, easy,
+	return fwrite_wrapper( buffer, size, nitems, easy,
 			&easy->cb[ CB_EASY_WRITE ] );
 } /*}}}*/
 
@@ -111,7 +111,7 @@ cb_easy_debug( CURL* handle, curl_infotype type, char *ptr, size_t size,
 
 /* read callback for calling a perl callback */
 static size_t
-cb_easy_read( void *ptr, size_t size, size_t nmemb, void *userptr )
+cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
 /*{{{*/ {
 	dTHX;
 	dSP;
@@ -456,4 +456,19 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 		return ret;
 	return CURL_FNMATCHFUNC_FAIL;
 }
+#endif
+
+
+#ifdef CALLBACK_TYPECHECK
+static curl_progress_callback t_progress __attribute__((unused)) = cb_easy_progress;
+static curl_write_callback t_write __attribute__((unused)) = cb_easy_write;
+static curl_chunk_bgn_callback t_chunk_bgn __attribute__((unused)) = cb_easy_chunk_bgn;
+static curl_chunk_end_callback t_chunk_end __attribute__((unused)) = cb_easy_chunk_end;
+static curl_fnmatch_callback t_fnmatch __attribute__((unused)) = cb_easy_fnmatch;
+static curl_seek_callback t_seek __attribute__((unused)) = cb_easy_seek;
+static curl_read_callback t_read __attribute__((unused)) = cb_easy_read;
+static curl_sockopt_callback t_sockopt __attribute__((unused)) = cb_easy_sockopt;
+static curl_opensocket_callback t_opensocket __attribute__((unused)) = cb_easy_opensocket;
+static curl_ioctl_callback t_ioctl __attribute__((unused)) = cb_easy_ioctl;
+static curl_debug_callback t_debug __attribute__((unused)) = cb_easy_debug;
 #endif
