@@ -398,15 +398,40 @@ cb_easy_chunk_bgn( const void *transfer_info, void *userptr, int remains )
 			(void) hv_stores( s, "target", newSVpv( fi->strings.target, 0 ) );
 
 		h = newHV();
-		if ( fi->filename )
+		if ( fi->filename
+# ifdef CURLFINFOFLAG_KNOWN_FILENAME
+				&& ( fi->flags & CURLFINFOFLAG_KNOWN_FILENAME )
+# endif
+			)
 			(void) hv_stores( h, "filename", newSVpv( fi->filename, 0 ) );
-		(void) hv_stores( h, "filetype", newSViv( fi->filetype ) );
-		(void) hv_stores( h, "time", newSViv( fi->time ) );
-		(void) hv_stores( h, "perm", newSVuv( fi->perm ) );
-		(void) hv_stores( h, "uid", newSViv( fi->uid ) );
-		(void) hv_stores( h, "gid", newSViv( fi->gid ) );
-		(void) hv_stores( h, "size", newSV( fi->size ) );
-		(void) hv_stores( h, "hardlinks", newSViv( fi->hardlinks ) );
+# ifdef CURLFINFOFLAG_KNOWN_FILETYPE
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_FILETYPE )
+# endif
+			(void) hv_stores( h, "filetype", newSViv( fi->filetype ) );
+# ifdef CURLFINFOFLAG_KNOWN_TIME
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_TIME )
+# endif
+			(void) hv_stores( h, "time", newSViv( fi->time ) );
+# ifdef CURLFINFOFLAG_KNOWN_PERM
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_PERM )
+# endif
+			(void) hv_stores( h, "perm", newSVuv( fi->perm ) );
+# ifdef CURLFINFOFLAG_KNOWN_UID
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_UID )
+# endif
+			(void) hv_stores( h, "uid", newSViv( fi->uid ) );
+# ifdef CURLFINFOFLAG_KNOWN_GID
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_GID )
+# endif
+			(void) hv_stores( h, "gid", newSViv( fi->gid ) );
+# ifdef CURLFINFOFLAG_KNOWN_SIZE
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_SIZE )
+# endif
+			(void) hv_stores( h, "size", newSV( fi->size ) );
+# ifdef CURLFINFOFLAG_KNOWN_HLINKCOUNT
+		if ( fi->flags & CURLFINFOFLAG_KNOWN_HLINKCOUNT )
+# endif
+			(void) hv_stores( h, "hardlinks", newSViv( fi->hardlinks ) );
 		(void) hv_stores( h, "strings", newRV( sv_2mortal( (SV *) s ) ) );
 		(void) hv_stores( h, "flags", newSVuv( fi->flags ) );
 
