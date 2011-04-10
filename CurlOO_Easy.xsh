@@ -383,38 +383,45 @@ SV *
 getinfo( easy, option )
 	WWW::CurlOO::Easy easy
 	int option
-	PREINIT:
-		CURLcode ret = CURLE_OK;
 	CODE:
-		/* XXX: die right away */
-		switch( option & CURLINFO_TYPEMASK ) {
+		switch ( option & CURLINFO_TYPEMASK ) {
 			case CURLINFO_STRING:
 			{
+				CURLcode ret;
 				char * vchar;
 				ret = curl_easy_getinfo( easy->handle, option, &vchar );
+				EASY_DIE( ret );
 				RETVAL = newSVpv( vchar, 0 );
 				break;
 			}
 			case CURLINFO_LONG:
 			{
+				CURLcode ret;
 				long vlong;
 				ret = curl_easy_getinfo( easy->handle, option, &vlong );
+				EASY_DIE( ret );
 				RETVAL = newSViv( vlong );
 				break;
 			}
 			case CURLINFO_DOUBLE:
 			{
+				CURLcode ret;
 				double vdouble;
 				ret = curl_easy_getinfo( easy->handle, option, &vdouble );
+				EASY_DIE( ret );
 				RETVAL = newSVnv( vdouble );
 				break;
 			}
 			case CURLINFO_SLIST:
 			{
+				CURLcode ret;
 				struct curl_slist *vlist, *entry;
-				AV *items = newAV();
+				AV *items = NULL;
 				ret = curl_easy_getinfo( easy->handle, option, &vlist );
+				EASY_DIE( ret );
+
 				if ( vlist != NULL ) {
+					items = newAV();
 					entry = vlist;
 					while ( entry ) {
 						av_push( items, newSVpv( entry->data, 0 ) );
@@ -429,10 +436,6 @@ getinfo( easy, option )
 				croak( "invalid getinfo option" );
 				break;
 			}
-		}
-		if ( ret != CURLE_OK ) {
-			sv_2mortal( RETVAL );
-			EASY_DIE( ret );
 		}
 	OUTPUT:
 		RETVAL
