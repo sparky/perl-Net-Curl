@@ -56,7 +56,7 @@ foreach my $file ( @files ) {
 		my $bad = 0;
 		my @ifdef;
 		foreach my $line ( @lines ) {
-			if ( $line =~ /#if(?:def\s+(\S+))?/ ) {
+			if ( $line =~ /^\s*#\s*if(?:def\s+(\S+))?/ ) {
 				push @ifdef, $1;
 			} elsif ( $line =~ /#else/ ) {
 				# invert ifdef
