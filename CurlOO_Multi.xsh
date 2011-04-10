@@ -128,6 +128,10 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 	return PERL_CURL_CALL( &multi->cb[ CB_MULTI_TIMER ], args );
 } /*}}}*/
 
+#ifdef CALLBACK_TYPECHECK
+static curl_socket_callback pct_socket __attribute__((unused)) = cb_multi_socket;
+static curl_multi_timer_callback pct_timer __attribute__((unused)) = cb_multi_timer;
+#endif
 
 #define MULTI_DIE( ret )		\
 	STMT_START {				\

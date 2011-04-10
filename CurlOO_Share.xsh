@@ -109,6 +109,10 @@ cb_share_unlock( CURL *easy_handle, curl_lock_data data, void *userptr )
 	return;
 }
 
+#ifdef CALLBACK_TYPECHECK
+static curl_lock_function pct_lock __attribute__((unused)) = cb_share_lock;
+static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock;
+#endif
 
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share
