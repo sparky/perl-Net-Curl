@@ -369,6 +369,7 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 #include "curloo-Form-c.inc"
 #include "curloo-Multi-c.inc"
 #include "curloo-Share-c.inc"
+#include "CurlOO_Easy_setopt.c"
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO
 

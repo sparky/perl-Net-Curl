@@ -1,0 +1,238 @@
+/* vim: ts=4:sw=4:ft=xs:fdm=marker: */
+/*
+ * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
+ *
+ * Loosely based on code by Cris Bailiff <c.bailiff+curl at devsecure.com>,
+ * and subsequent fixes by other contributors.
+ */
+
+
+static void
+perl_curl_easy_setopt_long( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	CURLcode ret = CURLE_OK;
+
+	ret = curl_easy_setopt( easy->handle, option, (long) SvIV( value ) );
+	EASY_DIE( ret );
+}
+
+
+static void
+perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	int cbnum = CB_EASY_LAST;
+	int dataopt = 0;
+	void *funcptr = NULL;
+
+	switch ( option ) {
+		case CURLOPT_WRITEFUNCTION:
+			/* function registered already */
+			cbnum = CB_EASY_WRITE;
+			break;
+		case CURLOPT_READFUNCTION:
+			/* function registered already */
+			cbnum = CB_EASY_READ;
+			break;
+		case CURLOPT_HEADERFUNCTION:
+			funcptr = cb_easy_header;
+			dataopt = CURLOPT_WRITEHEADER;
+			cbnum = CB_EASY_HEADER;
+			break;
+		case CURLOPT_PROGRESSFUNCTION:
+			funcptr = cb_easy_progress;
+			dataopt = CURLOPT_PROGRESSDATA;
+			cbnum = CB_EASY_PROGRESS;
+			break;
+		case CURLOPT_DEBUGFUNCTION:
+			funcptr = cb_easy_debug;
+			dataopt = CURLOPT_DEBUGDATA;
+			cbnum = CB_EASY_DEBUG;
+			break;
+		default:
+			croak( "unrecognized function option %d", option );
+	}
+
+	if ( cbnum != CB_EASY_LAST )
+		SvREPLACE( easy->cb[ cbnum ].func, value );
+
+	if ( dataopt ) {
+		CURLcode ret1, ret2;
+		ret1 = curl_easy_setopt( easy->handle, option,
+			SvOK( value ) ? funcptr : NULL );
+		ret2 = curl_easy_setopt( easy->handle, dataopt,
+			SvOK( value ) ? easy : NULL );
+
+		EASY_DIE( ret1 ? ret1 : ret2 );
+	}
+}
+
+static long
+perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	int cbnum = CB_EASY_LAST;
+	CURLcode ret = CURLE_OK;
+
+	switch ( option ) {
+		case CURLOPT_FILE:
+			cbnum = CB_EASY_WRITE;
+			break;
+		case CURLOPT_INFILE:
+			cbnum = CB_EASY_READ;
+			break;
+		case CURLOPT_WRITEHEADER:
+			/* cb_easy_header has default writer function,
+			 * but no default destination */
+			{
+				CURLcode ret2;
+				ret = curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION,
+					SvOK( value ) ? cb_easy_header : NULL );
+				ret2 = curl_easy_setopt( easy->handle, option,
+					SvOK( value ) ? easy : NULL );
+				if ( ret == CURLE_OK )
+					ret = ret2;
+			}
+			cbnum = CB_EASY_HEADER;
+			break;
+		case CURLOPT_PROGRESSDATA:
+			cbnum = CB_EASY_PROGRESS;
+			break;
+		case CURLOPT_DEBUGDATA:
+			cbnum = CB_EASY_DEBUG;
+			break;
+		default:
+			return -1;
+	}
+
+	SvREPLACE( easy->cb[ cbnum ].data, value );
+
+	return ret;
+}
+
+static void
+perl_curl_easy_setopt_object( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	int ret = CURLE_OK;
+	char *pv;
+
+	/* is it a function data ? */
+	ret = perl_curl_easy_setopt_functiondata( aTHX_ easy, option, value );
+	if ( ret >= 0 ) {
+		EASY_DIE( ret );
+		return;
+	}
+
+	/* is it a slist option ? */
+	ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 1 );
+	if ( ret >= 0 ) {
+		EASY_DIE( ret );
+		return;
+	}
+
+	switch ( option ) {
+		case CURLOPT_ERRORBUFFER:
+			croak( "CURLOPT_ERRORBUFFER is not supported, use $easy->error instead" );
+			return;
+
+		/* tell curl to redirect STDERR - value should be a glob */
+		case CURLOPT_STDERR:
+			ret = curl_easy_setopt( easy->handle, option,
+				PerlIO_findFILE( IoOFP( sv_2io( value ) ) ) );
+			return;
+
+		case CURLOPT_HTTPPOST:
+			if ( easy->form_sv ) {
+				curl_easy_setopt( easy->handle, option, NULL );
+				sv_2mortal( easy->form_sv );
+				easy->form_sv = NULL;
+			}
+
+			if ( SvOK( value ) ) {
+				perl_curl_form_t *form;
+				form = perl_curl_getptr_fatal( aTHX_ value,
+					"CURLOPT_HTTPPOST", "WWW::CurlOO::Form" );
+
+				easy->form_sv = newSVsv( value );
+				ret = curl_easy_setopt( easy->handle, option, form->post );
+				EASY_DIE( ret );
+			}
+			return;
+
+		case CURLOPT_SHARE:
+			if ( easy->share_sv ) {
+				curl_easy_setopt( easy->handle, option, NULL );
+				sv_2mortal( easy->share_sv );
+				easy->share_sv = NULL;
+			}
+
+			if ( SvOK( value ) ) {
+				perl_curl_share_t *share;
+				share = perl_curl_getptr_fatal( aTHX_ value,
+					"CURLOPT_SHARE", "WWW::CurlOO::Share" );
+
+				/* copy sv before setopt because this may trigger a callback */
+				easy->share_sv = newSVsv( value );
+				ret = curl_easy_setopt( easy->handle, option, share->handle );
+				EASY_DIE( ret );
+			}
+			return;
+
+		case CURLOPT_PRIVATE:
+			croak( "CURLOPT_PRIVATE is not available, use your base object" );
+			return;
+	};
+
+	/* default, assume it's data */
+	if ( SvOK( value ) ) {
+		char **ppv;
+		ppv = perl_curl_simplell_add( aTHX_ &easy->strings, option );
+		if ( ppv )
+			Safefree( *ppv );
+#ifdef savesvpv
+		pv = *ppv = savesvpv( value );
+#else
+		{
+			STRLEN len;
+			char *src = SvPV( value, len );
+			pv = *ppv = savepvn( src, len );
+		}
+#endif
+	} else {
+		pv = perl_curl_simplell_del( aTHX_ &easy->strings, option );
+		if ( pv )
+			Safefree( pv );
+		pv = NULL;
+	}
+
+	ret = curl_easy_setopt( easy->handle, option, pv );
+	EASY_DIE( ret );
+}
+
+
+
+static void
+perl_curl_easy_setopt_off_t( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	CURLcode ret = CURLE_OK;
+	curl_off_t v = 0;
+
+	if ( SvOK( value ) ) {
+#if IVSIZE == CURL_SIZEOF_CURL_OFF_T
+		if ( SvIOK( value ) ) {
+			v = SvIV( value );
+		} else
+#endif
+		if ( looks_like_number( value ) ) {
+			char *pv = SvPV_nolen( value );
+			char *pdummy;
+			v = strtoll( pv, &pdummy, 10 );
+		}
+	}
+
+	ret = curl_easy_setopt( easy->handle, option, v );
+	EASY_DIE( ret );
+}

@@ -73,41 +73,7 @@ struct perl_curl_easy_s {
 };
 
 
-/* switch from curl option codes to the relevant callback index */
-static perl_curl_easy_callback_code_t
-callback_index( int option )
-/*{{{*/ {
-	switch( option ) {
-		case CURLOPT_WRITEFUNCTION:
-		case CURLOPT_FILE:
-			return CB_EASY_WRITE;
-			break;
-
-		case CURLOPT_READFUNCTION:
-		case CURLOPT_INFILE:
-			return CB_EASY_READ;
-			break;
-
-		case CURLOPT_HEADERFUNCTION:
-		case CURLOPT_WRITEHEADER:
-			return CB_EASY_HEADER;
-			break;
-
-		case CURLOPT_PROGRESSFUNCTION:
-		case CURLOPT_PROGRESSDATA:
-			return CB_EASY_PROGRESS;
-			break;
-		case CURLOPT_DEBUGFUNCTION:
-		case CURLOPT_DEBUGDATA:
-			return CB_EASY_DEBUG;
-			break;
-	}
-	croak( "Bad callback index requested\n" );
-	return CB_EASY_LAST;
-} /*}}}*/
-
-
-static int
+static long
 perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV *value,
 		int clear )
 /*{{{*/ {
@@ -120,7 +86,7 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV 
 		if ( perl_curl_easy_option_slist[ si ] == option )
 			goto found;
 	}
-	return CURLE_BAD_FUNCTION_ARGUMENT;
+	return -1;
 
 found:
 
@@ -216,6 +182,8 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	Safefree( easy );
 
 } /*}}}*/
+
+/* {{{ CALLBACKS */
 
 static size_t
 write_to_ctx( pTHX_ SV* const call_ctx, const char* const ptr, size_t const n )
@@ -441,6 +409,8 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	return PERL_CURL_CALL( cb, args );
 } /*}}}*/
 
+#if 0
+
 #ifdef CURLOPT_IOCTLFUNCTION
 /* IOCTLFUNCTION -- IOCTLDATA */
 static curlioerr
@@ -527,12 +497,12 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	if ( address ) {
 		HV *ah;
 		ah = newHV();
-		hv_stores( ah, "family", newSViv( address->family ) );
-		hv_stores( ah, "socktype", newSViv( address->socktype ) );
-		hv_stores( ah, "protocol", newSViv( address->protocol ) );
-		hv_stores( ah, "addrlen", newSVuv( address->addrlen ) );
+		(void) hv_stores( ah, "family", newSViv( address->family ) );
+		(void) hv_stores( ah, "socktype", newSViv( address->socktype ) );
+		(void) hv_stores( ah, "protocol", newSViv( address->protocol ) );
+		(void) hv_stores( ah, "addrlen", newSVuv( address->addrlen ) );
 		/* XXX: is this correct ? */
-		hv_stores( ah, "addr", newSVpvn( (const char *) &address->addr,
+		(void) hv_stores( ah, "addr", newSVpvn( (const char *) &address->addr,
 			sizeof( struct sockaddr ) ) );
 		args[2] = newRV( sv_2mortal( (SV *) ah ) );
 	}
@@ -670,6 +640,9 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 }
 #endif
 
+#endif
+/* }}} */
+
 
 static void
 perl_curl_easy_preset( perl_curl_easy_t *easy )
@@ -744,20 +717,19 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 		perl_curl_easy_preset( clone );
 
-		if ( easy->cb[ callback_index( CURLOPT_HEADERFUNCTION ) ].func
-				|| easy->cb[ callback_index( CURLOPT_WRITEHEADER ) ].data ) {
+		if ( easy->cb[ CB_EASY_HEADER ].func
+				|| easy->cb[ CB_EASY_HEADER ].data ) {
 			curl_easy_setopt( clone->handle, CURLOPT_HEADERFUNCTION, cb_easy_header );
 			curl_easy_setopt( clone->handle, CURLOPT_WRITEHEADER, clone );
 		}
 
-		if ( easy->cb[ callback_index( CURLOPT_PROGRESSFUNCTION ) ].func
-				|| easy->cb[ callback_index( CURLOPT_PROGRESSDATA ) ].data ) {
+		if ( easy->cb[ CB_EASY_PROGRESS ].func
+				|| easy->cb[ CB_EASY_PROGRESS ].data ) {
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSFUNCTION, cb_easy_progress );
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSDATA, clone );
 		}
 
-		if ( easy->cb[ callback_index( CURLOPT_DEBUGFUNCTION ) ].func
-				|| easy->cb[ callback_index( CURLOPT_DEBUGDATA ) ].data ) {
+		if ( easy->cb[ CB_EASY_DEBUG ].func ) {
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGFUNCTION, cb_easy_debug );
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGDATA, clone );
 		}
@@ -834,177 +806,20 @@ setopt( easy, option, value )
 	int option
 	SV *value
 	PREINIT:
-		CURLcode ret1 = CURLE_OK, ret2 = CURLE_OK;
+		int opttype;
 	CODE:
-		switch( option ) {
-			/* SV * to user contexts for callbacks - any SV (glob,scalar,ref) */
-			case CURLOPT_FILE:
-			case CURLOPT_INFILE:
-				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
-				break;
-			case CURLOPT_WRITEHEADER:
-				ret1 = curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION,
-					SvOK( value ) ? cb_easy_header : NULL );
-				ret2 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
-				break;
-			case CURLOPT_PROGRESSDATA:
-				ret1 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSFUNCTION,
-					SvOK( value ) ? cb_easy_progress : NULL );
-				ret2 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
-				break;
-			case CURLOPT_DEBUGDATA:
-				ret1 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGFUNCTION,
-					SvOK( value ) ? cb_easy_debug : NULL );
-				ret2 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].data, value );
-				break;
-
-			/* SV * to a subroutine ref */
-			case CURLOPT_WRITEFUNCTION:
-			case CURLOPT_READFUNCTION:
-				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
-				break;
-			case CURLOPT_HEADERFUNCTION:
-				ret1 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? cb_easy_header : NULL );
-				ret2 = curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
-				break;
-			case CURLOPT_PROGRESSFUNCTION:
-				ret1 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? cb_easy_progress : NULL );
-				ret2 = curl_easy_setopt( easy->handle, CURLOPT_PROGRESSDATA,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
-				break;
-			case CURLOPT_DEBUGFUNCTION:
-				ret1 = curl_easy_setopt( easy->handle, option,
-					SvOK( value ) ? cb_easy_debug : NULL );
-				ret2 = curl_easy_setopt( easy->handle, CURLOPT_DEBUGDATA,
-					SvOK( value ) ? easy : NULL );
-				SvREPLACE( easy->cb[ callback_index( option ) ].func, value );
-				break;
-
-			/* slist cases */
-			case CURLOPT_HTTPHEADER:
-			case CURLOPT_HTTP200ALIASES:
-#ifdef CURLOPT_MAIL_RCPT
-			case CURLOPT_MAIL_RCPT:
-#endif
-			case CURLOPT_QUOTE:
-			case CURLOPT_POSTQUOTE:
-			case CURLOPT_PREQUOTE:
-#ifdef CURLOPT_RESOLVE
-			case CURLOPT_RESOLVE:
-#endif
-			case CURLOPT_TELNETOPTIONS:
-				ret1 = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 1 );
-				break;
-
-			/* XXX: fix this */
-			case CURLOPT_ERRORBUFFER:
-				croak( "CURLOPT_ERRORBUFFER is not supported, use $easy->error instead" );
-				break;
-
-			/* tell curl to redirect STDERR - value should be a glob */
-			case CURLOPT_STDERR:
-				ret1 = curl_easy_setopt( easy->handle, option,
-					PerlIO_findFILE( IoOFP( sv_2io( value ) ) ) );
-				break;
-
-			/* not working yet... */
-			/* XXX: finish this */
-			case CURLOPT_HTTPPOST:
-				if ( easy->form_sv ) {
-					ret2 = curl_easy_setopt( easy->handle, option, NULL );
-					sv_2mortal( easy->form_sv );
-					easy->form_sv = NULL;
-				}
-
-				if ( SvOK( value ) ) {
-					WWW__CurlOO__Form form;
-					form = perl_curl_getptr_fatal( aTHX_ value,
-						"CURLOPT_HTTPPOST", "WWW::CurlOO::Form" );
-
-					easy->form_sv = newSVsv( value );
-					ret1 = curl_easy_setopt( easy->handle, option, form->post );
-				}
-				break;
-
-			case CURLOPT_SHARE:
-				if ( easy->share_sv ) {
-					ret2 = curl_easy_setopt( easy->handle, option, NULL );
-					sv_2mortal( easy->share_sv );
-					easy->share_sv = NULL;
-				}
-
-				if ( SvOK( value ) ) {
-					WWW__CurlOO__Share share;
-					share = perl_curl_getptr_fatal( aTHX_ value,
-						"CURLOPT_SHARE", "WWW::CurlOO::Share" );
-
-					/* copy sv before setopt because this may trigger a callback */
-					easy->share_sv = newSVsv( value );
-					ret1 = curl_easy_setopt( easy->handle, option, share->handle );
-				}
-				break;
-
-			case CURLOPT_PRIVATE:
-				croak( "CURLOPT_PRIVATE is off limits" );
-				break;
-
-			/* default cases */
-			default:
-				if ( option < CURLOPTTYPE_OBJECTPOINT ) {
-					/* A long (integer) value */
-					ret1 = curl_easy_setopt( easy->handle, option, (long) SvIV( value ) );
-				}
-				else if ( option < CURLOPTTYPE_FUNCTIONPOINT ) {
-					/* An objectpoint - string */
-					char *pv;
-					if ( SvOK( value ) ) {
-						char **ppv;
-						ppv = perl_curl_simplell_add( aTHX_ &easy->strings, option );
-						if ( ppv )
-							Safefree( *ppv );
-#ifdef savesvpv
-						pv = *ppv = savesvpv( value );
-#else
-						{
-							STRLEN len;
-							char *src = SvPV( value, len );
-							pv = *ppv = savepvn( src, len );
-						}
-#endif
-					} else {
-						pv = perl_curl_simplell_del( aTHX_ &easy->strings, option );
-						if ( pv )
-							Safefree( pv );
-						pv = NULL;
-					}
-					ret1 = curl_easy_setopt( easy->handle, option, pv );
-				}
-				else if ( option < CURLOPTTYPE_OFF_T ) { /* A function - notreached? */
-					croak( "Unknown curl option of type function" );
-				}
-				else { /* A LARGE file option using curl_off_t, handling larger than 32bit sizes without 64bit integer support */
-					if ( SvOK( value ) && looks_like_number( value ) ) {
-						STRLEN dummy = 0;
-						char* pv = SvPV( value, dummy );
-						char* pdummy;
-						ret1 = curl_easy_setopt( easy->handle, option,
-							(curl_off_t) strtoll( pv, &pdummy, 10 ) );
-					}
-				};
-				break;
-		};
-		EASY_DIE( ret1 ? ret1 : ret2 );
+		opttype = option - option % CURLOPTTYPE_OBJECTPOINT;
+		if ( opttype == CURLOPTTYPE_LONG ) {
+			perl_curl_easy_setopt_long( aTHX_ easy, option, value );
+		} else if ( opttype == CURLOPTTYPE_OBJECTPOINT ) {
+			perl_curl_easy_setopt_object( aTHX_ easy, option, value );
+		} else if ( opttype == CURLOPTTYPE_FUNCTIONPOINT ) {
+			perl_curl_easy_setopt_function( aTHX_ easy, option, value );
+		} else if ( opttype == CURLOPTTYPE_OFF_T ) {
+			perl_curl_easy_setopt_off_t( aTHX_ easy, option, value );
+		} else {
+			croak( "invalid option %d", option );
+		}
 
 
 void
@@ -1199,6 +1014,8 @@ pushopt( easy, option, value )
 		CURLcode ret;
 	CODE:
 		ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
+		if ( ret < 0 )
+			ret = CURLE_BAD_FUNCTION_ARGUMENT;
 		EASY_DIE( ret );
 
 
