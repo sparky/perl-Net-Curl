@@ -50,6 +50,72 @@ perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
 			dataopt = CURLOPT_DEBUGDATA;
 			cbnum = CB_EASY_DEBUG;
 			break;
+		case CURLOPT_IOCTLFUNCTION:
+			funcptr = cb_easy_ioctl;
+			dataopt = CURLOPT_IOCTLDATA;
+			cbnum = CB_EASY_IOCTL;
+			break;
+#ifdef CURLOPT_SEEKDATA
+# ifdef CURLOPT_SEEKFUNCTION
+		case CURLOPT_SEEKFUNCTION:
+			funcptr = cb_easy_seek;
+			dataopt = CURLOPT_SEEKDATA;
+			cbnum = CB_EASY_SEEK;
+			break;
+# endif
+#endif
+#ifdef CURLOPT_SOCKOPTDATA
+# ifdef CURLOPT_SOCKOPTFUNCTION
+		case CURLOPT_SOCKOPTFUNCTION:
+			funcptr = cb_easy_sockopt;
+			dataopt = CURLOPT_SOCKOPTDATA;
+			cbnum = CB_EASY_SOCKOPT;
+			break;
+# endif
+#endif
+#ifdef CURLOPT_OPENSOCKETDATA
+# ifdef CURLOPT_OPENSOCKETFUNCTION
+		case CURLOPT_OPENSOCKETFUNCTION:
+			funcptr = cb_easy_opensocket;
+			dataopt = CURLOPT_OPENSOCKETDATA;
+			cbnum = CB_EASY_OPENSOCKET;
+			break;
+# endif
+#endif
+#ifdef CURLOPT_INTERLEAVEDATA
+# ifdef CURLOPT_INTERLEAVEFUNCTION
+		case CURLOPT_INTERLEAVEFUNCTION:
+			funcptr = cb_easy_interleave;
+			dataopt = CURLOPT_INTERLEAVEDATA;
+			cbnum = CB_EASY_INTERLEAVE;
+			break;
+# endif
+#endif
+#ifdef CURLOPT_CHUNK_DATA
+# ifdef CURLOPT_CHUNK_BGN_FUNCTION
+		case CURLOPT_CHUNK_BGN_FUNCTION:
+			funcptr = cb_easy_chunk_bgn;
+			dataopt = CURLOPT_CHUNK_DATA;
+			cbnum = CB_EASY_CHUNK_BGN;
+			break;
+# endif
+# ifdef CURLOPT_CHUNK_END_FUNCTION
+		case CURLOPT_CHUNK_END_FUNCTION:
+			funcptr = cb_easy_chunk_end;
+			dataopt = CURLOPT_CHUNK_DATA;
+			cbnum = CB_EASY_CHUNK_END;
+			break;
+# endif
+#endif
+#ifdef CURLOPT_FNMATCH_DATA
+# ifdef CURLOPT_FNMATCH_FUNCTION
+		case CURLOPT_FNMATCH_FUNCTION:
+			funcptr = cb_easy_fnmatch;
+			dataopt = CURLOPT_FNMATCH_DATA;
+			cbnum = CB_EASY_FNMATCH;
+			break;
+# endif
+#endif
 		default:
 			croak( "unrecognized function option %d", option );
 	}
@@ -102,6 +168,43 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 		case CURLOPT_DEBUGDATA:
 			cbnum = CB_EASY_DEBUG;
 			break;
+
+		case CURLOPT_IOCTLDATA:
+			cbnum = CB_EASY_IOCTL;
+			break;
+#ifdef CURLOPT_SEEKDATA
+		case CURLOPT_SEEKDATA:
+			cbnum = CB_EASY_SEEK;
+			break;
+#endif
+#ifdef CURLOPT_SOCKOPTDATA
+		case CURLOPT_SOCKOPTDATA:
+			cbnum = CB_EASY_SOCKOPT;
+			break;
+#endif
+#ifdef CURLOPT_OPENSOCKETDATA
+		case CURLOPT_OPENSOCKETDATA:
+			cbnum = CB_EASY_OPENSOCKET;
+			break;
+#endif
+#ifdef CURLOPT_INTERLEAVEDATA
+		case CURLOPT_INTERLEAVEDATA:
+			cbnum = CB_EASY_INTERLEAVE;
+			break;
+#endif
+#ifdef CURLOPT_CHUNK_DATA
+		case CURLOPT_CHUNK_DATA:
+			cbnum = CB_EASY_CHUNK_BGN;
+			SvREPLACE( easy->cb[ cbnum ].data, value );
+			cbnum = CB_EASY_CHUNK_END;
+			break;
+#endif
+#ifdef CURLOPT_FNMATCH_DATA
+		case CURLOPT_FNMATCH_DATA:
+			cbnum = CB_EASY_FNMATCH;
+			break;
+#endif
+
 		default:
 			return -1;
 	}

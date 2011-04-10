@@ -231,9 +231,6 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	return PERL_CURL_CALL( cb, args );
 } /*}}}*/
 
-#if 0
-
-#ifdef CURLOPT_IOCTLFUNCTION
 /* IOCTLFUNCTION -- IOCTLDATA */
 static curlioerr
 cb_easy_ioctl( CURL *handle, int cmd, void *userptr )
@@ -251,7 +248,6 @@ cb_easy_ioctl( CURL *handle, int cmd, void *userptr )
 
 	return PERL_CURL_CALL( cb, args );
 }
-#endif
 
 
 # ifdef CURLOPT_SEEKFUNCTION
@@ -293,14 +289,14 @@ cb_easy_sockopt( void *userptr, curl_socket_t curlfd, curlsocktype purpose )
 		newSViv( purpose ),
 	};
 
-	return PERL_CURL_CALL( cb, args );
+	return ( PERL_CURL_CALL( cb, args ) ? 1 : 0 );
 }
 #endif
 
 
 #ifdef CURLOPT_OPENSOCKETFUNCTION
 /* OPENSOCKETFUNCTION -- OPENSOCKETDATA */
-static int
+static curl_socket_t
 cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	struct curl_sockaddr *address )
 {
@@ -405,7 +401,7 @@ cb_easy_chunk_bgn( const void *transfer_info, void *ptr, int remains )
 #ifdef CURL_CHUNK_END_FUNC_FAIL
 /* CHUNK_END_FUNCTION -- CHUNK_DATA */
 static long
-cb_easy_cunk_end( void *userptr )
+cb_easy_chunk_end( void *userptr )
 {
 	dTHX;
 	long ret;
@@ -461,6 +457,3 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 	return CURL_FNMATCHFUNC_FAIL;
 }
 #endif
-
-#endif
-
