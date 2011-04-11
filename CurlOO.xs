@@ -395,8 +395,13 @@ typedef perl_curl_share_t *WWW__CurlOO__Share;
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO
 
 BOOT:
-	/* FIXME: does this need a mutex for ithreads? */
-	curl_global_init( CURL_GLOBAL_ALL );
+	{
+		/* XXX 1: this is _not_ thread safe */
+		/* XXX 2: should never be called from a thread */
+		static int run_once = 0;
+		if ( !run_once++ )
+			curl_global_init( CURL_GLOBAL_ALL );
+	}
 	{
 		dTHX;
 		HV *symbol_table = get_hv( "WWW::CurlOO::", GV_ADD );
