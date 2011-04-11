@@ -33,7 +33,7 @@ sub on_socket
 	my ( $multi, $easy, $socket, $what, $socketdata_now_undef, $userdata ) = @_;
 	#warn "on_socket( $socket, $what )\n";
 
-	$sock_change = 0;
+	$sock_change++;
 	if ( $what == CURL_POLL_NONE ) {
 		#warn "on_socket: register, not interested in readiness\n";
 		vec( $vec_read, $socket, 1 ) = 0;
@@ -142,8 +142,9 @@ do {
 
 #warn "done\n";
 ok( $timer_change > 0, "timeout updated" );
-ok( $sock_read_all == 2, "registered 2 sockets for reading3 (is $sock_read_all)" );
-ok( 1, "skip" ); # may be 0 if server responds inmediatelly
+ok( $sock_read_all == 2, "registered 2 sockets for reading3 (is $sock_read_all -- $sock_change)" );
+ok( $sock_change > 0, "on_socket called ($sock_change)" );
+# may be 0 if server responds inmediatelly
 #ok( $sock_write_all == 2, "registered 2 sockets for writing (is $sock_write_all)" );
 ok( $sock_read <= 0, "deregistered all sockets for reading" );
 ok( $sock_write <= 0, "deregistered all sockets for writing" );
