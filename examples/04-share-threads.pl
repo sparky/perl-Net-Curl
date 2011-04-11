@@ -76,9 +76,9 @@ sub new
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS );
 
-	# XXX: WWW::CurlOO::Share does not support callbacks from other threads
-	# yet, so this won't work. In fact it will trigger a deep recursion and
-	# the application will be nooked.
+	# XXX: WWW::CurlOO::Share does not support callbacks from other
+	# threads yet, so this won't work. In fact it will trigger a
+	# deep recursion and the application will be nooked.
 	#$self->setopt( CURLSHOPT_LOCKFUNC, "cb_lock" );
 	#$self->setopt( CURLSHOPT_UNLOCKFUNC, "cb_unlock" );
 	
@@ -189,8 +189,8 @@ sub get
 	};
 
 	# There may have been some problem, make sure we unlock the share.
-	# This should issue a warning, check $easy->{unlocked} to se whether we
-	# really need to unlock.
+	# This should issue a warning, check $easy->{unlocked} to see
+	# whether we really need to unlock.
 	$easy->share->unlock();
 
 	# return something

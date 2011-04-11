@@ -73,7 +73,9 @@ sub new
 	# will die if fails
 	$self->perform();
 
-	$self->[ B_SOCKET ] = $self->getinfo( WWW::CurlOO::Easy::CURLINFO_LASTSOCKET );
+	$self->[ B_SOCKET ] = $self->getinfo(
+		WWW::CurlOO::Easy::CURLINFO_LASTSOCKET
+	);
 
 	# prepare select vector
 	my $vec = '';
@@ -83,8 +85,8 @@ sub new
 	return $self;
 }
 
-# send( DATA ) -- send some data, wait for socket availability if it cannot
-# be sent all at once
+# send( DATA ) -- send some data, wait for socket availability
+# if it cannot be sent all at once
 sub send($$)
 {
 	my $self = shift;
@@ -108,7 +110,8 @@ sub send($$)
 	};
 }
 
-# read( SIZE ) -- read SIZE bytes, wait for more data if there wasn't enough
+# read( SIZE ) -- read SIZE bytes, wait for more data if there
+# wasn't enough
 sub read($$)
 {
 	my $self = shift;

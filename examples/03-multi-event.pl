@@ -47,8 +47,8 @@ sub new
 }
 
 
-# socket callback:
-# will be called by curl any time events on some socket must be updated
+# socket callback: will be called by curl any time events on some
+# socket must be updated
 sub _cb_socket
 {
 	my ( $multi, $easy, $socket, $poll ) = @_;
@@ -64,9 +64,9 @@ sub _cb_socket
 	delete $multi->{ "r$socket" };
 	delete $multi->{ "w$socket" };
 
-	# AnyEvent does not support registering a socket for both reading and
-	# writing. This is rarely used so there is no harm in separating
-	# the events.
+	# AnyEvent does not support registering a socket for both
+	# reading and writing. This is rarely used so there is no
+	# harm in separating the events.
 
 	# register read event
 	if ( $poll == CURL_POLL_IN or $poll == CURL_POLL_INOUT ) {
@@ -86,10 +86,9 @@ sub _cb_socket
 }
 
 
-# timer callback:
-# It triggers timeout update. Timeout value tells us how soon socket_action
-# must be called if there were no actions on sockets. This will allow
-# curl to trigger timeout events.
+# timer callback: It triggers timeout update. Timeout value tells
+# us how soon socket_action must be called if there were no actions
+# on sockets. This will allow curl to trigger timeout events.
 sub _cb_timer
 {
 	my ( $multi, $timeout_ms ) = @_;
@@ -103,20 +102,19 @@ sub _cb_timer
 	};
 
 	if ( $timeout_ms < 0 ) {
-		# Negative timeout means there is no timeout at all. Normally happens
-		# if there are no handles anymore.
+		# Negative timeout means there is no timeout at all.
+		# Normally happens if there are no handles anymore.
 		#
 		# However, curl_multi_timeout(3) says:
 		#
-		# Note: if libcurl returns a -1 timeout here, it just means that
-		# libcurl currently has no stored timeout value. You must not wait
-		# too long (more than a few seconds perhaps) before you call
-		# curl_multi_perform() again.
+		# Note: if libcurl returns a -1 timeout here, it just means
+		# that libcurl currently has no stored timeout value. You
+		# must not wait too long (more than a few seconds perhaps)
+		# before you call curl_multi_perform() again.
 
-		# XXX: this is missing yet
-		#if ( $multi->handles ) {
+		if ( $multi->handles ) {
 			$multi->{timer} = AE::timer 10, 10, $cb;
-		#}
+		}
 	} else {
 		# This will trigger timeouts if there are any.
 		$multi->{timer} = AE::timer $timeout_ms / 1000, 0, $cb;
@@ -134,15 +132,17 @@ sub add_handle($$)
 	die "easy cannot finish()\n"
 		unless $easy->can( 'finish' );
 
-	# Calling socket_action with default arguments will trigger socket callback
-	# and register IO events.
+	# Calling socket_action with default arguments will trigger
+	# socket callback and register IO events.
 	#
-	# It _must_ be called _after_ add_handle(); AE will take care of that.
+	# It _must_ be called _after_ add_handle(); AE will take care
+	# of that.
 	#
-	# We are delaying the call because in some cases socket_action may finish
-	# inmediatelly (i.e. there was some error or we used persistent connections
-	# and server returned data right away) and it could confuse our
-	# application -- it would appear to have finished before it started.
+	# We are delaying the call because in some cases socket_action
+	# may finish inmediatelly (i.e. there was some error or we used
+	# persistent connections and server returned data right away)
+	# and it could confuse our application -- it would appear to
+	# have finished before it started.
 	AE::timer 0, 0, sub {
 		$multi->socket_action();
 	};
@@ -189,7 +189,9 @@ sub new
 	my $uri = shift;
 	my $cb = shift;
 
-	my $easy = $class->SUPER::new( { uri => $uri, body => '', cb => $cb } );
+	my $easy = $class->SUPER::new(
+		{ uri => $uri, body => '', cb => $cb }
+	);
 	$easy->setopt( CURLOPT_URL, $uri );
 	$easy->setopt( CURLOPT_WRITEHEADER, \$easy->{headers} );
 	$easy->setopt( CURLOPT_FILE, \$easy->{body} );

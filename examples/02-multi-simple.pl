@@ -38,8 +38,9 @@ sub add_handle($$)
 	$self->SUPER::add_handle( $easy );
 }
 
-# perform until some handle finishes, does all the magic needed to make it
-# efficient (check as soon as there is some data) without overusing the cpu.
+# perform until some handle finishes, does all the magic needed
+# to make it efficient (check as soon as there is some data)
+# without overusing the cpu.
 sub get_one($)
 {
 	my $self = shift;
@@ -100,8 +101,10 @@ sub easy
 	my $easy = WWW::CurlOO::Easy->new( { uri => $uri, body => '' } );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_VERBOSE(), 1 );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL(), $uri );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_WRITEHEADER(), \$easy->{headers} );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_FILE(), \$easy->{body} );
+	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_WRITEHEADER(),
+		\$easy->{headers} );
+	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_FILE(),
+		\$easy->{body} );
 	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_SHARE(), $share );
 	return $easy;
 }
@@ -129,7 +132,8 @@ while ( my ( $msg, $easy, $result ) = $multi->get_one() ) {
 
 	$ret = 1 if $result;
 
-	$multi->add_handle( easy( shift ( @uri ), $easy->share ) ) if @uri;
+	$multi->add_handle( easy( shift ( @uri ), $easy->share ) )
+		if @uri;
 }
 
 exit $ret;
