@@ -255,6 +255,7 @@ static int
 perl_curl_any_magic_nodup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 {
 	warn( "WWW::CurlOO::(Easy|Form|Multi) does not support cloning\n" );
+	mg->mg_ptr = NULL;
 	return 1;
 }
 

@@ -136,7 +136,8 @@ static curl_multi_timer_callback pct_timer __attribute__((unused)) = cb_multi_ti
 static int
 perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
-	perl_curl_multi_delete( aTHX_ (void *) mg->mg_ptr );
+	if ( mg->mg_ptr )
+		perl_curl_multi_delete( aTHX_ (void *) mg->mg_ptr );
 	return 0;
 }
 
