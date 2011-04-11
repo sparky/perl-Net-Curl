@@ -268,7 +268,7 @@ perl_curl_easy_setopt_object( pTHX_ perl_curl_easy_t *easy, long option,
 
 			if ( SvOK( value ) ) {
 				perl_curl_form_t *form;
-				form = perl_curl_getptr_fatal( aTHX_ value,
+				form = perl_curl_getptr_fatal( aTHX_ value, &perl_curl_form_vtbl,
 					"CURLOPT_HTTPPOST", "WWW::CurlOO::Form" );
 
 				easy->form_sv = newSVsv( value );
@@ -286,7 +286,7 @@ perl_curl_easy_setopt_object( pTHX_ perl_curl_easy_t *easy, long option,
 
 			if ( SvOK( value ) ) {
 				perl_curl_share_t *share;
-				share = perl_curl_getptr_fatal( aTHX_ value,
+				share = perl_curl_getptr_fatal( aTHX_ value, &perl_curl_share_vtbl,
 					"CURLOPT_SHARE", "WWW::CurlOO::Share" );
 
 				/* copy sv before setopt because this may trigger a callback */

@@ -115,6 +115,32 @@ static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock
 #endif
 
 
+static int
+perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
+{
+	warn( "WWW::CurlOO::Share can be duplicated !!!\n" );
+	return 0;
+}
+
+static int
+perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
+{
+	perl_curl_share_delete( aTHX_ (void *) mg->mg_ptr );
+	return 0;
+}
+
+static MGVTBL perl_curl_share_vtbl = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	perl_curl_share_magic_free,
+	NULL,
+	perl_curl_share_magic_dup,
+	NULL
+};
+
+
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share
 
 INCLUDE: const-share-xs.inc
@@ -133,7 +159,7 @@ new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
 			croak( "object base must be a valid reference\n" );
 
 		share = perl_curl_share_new();
-		perl_curl_setptr( aTHX_ base, share );
+		perl_curl_setptr( aTHX_ base, &perl_curl_share_vtbl, share );
 
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
@@ -181,13 +207,6 @@ setopt( share, option, value )
 		};
 		if ( ret1 != CURLSHE_OK || ( ret1 = ret2 ) != CURLSHE_OK )
 			die_code( "Share", ret1 );
-
-
-void
-DESTROY( share )
-	WWW::CurlOO::Share share
-	CODE:
-		perl_curl_share_delete( aTHX_ share );
 
 
 SV *

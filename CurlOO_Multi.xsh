@@ -133,6 +133,25 @@ static curl_socket_callback pct_socket __attribute__((unused)) = cb_multi_socket
 static curl_multi_timer_callback pct_timer __attribute__((unused)) = cb_multi_timer;
 #endif
 
+static int
+perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
+{
+	perl_curl_multi_delete( aTHX_ (void *) mg->mg_ptr );
+	return 0;
+}
+
+static MGVTBL perl_curl_multi_vtbl = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	perl_curl_multi_magic_free,
+	NULL,
+	perl_curl_any_magic_nodup,
+	NULL
+};
+
+
 #define MULTI_DIE( ret )		\
 	STMT_START {				\
 		CURLMcode code = (ret);	\
@@ -159,7 +178,7 @@ new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
 			croak( "object base must be a valid reference\n" );
 
 		multi = perl_curl_multi_new();
-		perl_curl_setptr( aTHX_ base, multi );
+		perl_curl_setptr( aTHX_ base, &perl_curl_multi_vtbl, multi );
 
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
@@ -457,13 +476,6 @@ assign( multi, sockfd, value=NULL )
 		MULTI_DIE( ret );
 
 #endif
-
-
-void
-DESTROY( multi )
-	WWW::CurlOO::Multi multi
-	CODE:
-		perl_curl_multi_delete( aTHX_ multi );
 
 
 SV *

@@ -31,8 +31,10 @@ perl_curl_form_new( void )
 }
 
 static void
-perl_curl_form_delete( perl_curl_form_t *form )
+perl_curl_form_delete( pTHX_ perl_curl_form_t *form )
 {
+	sv_2mortal( form->perl_self );
+
 	if ( form->post )
 		curl_formfree( form->post );
 
@@ -73,6 +75,24 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 	return PERL_CURL_CALL( &form->cb[ CB_FORM_GET ], args );
 }
 
+static int
+perl_curl_form_magic_free( pTHX_ SV *sv, MAGIC *mg )
+{
+	perl_curl_form_delete( aTHX_ (void *) mg->mg_ptr );
+	return 0;
+}
+
+static MGVTBL perl_curl_form_vtbl = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	perl_curl_form_magic_free,
+	NULL,
+	perl_curl_any_magic_nodup,
+	NULL
+};
+
 
 
 MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form
@@ -93,7 +113,7 @@ new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 			croak( "object base must be a valid reference\n" );
 
 		form = perl_curl_form_new();
-		perl_curl_setptr( aTHX_ base, form );
+		perl_curl_setptr( aTHX_ base, &perl_curl_form_vtbl, form );
 
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
@@ -247,11 +267,3 @@ get( form, ... )
 
 			XSRETURN(0);
 		}
-
-
-void
-DESTROY( form )
-	WWW::CurlOO::Form form
-	CODE:
-		sv_2mortal( form->perl_self );
-		perl_curl_form_delete( form );
