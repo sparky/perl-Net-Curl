@@ -22,6 +22,9 @@ struct perl_curl_share_s {
 
 	/* list of callbacks */
 	callback_t cb[ CB_SHARE_LAST ];
+
+	/* number of clones */
+	long threads;
 };
 
 
@@ -32,6 +35,7 @@ perl_curl_share_new( void )
 	perl_curl_share_t *share;
 	Newxz( share, 1, perl_curl_share_t );
 	share->handle = curl_share_init();
+	share->threads = 1;
 	return share;
 }
 
@@ -118,14 +122,18 @@ static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock
 static int
 perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 {
-	warn( "WWW::CurlOO::Share can be duplicated !!!\n" );
+	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
+	share->threads++;
 	return 0;
 }
 
 static int
 perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
-	perl_curl_share_delete( aTHX_ (void *) mg->mg_ptr );
+	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
+	share->threads--;
+	if ( share->threads < 1 )
+		perl_curl_share_delete( aTHX_ share );
 	return 0;
 }
 
