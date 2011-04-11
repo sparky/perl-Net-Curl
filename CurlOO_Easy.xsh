@@ -458,14 +458,6 @@ getinfo( easy, option )
 	OUTPUT:
 		RETVAL
 
-char *
-error( easy )
-	WWW::CurlOO::Easy easy
-	CODE:
-		RETVAL = easy->errbuf;
-	OUTPUT:
-		RETVAL
-
 
 #if LIBCURL_VERSION_NUM >= 0x071200
 
@@ -572,6 +564,15 @@ pushopt( easy, option, value )
 		if ( ret < 0 )
 			ret = CURLE_BAD_FUNCTION_ARGUMENT;
 		EASY_DIE( ret );
+
+
+char *
+error( easy )
+	WWW::CurlOO::Easy easy
+	CODE:
+		RETVAL = easy->errbuf;
+	OUTPUT:
+		RETVAL
 
 
 SV *
