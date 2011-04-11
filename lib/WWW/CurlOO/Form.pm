@@ -104,7 +104,7 @@ CURLFORM_FILE, CURLFORM_CONTENTTYPE, CURLFORM_FILENAME.
 Unlike in libcurl function, there is no need to add CURLFORM_END as the last
 argument.
 
-On error this method dies with WWW::CurlOO::Form::Code error object.
+On error this method dies with L</WWW::CurlOO::Form::Code> error object.
 
 Options CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS automatibally set
 appropriate their length values (CURLFORM_NAMELENGTH and CURLFORM_CONTENTSLENGTH
@@ -204,13 +204,7 @@ serialization will be aborted.
 
 =back
 
-Calls L<curl_formget(3)>.
-
-=item DESTROY( )
-
-Cleans up. It should not be called manually.
-
-Calls L<curl_formfree(3)>.
+Calls L<curl_formget(3)>. Rethrows exceptions from callbacks.
 
 =back
 
@@ -248,6 +242,12 @@ If add() fails it will return one of those values.
 =head2 CALLBACKS
 
 Callback for get() is described already in L</"use a callback"> subsection.
+
+=head2 WWW::CurlOO::Form::Code
+
+WWW::CurlOO::Form add() method on failure throw a WWW::CurlOO::Form::Code error
+object. It has both numeric value and, when used as string, it calls strerror()
+function to display a nice message.
 
 =head1 SEE ALSO
 

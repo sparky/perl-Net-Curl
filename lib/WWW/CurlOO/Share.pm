@@ -76,12 +76,7 @@ VALUE depends on whatever that option expects.
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 
 Calls L<curl_share_setopt(3)>.
-
-=item DESTROY( )
-
-Cleans up. It should not be called manually.
-
-Calls L<curl_share_cleanup(3)>.
+Throws L</WWW::CurlOO::Share::Code> on error.
 
 =back
 
@@ -147,13 +142,18 @@ CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
 
 =back
 
+=head2 WWW::CurlOO::Share::Code
+
+WWW::CurlOO::Share setopt method on failure throw a WWW::CurlOO::Share::Code error
+object. It has both numeric value and, when used as string, it calls strerror()
+function to display a nice message.
 
 =head1 SEE ALSO
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
 L<WWW::CurlOO::Multi>
-L<WWW::CurlOO::examples(3pm)>
+L<WWW::CurlOO::examples>
 L<libcurl-share(3)>
 L<libcurl-errors(3)>
 

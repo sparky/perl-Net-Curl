@@ -86,7 +86,7 @@ VALUE depends on whatever that option expects.
 
  $easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL, $uri );
 
-Calls L<curl_easy_setopt(3)>.
+Calls L<curl_easy_setopt(3)>. Throws L</WWW::CurlOO::Easy::Code> on error.
 
 =item pushopt( OPTION, ARRAYREF )
 
@@ -97,6 +97,7 @@ replacing the old slist.
      ['More: headers'] );
 
 Builds a slist and calls L<curl_easy_setopt(3)>.
+Throws L</WWW::CurlOO::Easy::Code> on error.
 
 =item perform( )
 
@@ -104,7 +105,8 @@ Perform upload and download process.
 
  $easy->perform();
 
-Calls L<curl_easy_perform(3)>.
+Calls L<curl_easy_perform(3)>. Rethrows exceptions from callbacks.
+Throws L</WWW::CurlOO::Easy::Code> on other errors.
 
 =item getinfo( OPTION )
 
@@ -113,6 +115,33 @@ Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
  my $socket = $self->getinfo( CURLINFO_LASTSOCKET );
 
 Calls L<curl_easy_getinfo(3)>.
+Throws L</WWW::CurlOO::Easy::Code> on error.
+
+=item pause( )
+
+Pause the transfer.
+
+Calls L<curl_easy_pause(3)>. Not available in curl before 7.18.0.
+Throws L</WWW::CurlOO::Easy::Code> on error.
+
+=item send( BUFFER )
+
+Send raw data.
+
+ $easy->send( $data );
+
+Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
+Throws L</WWW::CurlOO::Easy::Code> on error.
+
+=item recv( BUFFER, MAXLENGTH )
+
+Receive raw data. Will receive at most MAXLENGTH bytes. New data will be
+concatenated to BUFFER.
+
+ $easy->recv( $buffer, $len );
+
+Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
+Throws L</WWW::CurlOO::Easy::Code> on error.
 
 =item error( )
 
@@ -123,23 +152,6 @@ a longer description.
 
  my $error = $easy->error();
  print "Last error: $error\n";
-
-=item send( BUFFER )
-
-Send raw data.
-
- $easy->send( $data );
-
-Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
-
-=item recv( BUFFER, MAXLENGTH )
-
-Receive raw data. Will receive at most MAXLENGTH bytes. New data will be
-concatenated to BUFFER.
-
- $easy->recv( $buffer, $len );
-
-Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
 
 =item multi( )
 
@@ -161,12 +173,6 @@ If form object is attached to this easy handle, this method will return that
 form object.
 
  my $form = $easy->form;
-
-=item DESTROY( )
-
-Cleans up. It should not be called manually.
-
-Calls L<curl_easy_cleanup(3)>.
 
 =back
 
@@ -394,11 +400,31 @@ CURLOPT_FNMATCH_DATA value. Must return one of CURL_FNMATCHFUNC_* values.
 
 =back
 
+=head2 WWW::CurlOO::Easy::Code
+
+Most WWW::CurlOO::Easy methods on failure throw a WWW::CurlOO::Easy::Code error
+object. It has both numeric value and, when used as string, it calls strerror()
+function to display a nice message.
+
+ eval {
+     $easy->somemethod();
+ };
+ if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
+     if ( $@ == CURLE_SOME_ERROR_WE_EXPECTED ) {
+         warn "Expected error, continuing\n";
+     } else {
+         die "Unexpected curl error: $@\n";
+     }
+ } else {
+     # rethrow everyting else
+     die $@;
+ }
+
 =head1 SEE ALSO
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Multi>
-L<WWW::CurlOO::examples(3pm)>
+L<WWW::CurlOO::examples>
 L<libcurl-easy(3)>
 L<libcurl-errors(3)>
 

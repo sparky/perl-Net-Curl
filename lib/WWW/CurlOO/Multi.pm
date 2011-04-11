@@ -87,6 +87,7 @@ Add WWW::CurlOO::Easy to this WWW::CurlOO::Multi object.
  $multi->add_handle( $easy );
 
 Calls L<curl_multi_add_handle(3)>.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item remove_handle( EASY )
 
@@ -95,12 +96,18 @@ Remove WWW::CurlOO::Easy from this WWW::CurlOO::Multi object.
  $multi->remove_handle( $easy );
 
 Calls L<curl_multi_remove_handle(3)>.
+Rethrows exceptions from callbacks.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item info_read( )
 
 Read last message from this Multi.
 
  my ( $msg, $easy, $result ) = $multi->info_read();
+
+$msg contains one of CURLMSG_* values, currently only CURLMSG_DONE is returned.
+$easy is the L<WWW::CurlOO::Easy> object. Result is a
+L<WWW::CurlOO::Easy::Code> dualvar object.
 
 Calls L<curl_multi_info_read(3)>.
 
@@ -112,14 +119,16 @@ L<select()|perlfunc/select> and L<vec()|perlfunc/vec> perl builtins.
  my ( $rvec, $wvec, $evec ) = $multi->fdset();
 
 Calls L<curl_multi_fdset(3)>.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item timeout( )
 
-Returns timeout value.
+Returns timeout value in miliseconds.
 
  my $timeout_ms = $multi->timeout();
 
 Calls L<curl_multi_timeout(3)>.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item setopt( OPTION, VALUE )
 
@@ -129,14 +138,18 @@ VALUE depends on whatever that option expects.
  $multi->setopt( CURLMOPT_MAXCONNECTS, 10 );
 
 Calls L<curl_multi_setopt(3)>.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item perform( )
 
-Perform.
+Perform. Call it if there is some activity on any fd used by multi interface
+or timeout has just reached zero.
 
  my $active = $multi->perform();
 
 Calls L<curl_multi_perform(3)>.
+Rethrows exceptions from callbacks.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item socket_action( [SOCKET], [BITMASK] )
 
@@ -148,13 +161,21 @@ Signalize action on a socket.
  my $active = $multi->socket_action( $socket, CURL_CSELECT_IN );
 
 Calls L<curl_multi_socket_action(3)>.
+Rethrows exceptions from callbacks.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item assign( SOCKET, [VALUE] )
 
-Assigns some value to a socket file descriptor. Removes it is value is not
-specified.
+Assigns some value to a socket file descriptor. Removes it if value is not
+specified. The value is used only in socket callback.
+
+ my $socket = some_socket_open(...);
+
+ # store socket object for socket callback
+ $multi->assign( $socket->fileno(), $socket );
 
 Calls L<curl_multi_assign(3)>.
+Throws L</WWW::CurlOO::Multi::Code> on error.
 
 =item handles( )
 
@@ -162,12 +183,6 @@ In list context returns easy handles attached to this multi.
 In scalar context returns number of easy handles attached.
 
 There is no libcurl equivalent.
-
-=item DESTROY( )
-
-Cleans up. It should not be called manually.
-
-Calls L<curl_multi_cleanup(3)>.
 
 =back
 
@@ -225,12 +240,12 @@ Special socket value for socket_action() method.
 
 Socket callback will be called only if socket_action() method is being used.
 It receives 6 arguments: multi handle, easy handle, socket file number, poll
-action, an undefined value (for now), and CURLMOPT_SOCKETDATA value. It must
+action, socket data (see assign), and CURLMOPT_SOCKETDATA value. It must
 return 0.
 For more information reffer to L<curl_multi_socket_action(3)>.
 
  sub cb_socket {
-     my ( $multi, $easy, $socketfn, $action, $undef, $uservar ) = @_;
+     my ( $multi, $easy, $socketfn, $action, $socketdata, $uservar ) = @_;
      # ... register or deregister socket actions ...
      return 0;
  }
@@ -248,12 +263,32 @@ CURLMOPT_TIMERDATA value. Should return 0.
 
 =back
 
+=head2 WWW::CurlOO::Multi::Code
+
+Most WWW::CurlOO::Multi methods on failure throw a WWW::CurlOO::Multi::Code error
+object. It has both numeric value and, when used as string, it calls strerror()
+function to display a nice message.
+
+ eval {
+     $multi->somemethod();
+ };
+ if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
+     if ( $@ == CURLM_SOME_ERROR_WE_EXPECTED ) {
+         warn "Expected multi error, continuing\n";
+     } else {
+         die "Unexpected curl multi error: $@\n";
+     }
+ } else {
+     # rethrow everyting else
+     die $@;
+ }
+
 
 =head1 SEE ALSO
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
-L<WWW::CurlOO::examples(3pm)>
+L<WWW::CurlOO::examples>
 L<libcurl-multi(3)>
 L<libcurl-errors(3)>
 
