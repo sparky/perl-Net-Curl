@@ -79,7 +79,7 @@ Returns libcurl version string.
 
  my $libcurl_verstr = WWW::CurlOO::version();
  # prints something like:
- # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 libidn/1.20 libssh2/1.2.7 librtmp/2.3
+ # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 ...
  print $libcurl_verstr;
 
 Calls L<curl_version(3)> function.
@@ -101,9 +101,10 @@ Example for version_info with age CURLVERSION_FOURTH:
  ssl_version => 'GnuTLS/2.10.4'
  ssl_version_num => 0,
  libz_version => '1.2.5',
- protocols => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http', 'https',
-                'imap', 'imaps', 'ldap', 'ldaps', 'pop3', 'pop3s', 'rtmp', 'rtsp',
-                'scp', 'sftp', 'smtp', 'smtps', 'telnet', 'tftp' ],
+ protocols => [ 'dict', 'file', 'ftp', 'ftps', 'gopher', 'http',
+                'https', 'imap', 'imaps', 'ldap', 'ldaps', 'pop3',
+                'pop3s', 'rtmp', 'rtsp', 'scp', 'sftp', 'smtp',
+                'smtps', 'telnet', 'tftp' ],
  ares => '1.7.4',
  ares_num => 67332,
  libidn => '1.20',
@@ -113,7 +114,8 @@ Example for version_info with age CURLVERSION_FOURTH:
 You can import constants if you want to check libcurl features:
 
  use WWW::CurlOO qw(:constants);
- unless ( WWW::CurlOO::version_info()->{features} & CURL_VERSION_SSL ) {
+ my $vi = WWW::CurlOO::version_info();
+ unless ( $vi->{features} & CURL_VERSION_SSL ) {
      die "SSL support is required\n";
  }
 
@@ -175,6 +177,8 @@ pick one of these licenses.
 
 =head1 SEE ALSO
 
+L<WWW::CurlOO::Easy>
+L<WWW::CurlOO::Compat>
+L<WWW::CurlOO::examples>
 L<http://curl.haxx.se>
-
 L<libcurl(3)>
