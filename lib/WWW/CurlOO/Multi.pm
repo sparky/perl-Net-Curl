@@ -29,10 +29,6 @@ __END__
 
 WWW::CurlOO::Multi - Perl interface for curl_multi_* functions
 
-=head1 WARNING
-
-B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
-
 =head1 SYNOPSIS
 
  use WWW::CurlOO::Multi qw(:constants);

@@ -43,10 +43,6 @@ __END__
 
 WWW::CurlOO - Perl interface for libcurl
 
-=head1 WARNING
-
-B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
-
 =head1 SYNOPSIS
 
  use WWW::CurlOO;
@@ -150,25 +146,27 @@ runtime libcurl version has necessary features.
 
 =back
 
+=head1 STATUS
+
+Implemented interface is solid, there should be no more changes to it. Only
+new features will be added.
+
+This package tries very hard to not allow user do anything that could make
+libcurl crash, but there still may be some corner cases where that happens.
+
 =head1 AUTHORS
 
 This package was mostly rewritten by Przemyslaw Iskra <sparky at pld-linux.org>.
 
-It is based on WWW::Curl developed by Cris Bailiff <c.bailiff+curl at devsecure.com>
-and Balint Szilakszi <szbalint at cpan.org>.
+=head1 HISTORY
 
-Original Author Georg Horn <horn@koblenz-net.de>, with additional callback,
-pod and test work by Cris Bailiff <c.bailiff+curl@devsecure.com> and
-Forrest Cahoon <forrest.cahoon@merrillcorp.com>. Sebastian Riedel added ::Multi
-and Anton Fedorov (datacompboy <at> mail.ru) added ::Share. Balint Szilakszi
-repackaged the module into a more modern form.
+Module started as an extension to L<WWW::Curl> developed by Cris Bailiff
+<c.bailiff+curl at devsecure.com>, Balint Szilakszi <szbalint at cpan.org>
+and a long list of contributors. However, currently it shares no common code.
 
 =head1 COPYRIGHT
 
 Copyright (c) 2011 Przemyslaw Iskra.
-
-Copyright (C) 2000-2005,2008-2010 Daniel Stenberg, Cris Bailiff,
-Sebastian Riedel, Balint Szilakszi et al.
 
 You may opt to use, copy, modify, merge, publish, distribute and/or sell
 copies of the Software, and permit persons to whom the Software is furnished

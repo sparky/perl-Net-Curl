@@ -29,10 +29,6 @@ __END__
 
 WWW::CurlOO::Share - Perl interface for curl_share_* functions
 
-=head1 WARNING
-
-B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
-
 =head1 SYNOPSIS
 
  use WWW::CurlOO::Share qw(:constants);
@@ -157,6 +153,7 @@ CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
 L<WWW::CurlOO::Multi>
+L<WWW::CurlOO::examples(3pm)>
 L<libcurl-share(3)>
 L<libcurl-errors(3)>
 

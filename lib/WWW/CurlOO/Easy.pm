@@ -29,10 +29,6 @@ __END__
 
 WWW::CurlOO::Easy - Perl interface for curl_easy_* functions
 
-=head1 WARNING
-
-B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
-
 =head1 SYNOPSIS
 
  use WWW::CurlOO::Easy qw(:constants);

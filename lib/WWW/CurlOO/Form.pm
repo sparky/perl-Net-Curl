@@ -44,10 +44,6 @@ __END__
 
 WWW::CurlOO::Form - Form builder for WWW::CurlOO
 
-=head1 WARNING
-
-B<THIS MODULE IS UNDER HEAVY DEVELOPEMENT AND SOME INTERFACE MAY CHANGE YET.>
-
 =head1 SYNOPSIS
 
  use WWW::CurlOO::Form qw(:constants);
