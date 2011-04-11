@@ -523,3 +523,13 @@ handles( multi )
 			XPUSHs( newSVsv( now->value ) );
 			now = now->next;
 		}
+
+
+int
+CLONE_SKIP( pkg )
+	SV *pkg
+	CODE:
+		(void ) pkg;
+		RETVAL = 1;
+	OUTPUT:
+		RETVAL

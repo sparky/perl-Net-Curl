@@ -600,3 +600,13 @@ form( easy )
 		RETVAL = easy->form_sv ? newSVsv( easy->form_sv ) : &PL_sv_undef;
 	OUTPUT:
 		RETVAL
+
+
+int
+CLONE_SKIP( pkg )
+	SV *pkg
+	CODE:
+		(void ) pkg;
+		RETVAL = 1;
+	OUTPUT:
+		RETVAL

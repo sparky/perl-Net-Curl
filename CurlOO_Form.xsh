@@ -268,3 +268,13 @@ get( form, ... )
 
 			XSRETURN(0);
 		}
+
+
+int
+CLONE_SKIP( pkg )
+	SV *pkg
+	CODE:
+		(void ) pkg;
+		RETVAL = 1;
+	OUTPUT:
+		RETVAL
