@@ -207,6 +207,16 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 	int i;
 	long status;
 	SV *olderrsv = NULL;
+	int method_call = 0;
+
+	if ( SvROK( cb->func ) )
+		method_call = 0;
+	else if ( SvPOK( cb->func ) )
+		method_call = 1;
+	else {
+		warn( "Don't know how to call the callback\n" );
+		return -1;
+	}
 
 	ENTER;
 	SAVETMPS;
@@ -225,7 +235,10 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 	if ( SvTRUE( ERRSV ) )
 		olderrsv = sv_2mortal( newSVsv( ERRSV ) );
 
-	perl_call_sv( cb->func, G_SCALAR | G_EVAL );
+	if ( method_call )
+		perl_call_method( SvPV_nolen( cb->func ), G_SCALAR | G_EVAL );
+	else
+		perl_call_sv( cb->func, G_SCALAR | G_EVAL );
 
 	SPAGAIN;
 
