@@ -194,14 +194,13 @@ perl_curl_easy_magic_free( pTHX_ SV *sv, MAGIC *mg )
 }
 
 static MGVTBL perl_curl_easy_vtbl = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	perl_curl_easy_magic_free,
-	NULL,
-	perl_curl_any_magic_nodup,
-	NULL
+	NULL, NULL, NULL, NULL
+	,perl_curl_easy_magic_free
+	,NULL
+	,perl_curl_any_magic_nodup
+#ifdef MGf_LOCAL
+	,NULL
+#endif
 };
 
 static void

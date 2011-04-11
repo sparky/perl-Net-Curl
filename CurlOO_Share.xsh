@@ -138,14 +138,13 @@ perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 }
 
 static MGVTBL perl_curl_share_vtbl = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	perl_curl_share_magic_free,
-	NULL,
-	perl_curl_share_magic_dup,
-	NULL
+	NULL, NULL, NULL, NULL
+	,perl_curl_share_magic_free
+	,NULL
+	,perl_curl_share_magic_dup
+#ifdef MGf_LOCAL
+	,NULL
+#endif
 };
 
 

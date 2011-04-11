@@ -142,14 +142,13 @@ perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 }
 
 static MGVTBL perl_curl_multi_vtbl = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	perl_curl_multi_magic_free,
-	NULL,
-	perl_curl_any_magic_nodup,
-	NULL
+	NULL, NULL, NULL, NULL
+	,perl_curl_multi_magic_free
+	,NULL
+	,perl_curl_any_magic_nodup
+#ifdef MGf_LOCAL
+	,NULL
+#endif
 };
 
 
