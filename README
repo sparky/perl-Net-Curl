@@ -3,6 +3,10 @@ This package is working, but still a lot has to change.
 
 ** TODO **
 
++ use magic dup to improve thread support
++ use magic free to free the objects -- DESTROY is unreliable.
+- fix leaking scalars in threads
+
 CurlOO:
 + added LIBCURL_ constants
 
