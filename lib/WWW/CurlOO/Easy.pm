@@ -99,6 +99,14 @@ replacing the old slist.
 Builds a slist and calls L<curl_easy_setopt(3)>.
 Throws L</WWW::CurlOO::Easy::Code> on error.
 
+=item reset( )
+
+Reinitializes easy handle.
+
+ $easy->reset();
+
+Calls L<curl_easy_reset(3)> and presets some defaults.
+
 =item perform( )
 
 Perform upload and download process.
