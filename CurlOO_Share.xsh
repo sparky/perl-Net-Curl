@@ -24,7 +24,7 @@ struct perl_curl_share_s {
 	callback_t cb[ CB_SHARE_LAST ];
 
 	/* number of clones */
-	long threads;
+	long *threads;
 };
 
 
@@ -35,7 +35,8 @@ perl_curl_share_new( void )
 	perl_curl_share_t *share;
 	Newxz( share, 1, perl_curl_share_t );
 	share->handle = curl_share_init();
-	share->threads = 1;
+	Newxz( share->threads, 1, long );
+	*share->threads = 1;
 	return share;
 }
 
@@ -55,6 +56,7 @@ perl_curl_share_delete( pTHX_ perl_curl_share_t *share )
 
 	sv_2mortal( share->perl_self );
 
+	Safefree( share->threads );
 	Safefree( share );
 }
 
@@ -122,8 +124,17 @@ static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock
 static int
 perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 {
-	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
-	share->threads++;
+	perl_curl_share_t *source, *clone;
+
+	source = (perl_curl_share_t *) mg->mg_ptr;
+
+	Newxz( clone, 1, perl_curl_share_t );
+	clone->handle = source->handle;
+	clone->perl_self = sv_dup( source->perl_self, param );
+	clone->threads = source->threads;
+	(*clone->threads)++;
+	mg->mg_ptr = (char *) clone;
+
 	return 0;
 }
 
@@ -131,9 +142,11 @@ static int
 perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
 	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
-	share->threads--;
-	if ( share->threads < 1 )
+	if ( --(*share->threads) < 1 ) {
 		perl_curl_share_delete( aTHX_ share );
+	} else {
+		Safefree( share );
+	}
 	return 0;
 }
 
