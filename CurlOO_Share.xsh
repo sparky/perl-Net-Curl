@@ -131,6 +131,7 @@ perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 	Newxz( clone, 1, perl_curl_share_t );
 	clone->handle = source->handle;
 	clone->perl_self = sv_dup( source->perl_self, param );
+	SvREFCNT_inc( clone->perl_self );
 	clone->threads = source->threads;
 	(*clone->threads)++;
 	mg->mg_ptr = (char *) clone;
@@ -145,6 +146,7 @@ perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 	if ( --(*share->threads) < 1 ) {
 		perl_curl_share_delete( aTHX_ share );
 	} else {
+		SvREFCNT_dec( share->perl_self );
 		Safefree( share );
 	}
 	return 0;
