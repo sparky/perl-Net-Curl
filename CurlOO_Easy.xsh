@@ -339,7 +339,23 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 			} while ( in != NULL );
 		}
 
-		/* XXX: copy share and form */
+		if ( easy->share_sv ) {
+			perl_curl_share_t *share;
+			share = perl_curl_getptr( aTHX_ easy->share_sv,
+				&perl_curl_share_vtbl );
+
+			clone->share_sv = newSVsv( easy->share_sv );
+			curl_easy_setopt( clone->handle, CURLOPT_SHARE, share->handle );
+		}
+
+		if ( easy->form_sv ) {
+			perl_curl_form_t *form;
+			form = perl_curl_getptr( aTHX_ easy->form_sv,
+				&perl_curl_form_vtbl );
+
+			clone->form_sv = newSVsv( easy->form_sv );
+			curl_easy_setopt( clone->handle, CURLOPT_HTTPPOST, form->post );
+		}
 
 		perl_curl_setptr( aTHX_ base, &perl_curl_easy_vtbl, clone );
 		stash = gv_stashpv( sclass, 0 );
