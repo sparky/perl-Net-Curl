@@ -31,12 +31,43 @@ WWW::CurlOO::Easy - Perl interface for curl_easy_* functions
 
 =head1 SYNOPSIS
 
+Direct use.
+
  use WWW::CurlOO::Easy qw(:constants);
 
  my $easy = WWW::CurlOO::Easy->new();
  $easy->setopt( CURLOPT_URL, "http://example.com/" );
 
  $easy->perform();
+
+Build your own browser.
+
+ package MyBrowser;
+ use WWW::CurlOO::Easy qw(/^CURLOPT_/ /^CURLINFO_/);
+ use base qw(WWW::CurlOO::Easy);
+
+ sub new
+ {
+     my $class = shift;
+     my $self = $class->SUPER::new( { head => '', body => ''} );
+     $self->setopt( CURLOPT_USERAGENT, "MyBrowser v0.1" );
+     $self->setopt( CURLOPT_FOLLOWLOCATION, 1 );
+     $self->setopt( CURLOPT_COOKIEFILE, "" ); # enable cookie session
+     $self->setopt( CURLOPT_FILE, \$self->{body} );
+     $self->setopt( CURLOPT_HEADERDATA, \$self->{head} );
+     return $self;
+ }
+
+ sub get
+ {
+     my ( $self, $uri ) = @_;
+     $self->setopt( CURLOPT_URL, $uri );
+     @$self{qw(head body)} = ('', '');
+     $self->perform();
+     my $ref = $self->getinfo( CURLINFO_EFFECTIVE_URL );
+     $self->setopt( CURLOPT_REFERER, $ref );
+     return @$self{qw(head body)};
+ }
 
 =head1 DESCRIPTION
 
