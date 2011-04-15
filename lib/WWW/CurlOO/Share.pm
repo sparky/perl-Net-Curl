@@ -35,9 +35,11 @@ WWW::CurlOO::Share - Perl interface for curl_share_* functions
 
  my $share = WWW::CurlOO::Share->new();
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
+ $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS );
 
- $easy1->setopt( CURLOPT_SHARE() => $share );
- $easy2->setopt( CURLOPT_SHARE() => $share );
+ $easy_one->setopt( CURLOPT_SHARE() => $share );
+
+ $easy_two->setopt( CURLOPT_SHARE() => $share );
 
 =head1 DESCRIPTION
 
@@ -144,7 +146,7 @@ CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
 
 =head2 WWW::CurlOO::Share::Code
 
-WWW::CurlOO::Share setopt method on failure throw a WWW::CurlOO::Share::Code error
+WWW::CurlOO::Share setopt method on failure throws a WWW::CurlOO::Share::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 

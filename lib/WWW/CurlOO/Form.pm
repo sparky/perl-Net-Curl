@@ -245,7 +245,7 @@ Callback for get() is described already in L</"use a callback"> subsection.
 
 =head2 WWW::CurlOO::Form::Code
 
-WWW::CurlOO::Form add() method on failure throw a WWW::CurlOO::Form::Code error
+WWW::CurlOO::Form add() method on failure throws a WWW::CurlOO::Form::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 

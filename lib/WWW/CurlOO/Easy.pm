@@ -199,6 +199,8 @@ multi handle.
 
  my $multi = $easy->multi;
 
+Use $multi->add_handle() to attach the easy object to the multi interface.
+
 =item share( )
 
 If share object is attached to this easy handle, this method will return that
@@ -206,12 +208,16 @@ share object.
 
  my $share = $easy->share;
 
+Use setopt() with CURLOPT_SHARE option to attach the share object.
+
 =item form( )
 
 If form object is attached to this easy handle, this method will return that
 form object.
 
  my $form = $easy->form;
+
+Use setopt() with CURLOPT_HTTPPOST option to attach the share object.
 
 =back
 
@@ -249,7 +255,7 @@ base object.
 =item CURLOPT_ERRORBUFFER
 
 setopt() does not allow to use this constant. You can always retrieve latest
-error message with OBJECT->error() method.
+error message with $east->error() method.
 
 =back
 
@@ -258,7 +264,9 @@ error message with OBJECT->error() method.
 Reffer to libcurl documentation for more detailed info on each of those.
 Callbacks can be set using setopt() method.
 
- $easy->setopt( CURLOPT_somethingFUNCTION, \&something );
+ $easy->setopt( CURLOPT_somethingFUNCTION, \&callback_function );
+ # or
+ $easy->setopt( CURLOPT_somethingFUNCTION, "callback_method" );
  $easy->setopt( CURLOPT_somethingDATA, [qw(any additional data
      you want)] );
 
@@ -369,7 +377,8 @@ ulnow and CURLOPT_PROGRESSDATA value. It should return 0.
 
 =item CURLOPT_HEADERFUNCTION ( CURLOPT_WRITEHEADER )
 
-Behaviour is the same as in write callback.
+Behaviour is the same as in write callback. Callback is called once for
+every header line.
 
 =item CURLOPT_DEBUGFUNCTION ( CURLOPT_DEBUGDATA )
 
