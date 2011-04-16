@@ -561,11 +561,7 @@ strerror( ... )
 		RETVAL
 
 
-=head1 Extensions
-
-Functions that do not have libcurl equivalents.
-
-=cut
+# /* Extensions: Functions that do not have libcurl equivalents. */
 
 
 void
