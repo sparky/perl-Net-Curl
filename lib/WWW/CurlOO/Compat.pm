@@ -73,7 +73,7 @@ my @packages = qw(
 sub _copy_constants
 {
 	my $EXPORT = shift;
-	my $dest = (shift) . "::";
+	my $dest = shift;
 	my $source = shift;
 
 	no strict 'refs';
@@ -87,71 +87,74 @@ sub _copy_constants
 
 
 
-package WWW::Curl;
-
 use WWW::CurlOO ();
-
-our $VERSION = '4.15';
-
-package WWW::Curl::Easy;
-
-use WWW::CurlOO ();
-use WWW::CurlOO::Easy ();
+use WWW::CurlOO::Easy qw(/^CURLOPT_/ CURLE_BAD_FUNCTION_ARGUMENT CURLINFO_PRIVATE);
+use WWW::CurlOO::Form qw(/^CURLFORM_/);
+use WWW::CurlOO::Share ();
+use WWW::CurlOO::Multi ();
 use Exporter ();
-our @ISA = qw(WWW::CurlOO::Easy Exporter);
 
-our $VERSION = '4.15';
-our @EXPORT;
+# WWW::Curl
+
+$WWW::Curl::VERSION = '4.15';
+
+
+# WWW::Curl::Easy
+
+@WWW::Curl::Easy::ISA = qw(WWW::CurlOO::Easy Exporter);
+$WWW::Curl::Easy::VERSION = '4.15';
 
 BEGIN {
+	my $e = [];
 	# in WWW::Curl almost all the constants are thrown into WWW::Curl::Easy
 	foreach my $pkg ( qw(WWW::CurlOO:: WWW::CurlOO::Easy::
 			WWW::CurlOO::Form:: WWW::CurlOO::Share::
 			WWW::CurlOO::Multi::) ) {
 		WWW::CurlOO::Compat::_copy_constants(
-			\@EXPORT, __PACKAGE__, $pkg );
+			$e, 'WWW::Curl::Easy::', $pkg );
 	}
+	@WWW::Curl::Easy::EXPORT = @$e;
 }
 
 # what is that anyways ?
 $WWW::Curl::Easy::headers = "";
 $WWW::Curl::Easy::content = "";
 
-sub new
+sub WWW::Curl::Easy::new
 {
-	my $class = shift || __PACKAGE__;
-	return $class->SUPER::new();
+	my $class = shift || 'WWW::Curl::Easy';
+	return WWW::CurlOO::Easy::new( $class );
 }
 
-*init = \&new;
-*errbuf = \&WWW::CurlOO::Easy::error;
-*strerror = \&WWW::CurlOO::Easy::strerror;
+*WWW::Curl::Easy::init = \&WWW::Curl::Easy::new;
+*WWW::Curl::Easy::errbuf = \&WWW::CurlOO::Easy::error;
+*WWW::Curl::Easy::strerror = \&WWW::CurlOO::Easy::strerror;
 
-*version = \&WWW::CurlOO::version;
+*WWW::Curl::Easy::version = \&WWW::CurlOO::version;
 
-sub cleanup { 0 };
+sub WWW::Curl::Easy::cleanup { 0 };
 
-sub internal_setopt { die };
+sub WWW::Curl::Easy::internal_setopt { die };
 
-sub duphandle
+sub WWW::Curl::Easy::duphandle
 {
 	my ( $source ) = @_;
-	my $clone = $source->SUPER::duphandle;
+	my $clone = WWW::CurlOO::Easy::duphandle( $source );
 	bless $clone, "WWW::Curl::Easy"
 }
 
-sub const_string
+sub WWW::Curl::Easy::const_string
 {
 	my ( $self, $constant ) = @_;
-	return constant( $constant );
+	return WWW::Curl::Easy::constant( $constant );
 }
 
 # this thing is weird !
-sub constant
+sub WWW::Curl::Easy::constant
 {
 	my $name = shift;
 	undef $!;
-	my $value = eval "$name()";
+	my $value = eval "WWW::Curl::Easy::$name()";
 	if ( $@ ) {
 		require POSIX;
 		$! = POSIX::EINVAL();
@@ -160,7 +163,7 @@ sub constant
 	return $value;
 }
 
-sub setopt
+sub WWW::Curl::Easy::setopt
 {
 	# convert options and provide wrappers for callbacks
 	my ($self, $option, $value, $push) = @_;
@@ -212,18 +215,18 @@ sub setopt
 		};
 	}
 	eval {
-		$self->SUPER::setopt( $option, $value );
+		WWW::CurlOO::Easy::setopt( $self, $option, $value );
 	};
 	return 0 unless $@;
 	return 0+$@ if ref $@ eq "WWW::CurlOO::Easy::Code";
 	die $@;
 }
 
-sub pushopt
+sub WWW::Curl::Easy::pushopt
 {
 	my ($self, $option, $value) = @_;
 	eval {
-		$self->SUPER::pushopt( $option, $value );
+		WWW::CurlOO::Easy::pushopt( $self, $option, $value );
 	};
 	return 0 unless $@;
 	if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
@@ -236,7 +239,7 @@ sub pushopt
 	die $@;
 }
 
-sub getinfo
+sub WWW::Curl::Easy::getinfo
 {
 	my ($self, $option) = @_;
 
@@ -245,7 +248,7 @@ sub getinfo
 		$ret = $self->{private};
 	} else {
 		eval {
-			$ret = $self->SUPER::getinfo( $option );
+			$ret = WWW::CurlOO::Easy::getinfo( $self, $option );
 		};
 		if ( $@ ) {
 			return undef if ref $@ eq "WWW::CurlOO::Easy::Code";
@@ -258,11 +261,11 @@ sub getinfo
 	return $ret;
 }
 
-sub perform
+sub WWW::Curl::Easy::perform
 {
 	my $self = shift;
 	eval {
-		$self->SUPER::perform( @_ );
+		WWW::CurlOO::Easy::perform( $self );
 	};
 	if ( defined $self->{errorbuffer} ) {
 		my $error = $self->error();
@@ -281,27 +284,24 @@ sub perform
 }
 
 
-package WWW::Curl::Form;
-use WWW::CurlOO ();
-use WWW::CurlOO::Form ();
-use Exporter ();
-our @ISA = qw(WWW::CurlOO::Form Exporter);
+# WWW::Curl::Form
 
-our $VERSION = '4.15';
-
-our @EXPORT;
+@WWW::Curl::Form::ISA = qw(WWW::CurlOO::Form Exporter);
+$WWW::Curl::Form::VERSION = '4.15';
 
 BEGIN {
+	@WWW::Curl::Form::EXPORT = ();
 	WWW::CurlOO::Compat::_copy_constants(
-		\@EXPORT, __PACKAGE__, "WWW::CurlOO::Form::" );
+		\@WWW::Curl::Form::EXPORT, 'WWW::Curl::Form::',
+		"WWW::CurlOO::Form::" );
 }
 
 # this thing is weird !
-sub constant
+sub WWW::Curl::Form::constant
 {
 	my $name = shift;
 	undef $!;
-	my $value = eval "$name()";
+	my $value = eval "WWW::Curl::Form::$name()";
 	if ( $@ ) {
 		require POSIX;
 		$! = POSIX::EINVAL();
@@ -310,13 +310,13 @@ sub constant
 	return $value;
 }
 
-sub new
+sub WWW::Curl::Form::new
 {
-	my $class = shift || __PACKAGE__;
-	return $class->SUPER::new();
+	my $class = shift || 'WWW::Curl::Form';
+	return WWW::CurlOO::Form::new( $class );
 }
 
-sub formadd
+sub WWW::Curl::Form::formadd
 {
 	my ( $self, $name, $value ) = @_;
 	eval {
@@ -327,7 +327,7 @@ sub formadd
 	};
 }
 
-sub formaddfile
+sub WWW::Curl::Form::formaddfile
 {
 	my ( $self, $filename, $description, $type ) = @_;
 	eval {
@@ -340,41 +340,40 @@ sub formaddfile
 }
 
 
-package WWW::Curl::Multi;
-use WWW::CurlOO ();
-use WWW::CurlOO::Multi ();
-our @ISA = qw(WWW::CurlOO::Multi);
+# WWW::Curl::Multi
 
-*strerror = \&WWW::CurlOO::Multi::strerror;
+@WWW::Curl::Multi::ISA = qw(WWW::CurlOO::Multi);
 
-sub new
+*WWW::Curl::Multi::strerror = \&WWW::CurlOO::Multi::strerror;
+
+sub WWW::Curl::Multi::new
 {
-	my $class = shift || __PACKAGE__;
-	return $class->SUPER::new();
+	my $class = shift || 'WWW::Curl::Multi';
+	return WWW::CurlOO::Multi::new( $class );
 }
 
-sub add_handle
-{
-	my ( $multi, $easy ) = @_;
-	eval {
-		$multi->SUPER::add_handle( $easy );
-	};
-}
-
-sub remove_handle
+sub WWW::Curl::Multi::add_handle
 {
 	my ( $multi, $easy ) = @_;
 	eval {
-		$multi->SUPER::remove_handle( $easy );
+		WWW::CurlOO::Multi::add_handle( $multi, $easy );
 	};
 }
 
-sub info_read
+sub WWW::Curl::Multi::remove_handle
+{
+	my ( $multi, $easy ) = @_;
+	eval {
+		WWW::CurlOO::Multi::remove_handle( $multi, $easy );
+	};
+}
+
+sub WWW::Curl::Multi::info_read
 {
 	my ( $multi ) = @_;
 	my @ret;
 	eval {
-		@ret = $multi->SUPER::info_read();
+		@ret = WWW::CurlOO::Multi::info_read( $multi );
 	};
 	return () unless @ret;
 
@@ -384,12 +383,12 @@ sub info_read
 	return ( $easy->{private}, $result );
 }
 
-sub fdset
+sub WWW::Curl::Multi::fdset
 {
 	my ( $multi ) = @_;
 	my @vec;
 	eval {
-		@vec = $multi->SUPER::fdset;
+		@vec = WWW::CurlOO::Multi::fdset( $multi );
 	};
 	my @out;
 	foreach my $in ( @vec ) {
@@ -404,45 +403,43 @@ sub fdset
 	return @out;
 }
 
-sub perform
+sub WWW::Curl::Multi::perform
 {
 	my ( $multi ) = @_;
 
 	my $ret;
 	eval {
-		$ret = $multi->SUPER::perform;
+		$ret = WWW::CurlOO::Multi::perform( $multi );
 	};
 
 	return $ret;
 }
 
-package WWW::Curl::Share;
-use WWW::CurlOO ();
-use WWW::CurlOO::Share ();
-use Exporter ();
-our @ISA = qw(WWW::CurlOO::Share Exporter);
+# WWW::Curl::Share
 
-our @EXPORT;
+@WWW::Curl::Share::ISA = qw(WWW::CurlOO::Share Exporter);
 
 BEGIN {
+	@WWW::Curl::Share::EXPORT = ();
 	WWW::CurlOO::Compat::_copy_constants(
-		\@EXPORT, __PACKAGE__, "WWW::CurlOO::Share::" );
+		\@WWW::Curl::Share::EXPORT, 'WWW::Curl::Share::',
+		"WWW::CurlOO::Share::" );
 }
 
-*strerror = \&WWW::CurlOO::Share::strerror;
+*WWW::Curl::Share::strerror = \&WWW::CurlOO::Share::strerror;
 
-sub new
+sub WWW::Curl::Share::new
 {
-	my $class = shift || __PACKAGE__;
-	return $class->SUPER::new();
+	my $class = shift || 'WWW::Curl::Share';
+	return WWW::CurlOO::Share::new( $class );
 }
 
 # this thing is weird !
-sub constant
+sub WWW::Curl::Share::constant
 {
 	my $name = shift;
 	undef $!;
-	my $value = eval "$name()";
+	my $value = eval "WWW::Curl::Share::$name()";
 	if ( $@ ) {
 		require POSIX;
 		$! = POSIX::EINVAL();
@@ -451,11 +448,11 @@ sub constant
 	return $value;
 }
 
-sub setopt
+sub WWW::Curl::Share::setopt
 {
 	my ($self, $option, $value) = @_;
 	eval {
-		$self->SUPER::setopt( $option, $value );
+		WWW::CurlOO::Share::setopt( $self, $option, $value );
 	};
 	return 0 unless $@;
 	return 0+$@ if ref $@ eq "WWW::CurlOO::Form::Code";
