@@ -292,7 +292,7 @@ cb_easy_sockopt( void *userptr, curl_socket_t curlfd, curlsocktype purpose )
 		newSViv( purpose ),
 	};
 
-	return ( PERL_CURL_CALL( cb, args ) ? 1 : 0 );
+	return PERL_CURL_CALL( cb, args );
 }
 #endif
 
@@ -374,7 +374,6 @@ cb_easy_chunk_bgn( const void *transfer_info, void *userptr, int remains )
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
 	callback_t *cb = &easy->cb[ CB_EASY_CHUNK_BGN ];
-	long ret;
 
 	SV *args[] = {
 		newSVsv( easy->perl_self ),
@@ -438,18 +437,7 @@ cb_easy_chunk_bgn( const void *transfer_info, void *userptr, int remains )
 		args[2] = newRV( sv_2mortal( (SV *) h ) );
 	}
 
-	ret = PERL_CURL_CALL( cb, args );
-
-	if ( 0
-# ifdef CURL_CHUNK_BGN_FUNC_OK
-			|| ret == CURL_CHUNK_BGN_FUNC_OK
-# endif
-# ifdef CURL_CHUNK_BGN_FUNC_SKIP
-			|| ret == CURL_CHUNK_BGN_FUNC_SKIP
-# endif
-		)
-		return ret;
-	return CURL_CHUNK_BGN_FUNC_FAIL;
+	return PERL_CURL_CALL( cb, args );
 }
 #endif
 
@@ -460,7 +448,6 @@ static long
 cb_easy_chunk_end( void *userptr )
 {
 	dTHX;
-	long ret;
 
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
@@ -470,14 +457,7 @@ cb_easy_chunk_end( void *userptr )
 		newSVsv( easy->perl_self ),
 	};
 
-	ret = PERL_CURL_CALL( cb, args );
-	if ( 0
-# ifdef CURL_CHUNK_END_FUNC_OK
-			|| ret == CURL_CHUNK_END_FUNC_OK
-# endif
-		)
-		return ret;
-	return CURL_CHUNK_END_FUNC_FAIL;
+	return PERL_CURL_CALL( cb, args );
 }
 #endif
 
@@ -488,7 +468,6 @@ static int
 cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 {
 	dTHX;
-	long ret;
 
 	perl_curl_easy_t *easy;
 	easy = (perl_curl_easy_t *) userptr;
@@ -500,17 +479,7 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 		newSVpv( string, 0 ),
 	};
 
-	ret = PERL_CURL_CALL( cb, args );
-	if ( 0
-# ifdef CURL_FNMATCHFUNC_MATCH
-			|| ret == CURL_FNMATCHFUNC_MATCH
-# endif
-# ifdef CURL_FNMATCHFUNC_NOMATCH
-			|| ret == CURL_FNMATCHFUNC_NOMATCH
-# endif
-		)
-		return ret;
-	return CURL_FNMATCHFUNC_FAIL;
+	return PERL_CURL_CALL( cb, args );
 }
 #endif
 
