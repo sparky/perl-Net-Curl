@@ -200,12 +200,12 @@ perl_curl_simplell_del( pTHX_ simplell_t **start, PTRV key )
 }
 
 /* generic function for our callback calling needs */
-static long
+static IV
 perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 {
 	dSP;
 	int i;
-	long status;
+	IV status;
 	SV *olderrsv = NULL;
 	int method_call = 0;
 
