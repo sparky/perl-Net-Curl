@@ -236,9 +236,9 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 		olderrsv = sv_2mortal( newSVsv( ERRSV ) );
 
 	if ( method_call )
-		perl_call_method( SvPV_nolen( cb->func ), G_SCALAR | G_EVAL );
+		call_method( SvPV_nolen( cb->func ), G_SCALAR | G_EVAL );
 	else
-		perl_call_sv( cb->func, G_SCALAR | G_EVAL );
+		call_sv( cb->func, G_SCALAR | G_EVAL );
 
 	SPAGAIN;
 
