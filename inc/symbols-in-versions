@@ -1,17 +1,17 @@
-#                                  _   _ ____  _
-#                              ___| | | |  _ \| |
-#                             / __| | | | |_) | |
-#                            | (__| |_| |  _ <| |___
-#                             \___|\___/|_| \_\_____|
-#
-# This document lists defines and other symbols present in libcurl, together
-# with exact information about the first libcurl version that provides the
-# symbol, the first version in which the symbol was marked as deprecated and
-# for a few symbols the last version that featured it. The names appear in
-# alphabetical order.
-#
-# Name                           Introduced  Deprecated  Removed
-#
+                                  _   _ ____  _
+                              ___| | | |  _ \| |
+                             / __| | | | |_) | |
+                            | (__| |_| |  _ <| |___
+                             \___|\___/|_| \_\_____|
+
+ This document lists defines and other symbols present in libcurl, together
+ with exact information about the first libcurl version that provides the
+ symbol, the first version in which the symbol was marked as deprecated and
+ for a few symbols the last version that featured it. The names appear in
+ alphabetical order.
+
+ Name                           Introduced  Deprecated  Removed
+
 CURLAUTH_ANY                    7.10.6
 CURLAUTH_ANYSAFE                7.10.6
 CURLAUTH_BASIC                  7.10.6
@@ -82,6 +82,7 @@ CURLE_LDAP_SEARCH_FAILED        7.1
 CURLE_LIBRARY_NOT_FOUND         7.1           7.17.0
 CURLE_LOGIN_DENIED              7.13.1
 CURLE_MALFORMAT_USER            7.1           7.17.0
+CURLE_NOT_BUILT_IN              7.21.5
 CURLE_OK                        7.1
 CURLE_OPERATION_TIMEDOUT        7.10.2
 CURLE_OPERATION_TIMEOUTED       7.1           7.17.0
@@ -123,6 +124,7 @@ CURLE_TFTP_NOTFOUND             7.15.0
 CURLE_TFTP_PERM                 7.15.0
 CURLE_TFTP_UNKNOWNID            7.15.0
 CURLE_TOO_MANY_REDIRECTS        7.5
+CURLE_UNKNOWN_OPTION            7.21.5
 CURLE_UNKNOWN_TELNET_OPTION     7.7
 CURLE_UNSUPPORTED_PROTOCOL      7.1
 CURLE_UPLOAD_FAILED             7.16.3
