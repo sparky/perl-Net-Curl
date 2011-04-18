@@ -124,6 +124,7 @@ static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock
 static int
 perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 {
+#ifdef USE_ITHREADS
 	perl_curl_share_t *source, *clone;
 
 	source = (perl_curl_share_t *) mg->mg_ptr;
@@ -135,7 +136,10 @@ perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 	clone->threads = source->threads;
 	(*clone->threads)++;
 	mg->mg_ptr = (char *) clone;
-
+#else
+	warn( "WWW::CurlOO::Share does not support cloning without ithreads\n" );
+	mg->mg_ptr = NULL;
+#endif
 	return 0;
 }
 
@@ -143,11 +147,14 @@ static int
 perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
 	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
-	if ( --(*share->threads) < 1 ) {
-		perl_curl_share_delete( aTHX_ share );
-	} else {
+#ifdef USE_ITHREADS
+	if ( --(*share->threads) > 0 ) {
 		SvREFCNT_dec( share->perl_self );
 		Safefree( share );
+	} else
+#endif
+	{
+		perl_curl_share_delete( aTHX_ share );
 	}
 	return 0;
 }
