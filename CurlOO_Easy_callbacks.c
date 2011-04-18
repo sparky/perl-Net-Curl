@@ -131,6 +131,16 @@ cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
 		SV *sv;
 		size_t status = CURL_READFUNC_ABORT;
 		SV *olderrsv = NULL;
+		int method_call = 0;
+
+		if ( SvROK( cb->func ) )
+			method_call = 0;
+		else if ( SvPOK( cb->func ) )
+			method_call = 1;
+		else {
+			warn( "Don't know how to call the callback\n" );
+			return CURL_READFUNC_ABORT;
+		}
 
 		ENTER;
 		SAVETMPS;
@@ -149,7 +159,10 @@ cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
 		if ( SvTRUE( ERRSV ) )
 			olderrsv = sv_2mortal( newSVsv( ERRSV ) );
 
-		perl_call_sv( cb->func, G_SCALAR | G_EVAL );
+		if ( method_call )
+			call_method( SvPV_nolen( cb->func ), G_SCALAR | G_EVAL );
+		else
+			call_sv( cb->func, G_SCALAR | G_EVAL );
 
 		SPAGAIN;
 
