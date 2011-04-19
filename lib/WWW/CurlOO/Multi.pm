@@ -242,7 +242,7 @@ Socket callback will be called only if socket_action() method is being used.
 It receives 6 arguments: multi handle, easy handle, socket file number, poll
 action, socket data (see assign), and CURLMOPT_SOCKETDATA value. It must
 return 0.
-For more information reffer to L<curl_multi_socket_action(3)>.
+For more information refer to L<curl_multi_socket_action(3)>.
 
  sub cb_socket {
      my ( $multi, $easy, $socketfn, $action, $socketdata, $uservar ) = @_;

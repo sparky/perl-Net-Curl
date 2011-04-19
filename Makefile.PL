@@ -375,8 +375,8 @@ sub write_examples_pod
 
 	print "Writing $out\n";
 	open my $o, ">", $out;
-	print $o "=head1 WWW::CurlOO examples\n\n";
-	print $o "WWW::CurlOO::examples -- sample modules and test code for WWW::CurlOO\n\n";
+	print $o "=head1 NAME\n\n";
+	print $o "WWW::CurlOO::examples - sample modules and test code for WWW::CurlOO\n\n";
 
 	foreach my $script ( sort glob "examples/*.pl" ) {
 		my $nopod = 0;
