@@ -36,7 +36,7 @@ my $url_list=[
 
 
 my $v = WWW::CurlOO::version_info();
-if ( ($v->{features} | CURL_VERSION_SSL) == 0 ) {
+if ( ($v->{features} & CURL_VERSION_SSL) == 0 ) {
 	plan skip_all => 'libcurl was compiled without ssl support, skipping ssl tests';
 } else {
 	plan tests => scalar(@{$url_list})+7;
