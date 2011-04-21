@@ -1,7 +1,22 @@
 =head1 Irssi async downloader
 
+This module implements asynchronous file fetcher for Irssi.
+
+=head2 Motivation
+
+Irssi provides a set of nice io and timer handlers, but using them may be
+painful sometimes. This code provides a working downloader solution.
+
+=head2 Instalation
+
+Save it in your C<~/.irssi/scripts> directory as C<downloader.pl> for instance.
+Make sure module is loaded before any script that may use it.
+
+=head2 MODULE CODE
+
 =cut
 
+# Irssi will provide a package name and it must be left unchanged
 #package Irssi::Script::downloader;
 
 use strict;
@@ -52,7 +67,8 @@ sub _cb_socket
 		$action = CURL_CSELECT_OUT;
 	} elsif ( $poll == CURL_POLL_INOUT ) {
 		$cond = Irssi::INPUT_READ() | Irssi::INPUT_WRITE();
-		# let libcurl figure it out
+		# we don't know whether it can read or write,
+		# so let libcurl figure it out
 		$action = 0;
 	} else {
 		return 1;
@@ -81,9 +97,12 @@ sub _cb_timer
 
 	if ( $timeout_ms < 0 ) {
 		if ( $multi->handles ) {
+			# we don't know what the timeout is
 			$multi->{timer} = Irssi::timeout_add( 10000, $cb, '' );
 		}
 	} else {
+		# Irssi won't allow smaller timeouts
+		$timeout_ms = 10 if $timeout_ms < 10;
 		$multi->{timer} = Irssi::timeout_add_once( $timeout_ms, $cb, '' );
 	}
 
@@ -98,6 +117,7 @@ sub add_handle($$)
 	die "easy cannot finish()\n"
 		unless $easy->can( 'finish' );
 
+	# Irssi won't allow timeout smaller than 10ms
 	Irssi::timeout_add_once( 10, sub {
 		$multi->socket_action();
 	}, '' );
@@ -127,7 +147,10 @@ sub socket_action
 }
 
 
+# we use just one global multi object
 my $multi;
+
+# put the add() function in some package we know
 sub WWW::CurlOO::Multi::add($)
 {
 	unless ( $multi ) {
@@ -140,8 +163,12 @@ sub WWW::CurlOO::Multi::add($)
 package Irssi::CurlOO::Easy;
 use strict;
 use warnings;
+use WWW::CurlOO;
 use WWW::CurlOO::Easy qw(/^CURLOPT_/);
 use base qw(WWW::CurlOO::Easy);
+
+my $has_zlib = ( WWW::CurlOO::version_info()->{features}
+	& WWW::CurlOO::CURL_VERSION_LIBZ ) != 0;
 
 sub new
 {
@@ -152,13 +179,14 @@ sub new
 	my $easy = $class->SUPER::new(
 		{ body => '', headers => '' }
 	);
+	# some sane defaults
 	$easy->setopt( CURLOPT_WRITEHEADER, \$easy->{headers} );
 	$easy->setopt( CURLOPT_FILE, \$easy->{body} );
 	$easy->setopt( CURLOPT_TIMEOUT, 300 );
 	$easy->setopt( CURLOPT_CONNECTTIMEOUT, 60 );
 	$easy->setopt( CURLOPT_MAXREDIRS, 20 );
 	$easy->setopt( CURLOPT_FOLLOWLOCATION, 1 );
-	$easy->setopt( CURLOPT_ENCODING, 'gzip,deflate' );
+	$easy->setopt( CURLOPT_ENCODING, 'gzip,deflate' ) if $has_zlib;
 	$easy->setopt( CURLOPT_SSL_VERIFYPEER, 0 );
 	$easy->setopt( CURLOPT_COOKIEFILE, '' );
 	$easy->setopt( CURLOPT_USERAGENT, 'Irssi + WWW::CurlOO' );
@@ -189,6 +217,7 @@ sub _common_add
 	WWW::CurlOO::Multi::add( $easy );
 }
 
+# get some uri
 sub get
 {
 	my ( $easy, $uri, $cb ) = @_;
@@ -196,6 +225,7 @@ sub get
 	$easy->_common_add( $uri, $cb );
 }
 
+# request head on some uri
 sub head
 {
 	my ( $easy, $uri, $cb ) = @_;
@@ -203,6 +233,7 @@ sub head
 	$easy->_common_add( $uri, $cb );
 }
 
+# post data to some uri
 sub post
 {
 	my ( $easy, $uri, $cb, $post ) = @_;
@@ -212,13 +243,16 @@ sub post
 	$easy->_common_add( $uri, $cb );
 }
 
-
+# get new downloader object
 sub Irssi::downloader
 {
 	return __PACKAGE__->new();
 }
 
 =head2 EXAMPLE SCRIPT
+
+This script will load downloader module automatically, if it has been
+named C<downloader.pl>.
 
  use strict;
  use warnings;
@@ -267,3 +301,5 @@ sub Irssi::downloader
  Irssi::command_bind( 'cpan', \&cpan_search );
 
 =cut
+#nopod
+# vim: ts=4:sw=4
