@@ -92,7 +92,9 @@ sub _cb_timer
 	}
 
 	my $cb = sub {
-		$multi->socket_action( WWW::CurlOO::Multi::CURL_SOCKET_TIMEOUT );
+		$multi->socket_action(
+			WWW::CurlOO::Multi::CURL_SOCKET_TIMEOUT
+		);
 	};
 
 	if ( $timeout_ms < 0 ) {
@@ -103,7 +105,9 @@ sub _cb_timer
 	} else {
 		# Irssi won't allow smaller timeouts
 		$timeout_ms = 10 if $timeout_ms < 10;
-		$multi->{timer} = Irssi::timeout_add_once( $timeout_ms, $cb, '' );
+		$multi->{timer} = Irssi::timeout_add_once(
+			$timeout_ms, $cb, ''
+		);
 	}
 
 	return 1;
@@ -197,7 +201,9 @@ sub new
 sub finish
 {
 	my ( $easy, $result ) = @_;
-	$easy->{referer} = $easy->getinfo( WWW::CurlOO::Easy::CURLINFO_EFFECTIVE_URL );
+	$easy->{referer} = $easy->getinfo(
+		WWW::CurlOO::Easy::CURLINFO_EFFECTIVE_URL
+	);
 
 	my $cb = $easy->{cb};
 	$cb->( $easy, $result );
@@ -271,7 +277,8 @@ named C<downloader.pl>.
      }
 
      my @found;
-     while ( $easy->{body} =~ s#<h2 class=sr><a href="(.*?)"><b>(.*?)</b></a></h2>## ) {
+     while ( $easy->{body} =~ s#<h2\s+class=sr><a\s+href="(.*?)">
+             <b>(.*?)</b></a></h2>##x ) {
          my $uri = $1;
          $_ = $2;
          s/&#(\d+);/chr $1/eg;
@@ -279,7 +286,8 @@ named C<downloader.pl>.
          push @found, $_;
      }
      @found = "no results" unless @found;
-     my $msg = "CPAN search %9$easy->{args}%n: " . (join "%9;%n ", @found);
+     my $msg = "CPAN search %9$easy->{args}%n: "
+         . (join "%9;%n ", @found);
      if ( $window ) {
          $window->print( $msg );
      } else {

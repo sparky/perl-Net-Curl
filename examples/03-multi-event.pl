@@ -98,7 +98,9 @@ sub _cb_timer
 	delete $multi->{timer};
 
 	my $cb = sub {
-		$multi->socket_action( WWW::CurlOO::Multi::CURL_SOCKET_TIMEOUT );
+		$multi->socket_action(
+			WWW::CurlOO::Multi::CURL_SOCKET_TIMEOUT
+		);
 	};
 
 	if ( $timeout_ms < 0 ) {
