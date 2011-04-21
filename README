@@ -5,29 +5,24 @@ This package is working, but still a lot has to change.
 
 CurlOO:
 + added LIBCURL_ constants
+- register _global_cleanup from xs somehow
 
 Easy:
-- review !
 - test callback arguments just before perform (maybe only for default writers)
 - write more documentation
-x multiple options in setopt
-  -- not a good idea
-x allow calling duphandle as: CLASS->duphandle( $source_object, $newbase );
-  -- can be reblessed easily
 
 Form:
-- test with Easy
 - implement buffer options
 - implement read callback
 - write more documentation
 
 Multi:
 - write more documentation
+- on destroy callback can resurrect multi object and destroy it recursively,
+  which will segv
 
 Share:
 - write more documentation
-+ test and fix multi-thread operation
-- fix leaking scalars in threads
 
 tests:
 - use some pure-perl http server, should do for most tests
