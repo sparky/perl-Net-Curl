@@ -140,7 +140,7 @@ WriteMakefile(
 		'Makefile'	=> '$(VERSION_FROM)',
 		'$(FIRST_MAKEFILE)' => join ( " ", qw(CurlOO_Easy.xsh CurlOO_Form.xsh
 			CurlOO_Multi.xsh CurlOO_Share.xsh CurlOO_Easy_setopt.c
-			CurlOO_Easy_callbacks.c),
+			CurlOO_Easy_callbacks.c inc/symbols-in-versions),
 			glob "examples/*.pl" ),
 	},
 	clean		=> {
@@ -414,6 +414,15 @@ sub write_examples_pod
 
 		print $o "\n\n";
 	}
+}
+
+sub MY::postamble
+{
+	return <<'EOM';
+.PHONY: update_symbols
+update_symbols:
+	curl https://github.com/bagder/curl/raw/master/docs/libcurl/symbols-in-versions -o inc/symbols-in-versions
+EOM
 }
 
 __END__
