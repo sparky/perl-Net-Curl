@@ -10,6 +10,15 @@ use Exporter 'import';
 our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Multi::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
+# workaround for "magical destroy too late" bug
+sub DESTROY
+{
+	my $self = shift;
+	foreach my $easy ( $self->handles() ) {
+		$self->remove_handle( $easy );
+	}
+}
+
 package WWW::CurlOO::Multi::Code;
 
 use overload
