@@ -12,8 +12,11 @@ perl_curl_easy_setopt_long( pTHX_ perl_curl_easy_t *easy, long option,
 		SV *value )
 {
 	CURLcode ret = CURLE_OK;
+	long value_num = 0;
+	if ( SvOK( value ) )
+		value_num = (long) SvIV( value );
 
-	ret = curl_easy_setopt( easy->handle, option, (long) SvIV( value ) );
+	ret = curl_easy_setopt( easy->handle, option, value_num );
 	EASY_DIE( ret );
 }
 
@@ -337,7 +340,7 @@ perl_curl_easy_setopt_off_t( pTHX_ perl_curl_easy_t *easy, long option,
 	curl_off_t v = 0;
 
 	if ( SvOK( value ) ) {
-#if IVSIZE == CURL_SIZEOF_CURL_OFF_T
+#if IVSIZE >= CURL_SIZEOF_CURL_OFF_T
 		if ( SvIOK( value ) ) {
 			v = SvIV( value );
 		} else
