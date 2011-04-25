@@ -209,7 +209,10 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 	SV *olderrsv = NULL;
 	int method_call = 0;
 
-	if ( SvROK( cb->func ) )
+	if ( ! cb->func || ! SvOK( cb->func ) ) {
+		warn( "callback function is not set\n" );
+		return -1;
+	} else if ( SvROK( cb->func ) )
 		method_call = 0;
 	else if ( SvPOK( cb->func ) )
 		method_call = 1;
