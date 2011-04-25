@@ -180,6 +180,9 @@ new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
 		multi = perl_curl_multi_new();
 		perl_curl_setptr( aTHX_ base, &perl_curl_multi_vtbl, multi );
 
+		curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION,
+			cb_multi_socket );
+
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
 
@@ -360,8 +363,6 @@ setopt( multi, option, value )
 
 			case CURLMOPT_SOCKETFUNCTION:
 				SvREPLACE( multi->cb[ CB_MULTI_SOCKET ].func, value );
-				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION,
-					SvOK( value ) ? cb_multi_socket : NULL );
 				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_SOCKETDATA, multi );
 				break;
 
