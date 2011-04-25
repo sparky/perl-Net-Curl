@@ -13,6 +13,7 @@ examples/01-curl-transport.pl
 examples/02-multi-simple.pl
 examples/03-multi-event.pl
 examples/04-share-threads.pl
+examples/05-irssi-downloader.pl
 lib/WWW/CurlOO.pm
 lib/WWW/CurlOO/Compat.pm
 lib/WWW/CurlOO/Easy.pm
