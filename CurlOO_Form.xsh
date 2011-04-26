@@ -33,8 +33,6 @@ perl_curl_form_new( void )
 static void
 perl_curl_form_delete( pTHX_ perl_curl_form_t *form )
 {
-	sv_2mortal( form->perl_self );
-
 	if ( form->post )
 		curl_formfree( form->post );
 
@@ -68,7 +66,7 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 
 	/* $form, $buffer, [$userdata] */
 	SV *args[] = {
-		newSVsv( form->perl_self ),
+		SELF2PERL( form ),
 		newSVpvn( buf, len )
 	};
 
@@ -122,8 +120,7 @@ new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
 
-		form->perl_self = newSVsv( ST(0) );
-		sv_rvweaken( form->perl_self );
+		form->perl_self = SvRV( ST(0) );
 
 		XSRETURN(1);
 

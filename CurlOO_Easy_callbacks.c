@@ -45,7 +45,7 @@ cb_easy_write( char *buffer, size_t size, size_t nitems, void *userptr )
 
 	if ( cb->func ) {
 		SV *args[] = {
-			newSVsv( easy->perl_self ),
+			SELF2PERL( easy ),
 			&PL_sv_undef
 		};
 		if ( buffer )
@@ -70,7 +70,7 @@ cb_easy_header( const void *ptr, size_t size, size_t nmemb,
 
 	if ( cb->func ) {
 		SV *args[] = {
-			newSVsv( easy->perl_self ),
+			SELF2PERL( easy ),
 			&PL_sv_undef
 		};
 		if ( ptr )
@@ -96,7 +96,7 @@ cb_easy_debug( CURL *easy_handle, curl_infotype type, char *ptr, size_t size,
 	if ( cb->func ) {
 		/* We are doing a callback to perl */
 		SV *args[] = {
-			newSVsv( easy->perl_self ),
+			SELF2PERL( easy ),
 			newSViv( type ),
 			&PL_sv_undef
 		};
@@ -149,7 +149,7 @@ cb_easy_read( char *ptr, size_t size, size_t nmemb, void *userptr )
 
 		/* $easy, $maxsize, $userdata */
 		EXTEND( SP, 2 );
-		mPUSHs( newSVsv( easy->perl_self ) );
+		mPUSHs( SELF2PERL( easy ) ),
 		mPUSHs( newSViv( maxlen ) );
 		if ( cb->data )
 			mXPUSHs( newSVsv( cb->data ) );
@@ -236,7 +236,7 @@ cb_easy_progress( void *userptr, double dltotal, double dlnow,
 	callback_t *cb = &easy->cb[ CB_EASY_PROGRESS ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSVnv( dltotal ),
 		newSVnv( dlnow ),
 		newSVnv( ultotal ),
@@ -258,7 +258,7 @@ cb_easy_ioctl( CURL *easy_handle, int cmd, void *userptr )
 	callback_t *cb = &easy->cb[ CB_EASY_IOCTL ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSViv( cmd ),
 	};
 
@@ -278,7 +278,7 @@ cb_easy_seek( void *userptr, curl_off_t offset, int origin )
 	callback_t *cb = &easy->cb[ CB_EASY_SEEK ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSViv( offset ),
 		newSViv( origin ),
 	};
@@ -300,7 +300,7 @@ cb_easy_sockopt( void *userptr, curl_socket_t curlfd, curlsocktype purpose )
 	callback_t *cb = &easy->cb[ CB_EASY_SOCKOPT ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSViv( curlfd ),
 		newSViv( purpose ),
 	};
@@ -325,7 +325,7 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	HV *ah;
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSViv( purpose ),
 		&PL_sv_undef,
 	};
@@ -364,7 +364,7 @@ cb_easy_interleave( void *ptr, size_t size, size_t nmemb, void *userptr )
 
 	if ( cb->func ) {
 		SV *args[] = {
-			newSVsv( easy->perl_self ),
+			SELF2PERL( easy ),
 			&PL_sv_undef
 		};
 		if ( ptr )
@@ -389,7 +389,7 @@ cb_easy_chunk_bgn( const void *transfer_info, void *userptr, int remains )
 	callback_t *cb = &easy->cb[ CB_EASY_CHUNK_BGN ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		&PL_sv_undef,
 		newSViv( remains )
 	};
@@ -467,7 +467,7 @@ cb_easy_chunk_end( void *userptr )
 	callback_t *cb = &easy->cb[ CB_EASY_CHUNK_END ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 	};
 
 	return PERL_CURL_CALL( cb, args );
@@ -487,7 +487,7 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 	callback_t *cb = &easy->cb[ CB_EASY_FNMATCH ];
 
 	SV *args[] = {
-		newSVsv( easy->perl_self ),
+		SELF2PERL( easy ),
 		newSVpv( pattern, 0 ),
 		newSVpv( string, 0 ),
 	};

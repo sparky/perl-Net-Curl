@@ -82,6 +82,11 @@
 			dst = NULL;					\
 	} STMT_END
 
+/*
+ * create a reference for perl callbacks
+ */
+#define SELF2PERL( obj ) \
+	sv_bless( newRV_inc( (obj)->perl_self ), SvSTASH( (obj)->perl_self ) )
 
 typedef struct {
 	/* function that will be called */
@@ -321,7 +326,7 @@ perl_curl_getptr_fatal( pTHX_ SV *self, MGVTBL *vtbl, const char *name,
 	 * existing reference from inside of a callback.
 	 */
 	perl_self = ret;
-	sv_2mortal( newSVsv( *perl_self ) );
+	sv_2mortal( newRV_inc( *perl_self ) );
 
 	return ret;
 }

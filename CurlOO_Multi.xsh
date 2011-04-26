@@ -80,8 +80,6 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 		sv_2mortal( multi->cb[i].data );
 	}
 
-	sv_2mortal( multi->perl_self );
-
 	Safefree( multi );
 } /*}}}*/
 
@@ -99,8 +97,8 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 
 	/* $multi, $easy, $socket, $what, $socketdata, $userdata */
 	SV *args[] = {
-		/* 0 */ newSVsv( multi->perl_self ),
-		/* 1 */ newSVsv( easy->perl_self ),
+		/* 0 */ SELF2PERL( multi ),
+		/* 1 */ SELF2PERL( easy ),
 		/* 2 */ newSVuv( s ),
 		/* 3 */ newSViv( what ),
 		/* 4 */ &PL_sv_undef
@@ -121,7 +119,7 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 
 	/* $multi, $timeout, $userdata */
 	SV *args[] = {
-		newSVsv( multi->perl_self ),
+		SELF2PERL( multi ),
 		newSViv( timeout_ms )
 	};
 
@@ -192,8 +190,7 @@ new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
 		stash = gv_stashpv( sclass, 0 );
 		ST(0) = sv_bless( base, stash );
 
-		multi->perl_self = newSVsv( ST(0) );
-		sv_rvweaken( multi->perl_self );
+		multi->perl_self = SvRV( ST(0) );
 
 		XSRETURN(1);
 
@@ -214,7 +211,7 @@ add_handle( multi, easy )
 			SV **easysv_ptr;
 			easysv_ptr = perl_curl_simplell_add( aTHX_ &multi->easies,
 				PTR2nat( easy ) );
-			*easysv_ptr = newSVsv( easy->perl_self );
+			*easysv_ptr = SELF2PERL( easy );
 			easy->multi = multi;
 		}
 		MULTI_DIE( ret );
@@ -268,7 +265,7 @@ info_read( multi )
 
 				EXTEND( SP, 3 );
 				mPUSHs( newSViv( msg->msg ) );
-				mPUSHs( newSVsv( easy->perl_self ) );
+				mPUSHs( SELF2PERL( easy ) );
 
 				errsv = sv_newmortal();
 				sv_setref_iv( errsv, "WWW::CurlOO::Easy::Code",
