@@ -78,8 +78,12 @@ cb_form_get_code( void *arg, const char *buf, size_t len )
 static int
 perl_curl_form_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
-	if ( mg->mg_ptr )
+	if ( mg->mg_ptr ) {
+		/* prevent recursive destruction */
+		SvREFCNT( sv ) = 1 << 30;
+
 		perl_curl_form_delete( aTHX_ (void *) mg->mg_ptr );
+	}
 	return 0;
 }
 

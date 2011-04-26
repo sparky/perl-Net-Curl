@@ -188,8 +188,12 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 static int
 perl_curl_easy_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
-	if ( mg->mg_ptr )
+	if ( mg->mg_ptr ) {
+		/* prevent recursive destruction */
+		SvREFCNT( sv ) = 1 << 30;
+
 		perl_curl_easy_delete( aTHX_ (void *)mg->mg_ptr );
+	}
 	return 0;
 }
 

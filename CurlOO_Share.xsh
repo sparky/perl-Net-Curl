@@ -148,12 +148,16 @@ perl_curl_share_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
 	perl_curl_share_t *share = (perl_curl_share_t *) mg->mg_ptr;
 #ifdef USE_ITHREADS
+	/* XXX: this needs a mutex */
 	if ( --(*share->threads) > 0 ) {
 		SvREFCNT_dec( share->perl_self );
 		Safefree( share );
 	} else
 #endif
 	{
+		/* prevent recursive destruction */
+		SvREFCNT( sv ) = 1 << 30;
+
 		perl_curl_share_delete( aTHX_ share );
 	}
 	return 0;
