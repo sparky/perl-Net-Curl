@@ -24,8 +24,8 @@ base object as shared if you want to use the data elsewhere.
 
 =item *
 
-Shared WWW::CurlOO::Share does not support lock and unlock callbacks. They
-kill the interpreter. This may be fixed some day.
+Shared WWW::CurlOO::Share does not support lock and unlock callbacks.
+However, locking is done internally, so no worries about corruption.
 
 =item *
 
@@ -38,11 +38,6 @@ assures cache coherency, but slows down overall application.
 
 This method does not reuse persistent connections, it would be much faster
 to get those 6 requests one after another than to doing all 6 in parallel.
-
-=item *
-
-WWW::CurlOO::Share currently leaks scalars, this is bad, and can be very bad
-for long-running applications.
 
 =item *
 
@@ -76,30 +71,14 @@ sub new
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS );
 
-	# XXX: WWW::CurlOO::Share does not support callbacks from other
-	# threads yet, so this won't work. In fact it will trigger a
-	# deep recursion and the application will be nooked.
-	#$self->setopt( CURLSHOPT_LOCKFUNC, "cb_lock" );
-	#$self->setopt( CURLSHOPT_UNLOCKFUNC, "cb_unlock" );
-	
-	# we use semaphore instead
+	# WWW::CurlOO::Share locks each datum automatically, this will
+	# prevent memory corruption.
+	#
+	# we use semaphore to lock share completely
 	$self->{sem} = Thread::Semaphore->new();
 	
 	return $self;
 }
-
-#sub cb_lock
-#{
-#	my ( $share, $easy, $data, $locktype, $uservar ) = @_;
-#	# Nothing here yet, because it won't work anyways.
-#}
-
-#sub cb_unlock
-#{
-#	my ( $share, $easy, $data, $uservar ) = @_;
-#	# Nothing here yet, because it won't work anyways.
-#}
-
 
 # this locks way too much, but works as expected
 sub lock
