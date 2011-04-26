@@ -108,11 +108,11 @@ Values for setopt().
 
 =item CURL_LOCK_ACCESS_*
 
-Values passed to lock callbacks.
+Values passed to lock callbacks. Unused.
 
 =item CURL_LOCK_DATA_*
 
-Values passed to lock and unlock callbacks.
+Values for enabling/disabling share.
 
 =back
 
@@ -124,23 +124,11 @@ Reffer to libcurl documentation for more detailed info on each of those.
 
 =item CURLSHOPT_LOCKFUNC ( CURLSHOPT_USERDATA )
 
-Lock callback receives 5 arguments: share object, easy object, lock data,
-lock access, and CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
-
- sub cb_lock {
-     my ( $share, $easy, $data, $locktype, $uservar ) = @_;
-     # ... lock ...
- }
+Not supported. Locking is done internally.
 
 =item CURLSHOPT_UNLOCKFUNC ( CURLSHOPT_USERDATA )
 
-Unlock callback receives 4 arguments: share object, easy object, lock data, and
-CURLSHOPT_USERDATA value. Easy may be undefined in some cases.
-
- sub cb_unlock {
-     my ( $share, $easy, $data, $uservar ) = @_;
-     # ... unlock ...
- }
+Not supported. Locking is done internally.
 
 =back
 
