@@ -112,7 +112,11 @@ Values passed to lock callbacks. Unused.
 
 =item CURL_LOCK_DATA_*
 
-Values for enabling/disabling share.
+Values passed to lock and unlock callbacks. Unused.
+
+=item CURL_LOCK_DATA_COOKIE, CURL_LOCK_DATA_DNS
+
+Values used to enable/disable shareing.
 
 =back
 
@@ -128,7 +132,7 @@ Not supported. Locking is done internally.
 
 =item CURLSHOPT_UNLOCKFUNC ( CURLSHOPT_USERDATA )
 
-Not supported. Locking is done internally.
+Not supported. (Un)Locking is done internally.
 
 =back
 
