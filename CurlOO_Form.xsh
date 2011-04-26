@@ -81,6 +81,8 @@ perl_curl_form_magic_free( pTHX_ SV *sv, MAGIC *mg )
 		SvREFCNT( sv ) = 1 << 30;
 
 		perl_curl_form_delete( aTHX_ (void *) mg->mg_ptr );
+
+		SvREFCNT( sv ) = 0;
 	}
 	return 0;
 }
