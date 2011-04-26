@@ -28,9 +28,6 @@ BEGIN {
 		$load_dyna->() if $@;
 	}
 }
-END {
-	_global_cleanup();
-}
 
 our @EXPORT_OK = grep /^(?:LIB)?CURL/, keys %{WWW::CurlOO::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );

@@ -10,7 +10,7 @@ use WWW::CurlOO::Multi;
 use WWW::CurlOO::Share;
 
 my %methods = (
-	WWW::CurlOO:: => [ qw(version version_info getdate _global_cleanup) ],
+	WWW::CurlOO:: => [ qw(version version_info getdate) ],
 	WWW::CurlOO::Easy:: => [ qw(new duphandle setopt pushopt perform
 		getinfo error strerror form multi reset share), ],
 	WWW::CurlOO::Form:: => [ qw(new add get strerror) ],
