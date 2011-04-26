@@ -48,6 +48,6 @@ $reftype = "";
 $curl = undef;
 
 pass( "did not die" );
-cmp_ok( $headercnt, '>', 1, "received more headers" );
+cmp_ok( $headercnt, '>', 0, "received more headers" );
 is( $reftype, 'WWW::CurlOO::Easy', 'callback received correct object type' );
 cmp_ok( $destroyed, '>', 0, 'object resources freed' );
