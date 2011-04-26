@@ -326,7 +326,8 @@ perl_curl_getptr_fatal( pTHX_ SV *self, MGVTBL *vtbl, const char *name,
 	 * existing reference from inside of a callback.
 	 */
 	perl_self = ret;
-	sv_2mortal( newRV_inc( *perl_self ) );
+	if ( perl_self && *perl_self )
+		sv_2mortal( newRV_inc( *perl_self ) );
 
 	return ret;
 }
