@@ -27,6 +27,7 @@ t/01-constants.t
 t/02-methods.t
 t/50-crash-lastref.t
 t/51-crash-destroy-with-callbacks.t
+t/52-alter-base.t
 t/97-pod.t
 t/98-pod-coverage.t
 t/99-symbols.t
