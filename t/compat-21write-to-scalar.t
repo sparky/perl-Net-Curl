@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::More 'no_plan';
 
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 
 my $ver_num_raw = WWW::Curl::Easy::version();

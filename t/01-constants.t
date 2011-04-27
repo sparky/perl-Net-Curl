@@ -3,13 +3,13 @@ use strict;
 use warnings;
 use Test::More;
 
-use WWW::CurlOO qw(:constants);
-use WWW::CurlOO::Easy qw(:constants);
-use WWW::CurlOO::Form qw(:constants);
-use WWW::CurlOO::Multi qw(:constants);
-use WWW::CurlOO::Share qw(:constants);
+use Net::Curl qw(:constants);
+use Net::Curl::Easy qw(:constants);
+use Net::Curl::Form qw(:constants);
+use Net::Curl::Multi qw(:constants);
+use Net::Curl::Share qw(:constants);
 
-WWW::CurlOO::version() =~ m#libcurl/([0-9\.]+)#;
+Net::Curl::version() =~ m#libcurl/([0-9\.]+)#;
 my $cver = eval "v$1";
 
 my @check;

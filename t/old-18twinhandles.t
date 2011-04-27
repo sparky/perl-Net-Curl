@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use Test::More tests => 12;
 
-BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
-use WWW::CurlOO::Easy qw(:constants);
+BEGIN { use_ok( 'Net::Curl::Easy' ); }
+use Net::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
@@ -21,13 +21,13 @@ sub body_callback {
 
 
 # Init the curl session
-my $curl1 = WWW::CurlOO::Easy->new();
+my $curl1 = Net::Curl::Easy->new();
 ok($curl1, 'Curl1 session initialize returns something');
-ok(ref($curl1) eq 'WWW::CurlOO::Easy', 'Curl1 session looks like an object from the WWW::CurlOO::Easy module');
+ok(ref($curl1) eq 'Net::Curl::Easy', 'Curl1 session looks like an object from the Net::Curl::Easy module');
 
-my $curl2 = WWW::CurlOO::Easy->new();
+my $curl2 = Net::Curl::Easy->new();
 ok($curl2, 'Curl2 session initialize returns something');
-ok(ref($curl2) eq 'WWW::CurlOO::Easy', 'Curl2 session looks like an object from the WWW::CurlOO::Easy module');
+ok(ref($curl2) eq 'Net::Curl::Easy', 'Curl2 session looks like an object from the Net::Curl::Easy module');
 
 for my $handle ($curl1,$curl2) {
 	$handle->setopt(CURLOPT_NOPROGRESS, 1);

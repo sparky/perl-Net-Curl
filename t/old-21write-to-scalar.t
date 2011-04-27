@@ -3,12 +3,12 @@ use strict;
 use warnings;
 use Test::More 'no_plan';
 
-use WWW::CurlOO::Easy qw(:constants);
+use Net::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 # Init the curl session
-my $curl = WWW::CurlOO::Easy->new();
+my $curl = Net::Curl::Easy->new();
 
 ok(! $curl->setopt(CURLOPT_NOPROGRESS, 1), "Setting CURLOPT_NOPROGRESS");
 ok(! $curl->setopt(CURLOPT_FOLLOWLOCATION, 1), "Setting CURLOPT_FOLLOWLOCATION");

@@ -1,13 +1,13 @@
-package WWW::CurlOO::Form;
+package Net::Curl::Form;
 use strict;
 use warnings;
 
-use WWW::CurlOO ();
+use Net::Curl ();
 use Exporter 'import';
 
-*VERSION = \*WWW::CurlOO::VERSION;
+*VERSION = \*Net::Curl::VERSION;
 
-our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Form::};
+our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Form::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 sub strerror
@@ -15,8 +15,8 @@ sub strerror
 	# first arg may be an object, package, or nothing
 	my $code = pop @_;
 
-	foreach my $c ( grep /^CURL_FORMADD_/, keys %{WWW::CurlOO::Form::} ) {
-		next unless WWW::CurlOO::Form->$c() == $code;
+	foreach my $c ( grep /^CURL_FORMADD_/, keys %{Net::Curl::Form::} ) {
+		next unless Net::Curl::Form->$c() == $code;
 		local $_ = $c;
 		s/^CURL_FORMADD_//;
 		tr/_/ /;
@@ -25,14 +25,14 @@ sub strerror
 	return "Invalid formadd error code";
 }
 
-package WWW::CurlOO::Form::Code;
+package Net::Curl::Form::Code;
 
 use overload
 	'0+' => sub {
 		return ${(shift)};
 	},
 	'""' => sub {
-		return WWW::CurlOO::Form::strerror( ${(shift)} );
+		return Net::Curl::Form::strerror( ${(shift)} );
 	},
 	fallback => 1;
 
@@ -42,13 +42,13 @@ __END__
 
 =head1 NAME
 
-WWW::CurlOO::Form - Form builder for WWW::CurlOO
+Net::Curl::Form - Form builder for Net::Curl
 
 =head1 SYNOPSIS
 
- use WWW::CurlOO::Form qw(:constants);
+ use Net::Curl::Form qw(:constants);
 
- my $form = WWW::CurlOO::Form->new();
+ my $form = Net::Curl::Form->new();
  $form->add(
      CURLFORM_COPYNAME() => $name,
      CURLFORM_COPYCONTENTS() => $data
@@ -68,11 +68,11 @@ WWW::CurlOO::Form - Form builder for WWW::CurlOO
 =head1 DESCRIPTION
 
 This module lets you build multipart/form-data HTTP POST. When finished it can
-be either supplied to WWW::CurlOO::Easy handle or serialized manually.
-WWW::CurlOO::Form does not export by default anything, but constants can be
+be either supplied to Net::Curl::Easy handle or serialized manually.
+Net::Curl::Form does not export by default anything, but constants can be
 exported upon request.
 
- use WWW::CurlOO::Form qw(:constants);
+ use Net::Curl::Form qw(:constants);
 
 =head2 CONSTRUCTOR
 
@@ -80,12 +80,12 @@ exported upon request.
 
 =item new( [BASE] )
 
-Creates new WWW::CurlOO::Form object. If BASE is specified it will be used
+Creates new Net::Curl::Form object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
- my $form = WWW::CurlOO::Form->new( [qw(my very private data)] );
+ my $form = Net::Curl::Form->new( [qw(my very private data)] );
 
 =back
 
@@ -100,7 +100,7 @@ Adds new section to form object. See L<curl_formadd(3)> for more info.
 Unlike in libcurl function, there is no need to add CURLFORM_END as the last
 argument.
 
-On error this method dies with L</WWW::CurlOO::Form::Code> error object.
+On error this method dies with L</Net::Curl::Form::Code> error object.
 
 Buffer and name options automatibally set their length values
 so there is no need to set length even if there is a NUL
@@ -146,7 +146,7 @@ an CURL_FORMADD_OPTION_TWICE exception will occur.
 =item get( [BUFFER / FH / USERDATA], [CALLBACK] )
 
 Use it to serialize the form object. Normally there is no need to use it
-because WWW::CurlOO::Easy will serialize it while uploading data.
+because Net::Curl::Easy will serialize it while uploading data.
 
 There are multiple ways to perform serialization:
 
@@ -214,8 +214,8 @@ None of those functions are exported, you must use fully qualified names.
 Return a string for error code CODE.
 String is extracted from error constant name.
 
- my $message = WWW::CurlOO::Form->strerror(
-     WWW::CurlOO::Form::CURL_FORMADD_OPTION_TWICE
+ my $message = Net::Curl::Form->strerror(
+     Net::Curl::Form::CURL_FORMADD_OPTION_TWICE
  );
 
 =back
@@ -240,16 +240,16 @@ If add() fails it will return one of those values.
 
 Callback for get() is described already in L</"use a callback"> subsection.
 
-=head2 WWW::CurlOO::Form::Code
+=head2 Net::Curl::Form::Code
 
-WWW::CurlOO::Form add() method on failure throws a WWW::CurlOO::Form::Code error
+Net::Curl::Form add() method on failure throws a Net::Curl::Form::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 
 =head1 SEE ALSO
 
-L<WWW::CurlOO>
-L<WWW::CurlOO::Easy>
+L<Net::Curl>
+L<Net::Curl::Easy>
 L<curl_formadd(3)>
 
 =head1 COPYRIGHT

@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More tests => 5;
-use WWW::CurlOO::Easy qw(:constants);
-use WWW::CurlOO::Multi qw(:constants);
+use Net::Curl::Easy qw(:constants);
+use Net::Curl::Multi qw(:constants);
 use Scalar::Util qw(weaken);
 
 
@@ -29,9 +29,9 @@ sub cb_write
 
 my $ref;
 
-my $curlm = new WWW::CurlOO::Multi;
+my $curlm = new Net::Curl::Multi;
 {
-	my $curl = WWW::CurlOO::Easy->new();
+	my $curl = Net::Curl::Easy->new();
 	$curl->setopt( CURLOPT_URL, $url );
 	$curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_write );
 	$curl->setopt( CURLOPT_WRITEHEADER, "head");

@@ -1,6 +1,6 @@
 =head1 Multi::Simple
 
-This module shows how to use WWW::CurlOO::Multi interface correctly in its
+This module shows how to use Net::Curl::Multi interface correctly in its
 simpliest form. Uses perl builtin select(). A more advanced code would use
 callbacks and some event library instead.
 
@@ -17,8 +17,8 @@ package Multi::Simple;
 
 use strict;
 use warnings;
-use WWW::CurlOO::Multi;
-use base qw(WWW::CurlOO::Multi);
+use Net::Curl::Multi;
+use base qw(Net::Curl::Multi);
 
 # make new object, preset the data
 sub new
@@ -88,7 +88,7 @@ package main;
 use strict;
 use warnings;
 #endnopod
-use WWW::CurlOO::Share qw(:constants);
+use Net::Curl::Share qw(:constants);
 
 
 sub easy
@@ -96,16 +96,16 @@ sub easy
 	my $uri = shift;
 	my $share = shift;
 
-	require WWW::CurlOO::Easy;
+	require Net::Curl::Easy;
 
-	my $easy = WWW::CurlOO::Easy->new( { uri => $uri, body => '' } );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_VERBOSE(), 1 );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL(), $uri );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_WRITEHEADER(),
+	my $easy = Net::Curl::Easy->new( { uri => $uri, body => '' } );
+	$easy->setopt( Net::Curl::Easy::CURLOPT_VERBOSE(), 1 );
+	$easy->setopt( Net::Curl::Easy::CURLOPT_URL(), $uri );
+	$easy->setopt( Net::Curl::Easy::CURLOPT_WRITEHEADER(),
 		\$easy->{headers} );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_FILE(),
+	$easy->setopt( Net::Curl::Easy::CURLOPT_FILE(),
 		\$easy->{body} );
-	$easy->setopt( WWW::CurlOO::Easy::CURLOPT_SHARE(), $share );
+	$easy->setopt( Net::Curl::Easy::CURLOPT_SHARE(), $share );
 	return $easy;
 }
 
@@ -119,7 +119,7 @@ my @uri = (
 
 {
 	# share cookies between all handles
-	my $share = WWW::CurlOO::Share->new();
+	my $share = Net::Curl::Share->new();
 	$share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 	$multi->add_handle( easy( shift ( @uri ), $share ) );
 }

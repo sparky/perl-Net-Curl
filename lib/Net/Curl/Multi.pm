@@ -1,23 +1,23 @@
-package WWW::CurlOO::Multi;
+package Net::Curl::Multi;
 use strict;
 use warnings;
 
-use WWW::CurlOO ();
+use Net::Curl ();
 use Exporter 'import';
 
-*VERSION = \*WWW::CurlOO::VERSION;
+*VERSION = \*Net::Curl::VERSION;
 
-our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Multi::};
+our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Multi::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
-package WWW::CurlOO::Multi::Code;
+package Net::Curl::Multi::Code;
 
 use overload
 	'0+' => sub {
 		return ${(shift)};
 	},
 	'""' => sub {
-		return WWW::CurlOO::Multi::strerror( ${(shift)} );
+		return Net::Curl::Multi::strerror( ${(shift)} );
 	},
 	fallback => 1;
 
@@ -27,13 +27,13 @@ __END__
 
 =head1 NAME
 
-WWW::CurlOO::Multi - Perl interface for curl_multi_* functions
+Net::Curl::Multi - Perl interface for curl_multi_* functions
 
 =head1 SYNOPSIS
 
- use WWW::CurlOO::Multi qw(:constants);
+ use Net::Curl::Multi qw(:constants);
 
- my $multi = WWW::CurlOO::Multi->new();
+ my $multi = Net::Curl::Multi->new();
  $multi->add_handle( $easy );
 
  my $running = 0;
@@ -57,7 +57,7 @@ This module wraps multi handle from libcurl and all related functions and
 constants. It does not export by default anything, but constants can be
 exported upon request.
 
- use WWW::CurlOO::Multi qw(:constants);
+ use Net::Curl::Multi qw(:constants);
 
 =head2 CONSTRUCTOR
 
@@ -65,12 +65,12 @@ exported upon request.
 
 =item new( [BASE] )
 
-Creates new WWW::CurlOO::Multi object. If BASE is specified it will be used
+Creates new Net::Curl::Multi object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
- my $multi = WWW::CurlOO::Multi->new( [qw(my very private data)] );
+ my $multi = Net::Curl::Multi->new( [qw(my very private data)] );
 
 Calls L<curl_multi_init(3)> and presets some defaults.
 
@@ -82,22 +82,22 @@ Calls L<curl_multi_init(3)> and presets some defaults.
 
 =item add_handle( EASY )
 
-Add WWW::CurlOO::Easy to this WWW::CurlOO::Multi object.
+Add Net::Curl::Easy to this Net::Curl::Multi object.
 
  $multi->add_handle( $easy );
 
 Calls L<curl_multi_add_handle(3)>.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item remove_handle( EASY )
 
-Remove WWW::CurlOO::Easy from this WWW::CurlOO::Multi object.
+Remove Net::Curl::Easy from this Net::Curl::Multi object.
 
  $multi->remove_handle( $easy );
 
 Calls L<curl_multi_remove_handle(3)>.
 Rethrows exceptions from callbacks.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item info_read( )
 
@@ -106,8 +106,8 @@ Read last message from this Multi.
  my ( $msg, $easy, $result ) = $multi->info_read();
 
 $msg contains one of CURLMSG_* values, currently only CURLMSG_DONE is returned.
-$easy is the L<WWW::CurlOO::Easy> object. Result is a
-L<WWW::CurlOO::Easy::Code> dualvar object.
+$easy is the L<Net::Curl::Easy> object. Result is a
+L<Net::Curl::Easy::Code> dualvar object.
 
 Calls L<curl_multi_info_read(3)>.
 
@@ -119,7 +119,7 @@ L<select()|perlfunc/select> and L<vec()|perlfunc/vec> perl builtins.
  my ( $rvec, $wvec, $evec ) = $multi->fdset();
 
 Calls L<curl_multi_fdset(3)>.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item timeout( )
 
@@ -128,7 +128,7 @@ Returns timeout value in miliseconds.
  my $timeout_ms = $multi->timeout();
 
 Calls L<curl_multi_timeout(3)>.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item setopt( OPTION, VALUE )
 
@@ -138,7 +138,7 @@ VALUE depends on whatever that option expects.
  $multi->setopt( CURLMOPT_MAXCONNECTS, 10 );
 
 Calls L<curl_multi_setopt(3)>.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item perform( )
 
@@ -149,7 +149,7 @@ or timeout has just reached zero.
 
 Calls L<curl_multi_perform(3)>.
 Rethrows exceptions from callbacks.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item socket_action( [SOCKET], [BITMASK] )
 
@@ -162,7 +162,7 @@ Signalize action on a socket.
 
 Calls L<curl_multi_socket_action(3)>.
 Rethrows exceptions from callbacks.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item assign( SOCKET, [VALUE] )
 
@@ -175,7 +175,7 @@ specified. The value is used only in socket callback.
  $multi->assign( $socket->fileno(), $socket );
 
 Calls L<curl_multi_assign(3)>.
-Throws L</WWW::CurlOO::Multi::Code> on error.
+Throws L</Net::Curl::Multi::Code> on error.
 
 =item handles( )
 
@@ -263,16 +263,16 @@ CURLMOPT_TIMERDATA value. Should return 0.
 
 =back
 
-=head2 WWW::CurlOO::Multi::Code
+=head2 Net::Curl::Multi::Code
 
-Most WWW::CurlOO::Multi methods on failure throw a WWW::CurlOO::Multi::Code error
+Most Net::Curl::Multi methods on failure throw a Net::Curl::Multi::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 
  eval {
      $multi->somemethod();
  };
- if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
+ if ( ref $@ eq "Net::Curl::Easy::Code" ) {
      if ( $@ == CURLM_SOME_ERROR_WE_EXPECTED ) {
          warn "Expected multi error, continuing\n";
      } else {
@@ -286,9 +286,9 @@ function to display a nice message.
 
 =head1 SEE ALSO
 
-L<WWW::CurlOO>
-L<WWW::CurlOO::Easy>
-L<WWW::CurlOO::examples>
+L<Net::Curl>
+L<Net::Curl::Easy>
+L<Net::Curl::examples>
 L<libcurl-multi(3)>
 L<libcurl-errors(3)>
 

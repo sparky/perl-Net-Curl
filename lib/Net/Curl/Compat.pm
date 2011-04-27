@@ -1,7 +1,7 @@
-package WWW::CurlOO::Compat;
+package Net::Curl::Compat;
 =head1 NAME
 
-WWW::CurlOO::Compat -- compatibility layer for WWW::Curl
+Net::Curl::Compat -- compatibility layer for WWW::Curl
 
 =head1 SYNOPSIS
 
@@ -11,29 +11,29 @@ WWW::CurlOO::Compat -- compatibility layer for WWW::Curl
   use strict;
   use warnings;
 
- +# support both WWW::CurlOO (default) and WWW::Curl
- +BEGIN { eval { require WWW::CurlOO::Compat; } }
+ +# support both Net::Curl (default) and WWW::Curl
+ +BEGIN { eval { require Net::Curl::Compat; } }
   use WWW::Curl::Easy 4.15;
   use WWW::Curl::Multi;
 
 =head1 DESCRIPTION
 
-WWW::CurlOO::Compat lets you use WWW::CurlOO in applications and modules
+Net::Curl::Compat lets you use Net::Curl in applications and modules
 that normally use WWW::Curl. There are several ways to accomplish it:
 
 =head2 EXECUTION
 
-Execute an application through perl with C<-MWWW::CurlOO::Compat> argument:
+Execute an application through perl with C<-MNet::Curl::Compat> argument:
 
- perl -MWWW::CurlOO::Compat APPLICATION [ARGUMENTS]
+ perl -MNet::Curl::Compat APPLICATION [ARGUMENTS]
 
-=head2 CODE, use WWW::CurlOO by default
+=head2 CODE, use Net::Curl by default
 
 Add this line before including any WWW::Curl modules:
 
- BEGIN { eval { require WWW::CurlOO::Compat; } }
+ BEGIN { eval { require Net::Curl::Compat; } }
 
-This will try to preload WWW::CurlOO, but won't fail if it isn't available.
+This will try to preload Net::Curl, but won't fail if it isn't available.
 
 =head2 CODE, use WWW::Curl by default
 
@@ -41,16 +41,16 @@ Add those lines before all the others that use WWW::Curl:
 
  BEGIN {
      eval { require WWW::Curl; }
-     require WWW::CurlOO::Compat if $@;
+     require Net::Curl::Compat if $@;
  }
 
-This will try WWW::Curl first, but will fallback to WWW::CurlOO if that fails.
+This will try WWW::Curl first, but will fallback to Net::Curl if that fails.
 
 =head1 NOTE
 
-If you want to write compatible code, DO NOT USE WWW::CurlOO::Compat during
+If you want to write compatible code, DO NOT USE Net::Curl::Compat during
 development. This module hides all the incompatibilities, but does not disable
-any of the features that are unique to WWW::CurlOO. You could end up using
+any of the features that are unique to Net::Curl. You could end up using
 methods that do not yet form part of official WWW::Curl distribution.
 
 =cut
@@ -67,7 +67,7 @@ my @packages = qw(
 );
 
 # mark fake packages as loaded
-@INC{ @packages } = ("WWW::CurlOO::Compat") x scalar @packages;
+@INC{ @packages } = ("Net::Curl::Compat") x scalar @packages;
 
 # copies constants to current namespace
 sub _copy_constants
@@ -87,11 +87,11 @@ sub _copy_constants
 
 
 
-use WWW::CurlOO ();
-use WWW::CurlOO::Easy qw(/^CURLOPT_/ CURLE_BAD_FUNCTION_ARGUMENT CURLINFO_PRIVATE);
-use WWW::CurlOO::Form qw(/^CURLFORM_/);
-use WWW::CurlOO::Share ();
-use WWW::CurlOO::Multi ();
+use Net::Curl ();
+use Net::Curl::Easy qw(/^CURLOPT_/ CURLE_BAD_FUNCTION_ARGUMENT CURLINFO_PRIVATE);
+use Net::Curl::Form qw(/^CURLFORM_/);
+use Net::Curl::Share ();
+use Net::Curl::Multi ();
 use Exporter ();
 
 # WWW::Curl
@@ -101,16 +101,16 @@ $WWW::Curl::VERSION = '4.15';
 
 # WWW::Curl::Easy
 
-@WWW::Curl::Easy::ISA = qw(WWW::CurlOO::Easy Exporter);
+@WWW::Curl::Easy::ISA = qw(Net::Curl::Easy Exporter);
 $WWW::Curl::Easy::VERSION = '4.15';
 
 BEGIN {
 	my $e = [];
 	# in WWW::Curl almost all the constants are thrown into WWW::Curl::Easy
-	foreach my $pkg ( qw(WWW::CurlOO:: WWW::CurlOO::Easy::
-			WWW::CurlOO::Form:: WWW::CurlOO::Share::
-			WWW::CurlOO::Multi::) ) {
-		WWW::CurlOO::Compat::_copy_constants(
+	foreach my $pkg ( qw(Net::Curl:: Net::Curl::Easy::
+			Net::Curl::Form:: Net::Curl::Share::
+			Net::Curl::Multi::) ) {
+		Net::Curl::Compat::_copy_constants(
 			$e, 'WWW::Curl::Easy::', $pkg );
 	}
 	@WWW::Curl::Easy::EXPORT = @$e;
@@ -123,14 +123,14 @@ $WWW::Curl::Easy::content = "";
 sub WWW::Curl::Easy::new
 {
 	my $class = shift || 'WWW::Curl::Easy';
-	return WWW::CurlOO::Easy::new( $class );
+	return Net::Curl::Easy::new( $class );
 }
 
 *WWW::Curl::Easy::init = \&WWW::Curl::Easy::new;
-*WWW::Curl::Easy::errbuf = \&WWW::CurlOO::Easy::error;
-*WWW::Curl::Easy::strerror = \&WWW::CurlOO::Easy::strerror;
+*WWW::Curl::Easy::errbuf = \&Net::Curl::Easy::error;
+*WWW::Curl::Easy::strerror = \&Net::Curl::Easy::strerror;
 
-*WWW::Curl::Easy::version = \&WWW::CurlOO::version;
+*WWW::Curl::Easy::version = \&Net::Curl::version;
 
 sub WWW::Curl::Easy::cleanup { 0 };
 
@@ -139,7 +139,7 @@ sub WWW::Curl::Easy::internal_setopt { die };
 sub WWW::Curl::Easy::duphandle
 {
 	my ( $source ) = @_;
-	my $clone = WWW::CurlOO::Easy::duphandle( $source );
+	my $clone = Net::Curl::Easy::duphandle( $source );
 	bless $clone, "WWW::Curl::Easy"
 }
 
@@ -215,10 +215,10 @@ sub WWW::Curl::Easy::setopt
 		};
 	}
 	eval {
-		WWW::CurlOO::Easy::setopt( $self, $option, $value );
+		Net::Curl::Easy::setopt( $self, $option, $value );
 	};
 	return 0 unless $@;
-	return 0+$@ if ref $@ eq "WWW::CurlOO::Easy::Code";
+	return 0+$@ if ref $@ eq "Net::Curl::Easy::Code";
 	die $@;
 }
 
@@ -226,10 +226,10 @@ sub WWW::Curl::Easy::pushopt
 {
 	my ($self, $option, $value) = @_;
 	eval {
-		WWW::CurlOO::Easy::pushopt( $self, $option, $value );
+		Net::Curl::Easy::pushopt( $self, $option, $value );
 	};
 	return 0 unless $@;
-	if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
+	if ( ref $@ eq "Net::Curl::Easy::Code" ) {
 		# WWW::Curl allows to use pushopt on non-slist arguments
 		if ( $@ == CURLE_BAD_FUNCTION_ARGUMENT ) {
 			return $self->setopt( $option, $value );
@@ -248,10 +248,10 @@ sub WWW::Curl::Easy::getinfo
 		$ret = $self->{private};
 	} else {
 		eval {
-			$ret = WWW::CurlOO::Easy::getinfo( $self, $option );
+			$ret = Net::Curl::Easy::getinfo( $self, $option );
 		};
 		if ( $@ ) {
-			return undef if ref $@ eq "WWW::CurlOO::Easy::Code";
+			return undef if ref $@ eq "Net::Curl::Easy::Code";
 			die $@;
 		}
 	}
@@ -265,7 +265,7 @@ sub WWW::Curl::Easy::perform
 {
 	my $self = shift;
 	eval {
-		WWW::CurlOO::Easy::perform( $self );
+		Net::Curl::Easy::perform( $self );
 	};
 	if ( defined $self->{errorbuffer} ) {
 		my $error = $self->error();
@@ -279,21 +279,21 @@ sub WWW::Curl::Easy::perform
 		*{ $self->{errorbuffer} } = \$error;
 	}
 	return 0 unless $@;
-	return 0+$@ if ref $@ eq "WWW::CurlOO::Easy::Code";
+	return 0+$@ if ref $@ eq "Net::Curl::Easy::Code";
 	die $@;
 }
 
 
 # WWW::Curl::Form
 
-@WWW::Curl::Form::ISA = qw(WWW::CurlOO::Form Exporter);
+@WWW::Curl::Form::ISA = qw(Net::Curl::Form Exporter);
 $WWW::Curl::Form::VERSION = '4.15';
 
 BEGIN {
 	@WWW::Curl::Form::EXPORT = ();
-	WWW::CurlOO::Compat::_copy_constants(
+	Net::Curl::Compat::_copy_constants(
 		\@WWW::Curl::Form::EXPORT, 'WWW::Curl::Form::',
-		"WWW::CurlOO::Form::" );
+		"Net::Curl::Form::" );
 }
 
 # this thing is weird !
@@ -313,7 +313,7 @@ sub WWW::Curl::Form::constant
 sub WWW::Curl::Form::new
 {
 	my $class = shift || 'WWW::Curl::Form';
-	return WWW::CurlOO::Form::new( $class );
+	return Net::Curl::Form::new( $class );
 }
 
 sub WWW::Curl::Form::formadd
@@ -342,21 +342,21 @@ sub WWW::Curl::Form::formaddfile
 
 # WWW::Curl::Multi
 
-@WWW::Curl::Multi::ISA = qw(WWW::CurlOO::Multi);
+@WWW::Curl::Multi::ISA = qw(Net::Curl::Multi);
 
-*WWW::Curl::Multi::strerror = \&WWW::CurlOO::Multi::strerror;
+*WWW::Curl::Multi::strerror = \&Net::Curl::Multi::strerror;
 
 sub WWW::Curl::Multi::new
 {
 	my $class = shift || 'WWW::Curl::Multi';
-	return WWW::CurlOO::Multi::new( $class );
+	return Net::Curl::Multi::new( $class );
 }
 
 sub WWW::Curl::Multi::add_handle
 {
 	my ( $multi, $easy ) = @_;
 	eval {
-		WWW::CurlOO::Multi::add_handle( $multi, $easy );
+		Net::Curl::Multi::add_handle( $multi, $easy );
 	};
 }
 
@@ -364,7 +364,7 @@ sub WWW::Curl::Multi::remove_handle
 {
 	my ( $multi, $easy ) = @_;
 	eval {
-		WWW::CurlOO::Multi::remove_handle( $multi, $easy );
+		Net::Curl::Multi::remove_handle( $multi, $easy );
 	};
 }
 
@@ -373,7 +373,7 @@ sub WWW::Curl::Multi::info_read
 	my ( $multi ) = @_;
 	my @ret;
 	eval {
-		@ret = WWW::CurlOO::Multi::info_read( $multi );
+		@ret = Net::Curl::Multi::info_read( $multi );
 	};
 	return () unless @ret;
 
@@ -388,7 +388,7 @@ sub WWW::Curl::Multi::fdset
 	my ( $multi ) = @_;
 	my @vec;
 	eval {
-		@vec = WWW::CurlOO::Multi::fdset( $multi );
+		@vec = Net::Curl::Multi::fdset( $multi );
 	};
 	my @out;
 	foreach my $in ( @vec ) {
@@ -409,7 +409,7 @@ sub WWW::Curl::Multi::perform
 
 	my $ret;
 	eval {
-		$ret = WWW::CurlOO::Multi::perform( $multi );
+		$ret = Net::Curl::Multi::perform( $multi );
 	};
 
 	return $ret;
@@ -417,21 +417,21 @@ sub WWW::Curl::Multi::perform
 
 # WWW::Curl::Share
 
-@WWW::Curl::Share::ISA = qw(WWW::CurlOO::Share Exporter);
+@WWW::Curl::Share::ISA = qw(Net::Curl::Share Exporter);
 
 BEGIN {
 	@WWW::Curl::Share::EXPORT = ();
-	WWW::CurlOO::Compat::_copy_constants(
+	Net::Curl::Compat::_copy_constants(
 		\@WWW::Curl::Share::EXPORT, 'WWW::Curl::Share::',
-		"WWW::CurlOO::Share::" );
+		"Net::Curl::Share::" );
 }
 
-*WWW::Curl::Share::strerror = \&WWW::CurlOO::Share::strerror;
+*WWW::Curl::Share::strerror = \&Net::Curl::Share::strerror;
 
 sub WWW::Curl::Share::new
 {
 	my $class = shift || 'WWW::Curl::Share';
-	return WWW::CurlOO::Share::new( $class );
+	return Net::Curl::Share::new( $class );
 }
 
 # this thing is weird !
@@ -452,10 +452,10 @@ sub WWW::Curl::Share::setopt
 {
 	my ($self, $option, $value) = @_;
 	eval {
-		WWW::CurlOO::Share::setopt( $self, $option, $value );
+		Net::Curl::Share::setopt( $self, $option, $value );
 	};
 	return 0 unless $@;
-	return 0+$@ if ref $@ eq "WWW::CurlOO::Form::Code";
+	return 0+$@ if ref $@ eq "Net::Curl::Form::Code";
 	die $@;
 }
 

@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More tests => 22;
-use WWW::CurlOO::Easy qw(:constants);
-use WWW::CurlOO::Multi qw(:constants);
+use Net::Curl::Easy qw(:constants);
+use Net::Curl::Multi qw(:constants);
 use File::Temp qw/tempfile/;
 
 my $header = tempfile();
@@ -49,19 +49,19 @@ sub action_wait {
 }
 
 
-    my $curl = new WWW::CurlOO::Easy;
+    my $curl = new Net::Curl::Easy;
     $curl->setopt( CURLOPT_URL, $url);
     ok(! $curl->setopt(CURLOPT_WRITEHEADER, $header), "Setting CURLOPT_WRITEHEADER");
     ok(! $curl->setopt(CURLOPT_WRITEDATA,$body), "Setting CURLOPT_WRITEDATA");
     ok( $curl->{private} = "foo" , "Setting private data");
 
-    my $curl2 = new WWW::CurlOO::Easy;
+    my $curl2 = new Net::Curl::Easy;
     $curl2->setopt( CURLOPT_URL, $url);
     ok(! $curl2->setopt(CURLOPT_WRITEHEADER, $header2), "Setting CURLOPT_WRITEHEADER");
     ok(! $curl2->setopt(CURLOPT_WRITEDATA,$body2), "Setting CURLOPT_WRITEDATA");
     ok( $curl2->{private} = 42, "Setting private data");
 
-    my $curlm = new WWW::CurlOO::Multi;
+    my $curlm = new Net::Curl::Multi;
     my @fds = $curlm->fdset;
     print_fdset( @fds );
     ok( @fds == 3 && ref($fds[0]) eq '' && ref($fds[1]) eq '' && ref($fds[2]) eq '', "fdset returns 3 vectors");

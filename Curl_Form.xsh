@@ -108,14 +108,14 @@ static MGVTBL perl_curl_form_vtbl = {
 
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Form
+MODULE = Net::Curl	PACKAGE = Net::Curl::Form
 
 INCLUDE: const-form-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
+new( sclass="Net::Curl::Form", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -138,7 +138,7 @@ new( sclass="WWW::CurlOO::Form", base=HASHREF_BY_DEFAULT )
 
 void
 add( form, ... )
-	WWW::CurlOO::Form form
+	Net::Curl::Form form
 	PROTOTYPE: $%
 	PREINIT:
 		struct curl_forms *farray;
@@ -251,7 +251,7 @@ add( form, ... )
 
 void
 get( form, ... )
-	WWW::CurlOO::Form form
+	Net::Curl::Form form
 	PROTOTYPE: $;$&
 	PREINIT:
 		SV *output;

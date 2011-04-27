@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Test::More tests => 20;
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 use WWW::Curl::Multi;
 use File::Temp qw/tempfile/;

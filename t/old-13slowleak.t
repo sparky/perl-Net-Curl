@@ -5,8 +5,8 @@ use warnings;
 #use Test::More tests => 214;
 use Test::More skip_all => "Not performing slow leakage regression test";
 
-BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
-use WWW::CurlOO::Easy qw(:constants);
+BEGIN { use_ok( 'Net::Curl::Easy' ); }
+use Net::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
@@ -15,16 +15,16 @@ my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 foreach my $j (1..200) {
 
 # Init the curl session
-my $curl = WWW::CurlOO::Easy->new() or die "cannot curl";
+my $curl = Net::Curl::Easy->new() or die "cannot curl";
 
 $curl->setopt(CURLOPT_NOPROGRESS, 1);
 $curl->setopt(CURLOPT_FOLLOWLOCATION, 1);
 $curl->setopt(CURLOPT_TIMEOUT, 30);
 
 open (HEAD, "+>",undef);
-WWW::CurlOO::Easy::setopt($curl, CURLOPT_WRITEHEADER, \*HEAD);
+Net::Curl::Easy::setopt($curl, CURLOPT_WRITEHEADER, \*HEAD);
 open (BODY, "+>", undef);
-WWW::CurlOO::Easy::setopt($curl, CURLOPT_FILE, \*BODY);
+Net::Curl::Easy::setopt($curl, CURLOPT_FILE, \*BODY);
 
 $curl->setopt(CURLOPT_URL, $url);
                                                                         

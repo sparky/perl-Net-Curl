@@ -10,13 +10,13 @@ unless ( $ENV{'TEST_AUTHOR'} ) {
 
 my $cver = v7.15.4;
 my @files = qw(
-CurlOO.xs
-CurlOO_Easy.xsh
-CurlOO_Easy_setopt.c
-CurlOO_Easy_callbacks.c
-CurlOO_Form.xsh
-CurlOO_Multi.xsh
-CurlOO_Share.xsh
+Curl.xs
+Curl_Easy.xsh
+Curl_Easy_setopt.c
+Curl_Easy_callbacks.c
+Curl_Form.xsh
+Curl_Multi.xsh
+Curl_Share.xsh
 );
 
 # extract constants which were introduced after $cver

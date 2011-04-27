@@ -2,11 +2,11 @@
 use strict;
 use warnings;
 use Test::More tests => 4;
-use WWW::CurlOO;
+use Net::Curl;
 
 diag "libcurl\n";
-diag "version():\n\t" . WWW::CurlOO::version() . "\n";
-my $vi = WWW::CurlOO::version_info();
+diag "version():\n\t" . Net::Curl::version() . "\n";
+my $vi = Net::Curl::version_info();
 
 diag "version_info():\n";
 foreach my $key ( sort keys %$vi ) {
@@ -30,10 +30,10 @@ sub print_features
 	my $features = shift;
 	my @found = ('');
 	my @missing = ('');
-	foreach my $f ( sort { WWW::CurlOO->$a() <=> WWW::CurlOO->$b() }
-			grep /^CURL_VERSION_/, keys %{WWW::CurlOO::} )
+	foreach my $f ( sort { Net::Curl->$a() <=> Net::Curl->$b() }
+			grep /^CURL_VERSION_/, keys %{Net::Curl::} )
 	{
-		my $val = WWW::CurlOO->$f();
+		my $val = Net::Curl->$f();
 		my $bit = log ( $val ) / log 2;
 		if ( $features & $val ) {
 			push @found, "$f (1<<$bit)"
@@ -58,7 +58,7 @@ my @buildtime = qw(
 	LIBCURL_TIMESTAMP
 );
 foreach my $key ( @buildtime ) {
-	my $value = WWW::CurlOO->$key();
+	my $value = Net::Curl->$key();
 	if ( $value =~ m/^\d+$/ ) {
 		$value = sprintf "0x%06x", $value
 			if $value > 255;
@@ -70,15 +70,15 @@ foreach my $key ( @buildtime ) {
 }
 
 # older than this are not supported
-cmp_ok( $vi->{age}, '>=', WWW::CurlOO::CURLVERSION_THIRD,
-	"{age} >= WWW::CurlOO::CURLVERSION_THIRD" );
+cmp_ok( $vi->{age}, '>=', Net::Curl::CURLVERSION_THIRD,
+	"{age} >= Net::Curl::CURLVERSION_THIRD" );
 
 # has same version as the one we compiled with
-cmp_ok( $vi->{age}, '==', WWW::CurlOO::CURLVERSION_NOW,
-	"{age} == WWW::CurlOO::CURLVERSION_NOW" );
+cmp_ok( $vi->{age}, '==', Net::Curl::CURLVERSION_NOW,
+	"{age} == Net::Curl::CURLVERSION_NOW" );
 
-is( $vi->{version}, WWW::CurlOO::LIBCURL_VERSION,
-	"{version} eq WWW::CurlOO::LIBCURL_VERSION" );
+is( $vi->{version}, Net::Curl::LIBCURL_VERSION,
+	"{version} eq Net::Curl::LIBCURL_VERSION" );
 
-cmp_ok( $vi->{version_num}, '==', WWW::CurlOO::LIBCURL_VERSION_NUM,
-	"{version_num} == WWW::CurlOO::LIBCURL_VERSION_NUM" );
+cmp_ok( $vi->{version_num}, '==', Net::Curl::LIBCURL_VERSION_NUM,
+	"{version_num} == Net::Curl::LIBCURL_VERSION_NUM" );

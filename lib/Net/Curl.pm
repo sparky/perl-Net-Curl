@@ -1,4 +1,4 @@
-package WWW::CurlOO;
+package Net::Curl;
 
 use strict;
 use Exporter 'import';
@@ -29,7 +29,7 @@ BEGIN {
 	}
 }
 
-our @EXPORT_OK = grep /^(?:LIB)?CURL/, keys %{WWW::CurlOO::};
+our @EXPORT_OK = grep /^(?:LIB)?CURL/, keys %{Net::Curl::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 1;
@@ -38,18 +38,18 @@ __END__
 
 =head1 NAME
 
-WWW::CurlOO - Perl interface for libcurl
+Net::Curl - Perl interface for libcurl
 
 =head1 SYNOPSIS
 
- use WWW::CurlOO;
- print $WWW::CurlOO::VERSION;
+ use Net::Curl;
+ print $Net::Curl::VERSION;
 
- print WWW::CurlOO::version();
+ print Net::Curl::version();
 
 =head1 DOCUMENTATION
 
-WWW::CurlOO provides a Perl interface to libcurl created with object-oriented
+Net::Curl provides a Perl interface to libcurl created with object-oriented
 implementations in mind. This documentation contains Perl-specific details
 and quirks. For more information consult libcurl man pages and documentation
 at L<http://curl.haxx.se>.
@@ -60,9 +60,9 @@ This package contains some static functions and version-releated constants.
 It does not export by default anything, but constants can be exported upon
 request.
 
- use WWW::CurlOO qw(:constants);
+ use Net::Curl qw(:constants);
 
-To perform any request you want L<WWW::CurlOO::Easy>.
+To perform any request you want L<Net::Curl::Easy>.
 
 =head2 FUNCTIONS
 
@@ -74,7 +74,7 @@ None of those functions are exported, you must use fully qualified names.
 
 Returns libcurl version string.
 
- my $libcurl_verstr = WWW::CurlOO::version();
+ my $libcurl_verstr = Net::Curl::version();
  # prints something like:
  # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 ...
  print $libcurl_verstr;
@@ -85,7 +85,7 @@ Calls L<curl_version(3)> function.
 
 Returns a hashref with the same information as L<curl_version_info(3)>.
 
- my $libcurl_ver = WWW::CurlOO::version_info();
+ my $libcurl_ver = Net::Curl::version_info();
  print Dumper( $libcurl_ver );
 
 Example for version_info with age CURLVERSION_FOURTH:
@@ -110,8 +110,8 @@ Example for version_info with age CURLVERSION_FOURTH:
 
 You can import constants if you want to check libcurl features:
 
- use WWW::CurlOO qw(:constants);
- my $vi = WWW::CurlOO::version_info();
+ use Net::Curl qw(:constants);
+ my $vi = Net::Curl::version_info();
  unless ( $vi->{features} & CURL_VERSION_SSL ) {
      die "SSL support is required\n";
  }
@@ -120,7 +120,7 @@ You can import constants if you want to check libcurl features:
 
 Decodes date string returning its numerical value, in seconds.
 
- my $time = WWW::CurlOO::getdate( "GMT 08:49:37 06-Nov-94 Sunday" );
+ my $time = Net::Curl::getdate( "GMT 08:49:37 06-Nov-94 Sunday" );
  my $timestr = gmtime $time;
  print "$timestr\n";
  # Sun Nov  6 08:49:37 1994
@@ -139,7 +139,7 @@ Can be used for decoding version_info() values. L<curl_version_info(3)>
 
 =item LIBCURL_*
 
-Can be used for determining buildtime libcurl version. Some WWW::CurlOO
+Can be used for determining buildtime libcurl version. Some Net::Curl
 features will not be available if it was built with older libcurl, even if
 runtime libcurl version has necessary features.
 
@@ -174,8 +174,8 @@ pick one of these licenses.
 
 =head1 SEE ALSO
 
-L<WWW::CurlOO::Easy>
-L<WWW::CurlOO::Compat>
-L<WWW::CurlOO::examples>
+L<Net::Curl::Easy>
+L<Net::Curl::Compat>
+L<Net::Curl::examples>
 L<http://curl.haxx.se>
 L<libcurl(3)>

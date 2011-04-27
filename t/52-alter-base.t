@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Test::More tests => 6;
-use WWW::CurlOO::Easy qw(:constants);
+use Net::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl/";
 
@@ -17,15 +17,15 @@ my $reftype;
 my $out = "";
 
 my $base = {};
-my $curl = WWW::CurlOO::Easy->new( $base );
+my $curl = Net::Curl::Easy->new( $base );
 
-is( ref $curl, 'WWW::CurlOO::Easy', 'correct object' );
-is( ref $base, 'WWW::CurlOO::Easy', 'correct object' );
+is( ref $curl, 'Net::Curl::Easy', 'correct object' );
+is( ref $base, 'Net::Curl::Easy', 'correct object' );
 
 # alter base
 $base = "foo";
 
-is( ref $curl, 'WWW::CurlOO::Easy', 'correct object' );
+is( ref $curl, 'Net::Curl::Easy', 'correct object' );
 is( ref $base, '', 'base has no object' );
 
 { $curl->{guard} = bless \my $foo, __PACKAGE__; }
@@ -44,4 +44,4 @@ sub cb_header {
 }
 
 pass( "did not die" );
-is( $reftype, 'WWW::CurlOO::Easy', 'callback received correct object type' );
+is( $reftype, 'Net::Curl::Easy', 'callback received correct object type' );

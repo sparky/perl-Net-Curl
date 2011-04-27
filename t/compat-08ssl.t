@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Test::More;
 use File::Temp qw/tempfile/;
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 
 unless ( $ENV{'TEST_EXTENDED'} ) {

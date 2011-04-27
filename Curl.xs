@@ -53,7 +53,7 @@
 #define die_code( pkg, num )			\
 	STMT_START {						\
 		SV *errsv = sv_newmortal();		\
-		sv_setref_iv( errsv, "WWW::CurlOO::" pkg "::Code", num ); \
+		sv_setref_iv( errsv, "Net::Curl::" pkg "::Code", num ); \
 		croak_sv( errsv );				\
 	} STMT_END
 
@@ -288,7 +288,7 @@ perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
 static int
 perl_curl_any_magic_nodup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 {
-	warn( "WWW::CurlOO::(Easy|Form|Multi) does not support cloning\n" );
+	warn( "Net::Curl::(Easy|Form|Multi) does not support cloning\n" );
 	mg->mg_ptr = NULL;
 	return 1;
 }
@@ -368,7 +368,7 @@ perl_curl_constant_add( pTHX_ HV *hash, const char *name, I32 namelen,
 #if PERL_REVISION == 5 && PERL_VERSION >= 9
 	SV **sv = hv_fetch( hash, name, namelen, TRUE );
 	if ( !sv )
-		croak( "Could not add key '%s' to %%WWW::CurlOO::", name );
+		croak( "Could not add key '%s' to %%Net::Curl::", name );
 
 	if ( SvOK( *sv ) || SvTYPE( *sv ) == SVt_PVGV ) {
 		newCONSTSUB( hash, name, value );
@@ -400,21 +400,21 @@ struct pv_s {
 	{ #c, sizeof( #c ) - 1, c, sizeof( c ) - 1 }
 
 
-typedef perl_curl_easy_t *WWW__CurlOO__Easy;
-typedef perl_curl_form_t *WWW__CurlOO__Form;
-typedef perl_curl_multi_t *WWW__CurlOO__Multi;
-typedef perl_curl_share_t *WWW__CurlOO__Share;
+typedef perl_curl_easy_t *Net__Curl__Easy;
+typedef perl_curl_form_t *Net__Curl__Form;
+typedef perl_curl_multi_t *Net__Curl__Multi;
+typedef perl_curl_share_t *Net__Curl__Share;
 
 /* default base object */
 #define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *) newHV() ) )
 
-#include "curloo-Easy-c.inc"
-#include "curloo-Form-c.inc"
-#include "curloo-Multi-c.inc"
-#include "curloo-Share-c.inc"
-#include "CurlOO_Easy_setopt.c"
+#include "curl-Easy-c.inc"
+#include "curl-Form-c.inc"
+#include "curl-Multi-c.inc"
+#include "curl-Share-c.inc"
+#include "Curl_Easy_setopt.c"
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO
+MODULE = Net::Curl	PACKAGE = Net::Curl
 
 BOOT:
 	{
@@ -428,7 +428,7 @@ BOOT:
 	}
 	{
 		dTHX;
-		HV *symbol_table = get_hv( "WWW::CurlOO::", GV_ADD );
+		HV *symbol_table = get_hv( "Net::Curl::", GV_ADD );
 		static const struct iv_s values_for_iv[] = {
 			IV_CONST( LIBCURL_VERSION_MAJOR ),
 			IV_CONST( LIBCURL_VERSION_MINOR ),
@@ -541,7 +541,7 @@ version_info()
 		RETVAL
 
 
-INCLUDE: curloo-Easy-xs.inc
-INCLUDE: curloo-Form-xs.inc
-INCLUDE: curloo-Multi-xs.inc
-INCLUDE: curloo-Share-xs.inc
+INCLUDE: curl-Easy-xs.inc
+INCLUDE: curl-Form-xs.inc
+INCLUDE: curl-Multi-xs.inc
+INCLUDE: curl-Share-xs.inc

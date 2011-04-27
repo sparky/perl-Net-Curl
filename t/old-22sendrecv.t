@@ -2,11 +2,11 @@
 use strict;
 use warnings;
 use Test::More;
-use WWW::CurlOO::Easy qw(:constants);
+use Net::Curl::Easy qw(:constants);
 
-my $vi = WWW::CurlOO::version_info();
-if ( WWW::CurlOO::LIBCURL_VERSION_NUM() < 0x071202 ) {
-	my $ver = WWW::CurlOO::LIBCURL_VERSION();
+my $vi = Net::Curl::version_info();
+if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x071202 ) {
+	my $ver = Net::Curl::LIBCURL_VERSION();
 	plan skip_all => "curl $ver does not support send and recv";
 }
 plan tests => 7;
@@ -19,7 +19,7 @@ my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 # make sure nothing blocks
 alarm 5;
 
-my $c = WWW::CurlOO::Easy->new();
+my $c = Net::Curl::Easy->new();
 $c->setopt( CURLOPT_URL, $url );
 $c->setopt( CURLOPT_CONNECT_ONLY, 1 );
 

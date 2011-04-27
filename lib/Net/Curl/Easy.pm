@@ -1,23 +1,23 @@
-package WWW::CurlOO::Easy;
+package Net::Curl::Easy;
 use strict;
 use warnings;
 
-use WWW::CurlOO ();
+use Net::Curl ();
 use Exporter 'import';
 
-*VERSION = \*WWW::CurlOO::VERSION;
+*VERSION = \*Net::Curl::VERSION;
 
-our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Easy::};
+our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Easy::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
-package WWW::CurlOO::Easy::Code;
+package Net::Curl::Easy::Code;
 
 use overload
 	'0+' => sub {
 		return ${(shift)};
 	},
 	'""' => sub {
-		return WWW::CurlOO::Easy::strerror( ${(shift)} );
+		return Net::Curl::Easy::strerror( ${(shift)} );
 	},
 	fallback => 1;
 
@@ -27,15 +27,15 @@ __END__
 
 =head1 NAME
 
-WWW::CurlOO::Easy - Perl interface for curl_easy_* functions
+Net::Curl::Easy - Perl interface for curl_easy_* functions
 
 =head1 SYNOPSIS
 
 Direct use.
 
- use WWW::CurlOO::Easy qw(:constants);
+ use Net::Curl::Easy qw(:constants);
 
- my $easy = WWW::CurlOO::Easy->new();
+ my $easy = Net::Curl::Easy->new();
  $easy->setopt( CURLOPT_URL, "http://example.com/" );
 
  $easy->perform();
@@ -43,8 +43,8 @@ Direct use.
 Build your own browser.
 
  package MyBrowser;
- use WWW::CurlOO::Easy qw(/^CURLOPT_/ /^CURLINFO_/);
- use base qw(WWW::CurlOO::Easy);
+ use Net::Curl::Easy qw(/^CURLOPT_/ /^CURLINFO_/);
+ use base qw(Net::Curl::Easy);
 
  sub new
  {
@@ -75,7 +75,7 @@ This module wraps easy handle from libcurl and all related functions and
 constants. It does not export by default anything, but constants can be
 exported upon request.
 
- use WWW::CurlOO::Easy qw(:constants);
+ use Net::Curl::Easy qw(:constants);
 
 =head2 CONSTRUCTOR
 
@@ -83,12 +83,12 @@ exported upon request.
 
 =item new( [BASE] )
 
-Creates new WWW::CurlOO::Easy object. If BASE is specified it will be used
+Creates new Net::Curl::Easy object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
- my $easy = WWW::CurlOO::Easy->new( [qw(my very private data)] );
+ my $easy = Net::Curl::Easy->new( [qw(my very private data)] );
 
 Calls L<curl_easy_init(3)> and presets some defaults.
 
@@ -100,7 +100,7 @@ Calls L<curl_easy_init(3)> and presets some defaults.
 
 =item duphandle( [BASE] )
 
-Clone WWW::CurlOO::Easy object. It will not copy BASE from the source object.
+Clone Net::Curl::Easy object. It will not copy BASE from the source object.
 If you want it copied you must do it on your own.
 
  my $hash_clone = $easy->duphandle( { %$easy } );
@@ -115,20 +115,20 @@ Calls L<curl_easy_duphandle(3)>.
 Set an option. OPTION is a numeric value, use one of CURLOPT_* constants.
 VALUE depends on whatever that option expects.
 
- $easy->setopt( WWW::CurlOO::Easy::CURLOPT_URL, $uri );
+ $easy->setopt( Net::Curl::Easy::CURLOPT_URL, $uri );
 
-Calls L<curl_easy_setopt(3)>. Throws L</WWW::CurlOO::Easy::Code> on error.
+Calls L<curl_easy_setopt(3)>. Throws L</Net::Curl::Easy::Code> on error.
 
 =item pushopt( OPTION, ARRAYREF )
 
 If option expects a slist, specified array will be appended instead of
 replacing the old slist.
 
- $easy->pushopt( WWW::CurlOO::Easy::CURLOPT_HTTPHEADER,
+ $easy->pushopt( Net::Curl::Easy::CURLOPT_HTTPHEADER,
      ['More: headers'] );
 
 Builds a slist and calls L<curl_easy_setopt(3)>.
-Throws L</WWW::CurlOO::Easy::Code> on error.
+Throws L</Net::Curl::Easy::Code> on error.
 
 =item reset( )
 
@@ -145,7 +145,7 @@ Perform upload and download process.
  $easy->perform();
 
 Calls L<curl_easy_perform(3)>. Rethrows exceptions from callbacks.
-Throws L</WWW::CurlOO::Easy::Code> on other errors.
+Throws L</Net::Curl::Easy::Code> on other errors.
 
 =item getinfo( OPTION )
 
@@ -154,14 +154,14 @@ Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
  my $socket = $self->getinfo( CURLINFO_LASTSOCKET );
 
 Calls L<curl_easy_getinfo(3)>.
-Throws L</WWW::CurlOO::Easy::Code> on error.
+Throws L</Net::Curl::Easy::Code> on error.
 
 =item pause( )
 
 Pause the transfer.
 
 Calls L<curl_easy_pause(3)>. Not available in curl before 7.18.0.
-Throws L</WWW::CurlOO::Easy::Code> on error.
+Throws L</Net::Curl::Easy::Code> on error.
 
 =item send( BUFFER )
 
@@ -170,7 +170,7 @@ Send raw data.
  $easy->send( $data );
 
 Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
-Throws L</WWW::CurlOO::Easy::Code> on error.
+Throws L</Net::Curl::Easy::Code> on error.
 
 =item recv( BUFFER, MAXLENGTH )
 
@@ -180,7 +180,7 @@ concatenated to BUFFER.
  $easy->recv( $buffer, $len );
 
 Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
-Throws L</WWW::CurlOO::Easy::Code> on error.
+Throws L</Net::Curl::Easy::Code> on error.
 
 =item error( )
 
@@ -231,8 +231,8 @@ None of those functions are exported, you must use fully qualified names.
 
 Return a string for error code CODE.
 
- my $message = WWW::CurlOO::Easy::strerror(
-     WWW::CurlOO::Easy::CURLE_OK
+ my $message = Net::Curl::Easy::strerror(
+     Net::Curl::Easy::CURLE_OK
  );
 
 Calls L<curl_easy_strerror(3)>.
@@ -241,8 +241,8 @@ Calls L<curl_easy_strerror(3)>.
 
 =head2 CONSTANTS
 
-WWW::CurlOO::Easy contains all the constants that do not form part of any
-other WWW::CurlOO modules. List below describes only the ones that behave
+Net::Curl::Easy contains all the constants that do not form part of any
+other Net::Curl modules. List below describes only the ones that behave
 differently than their C counterparts.
 
 =over
@@ -361,7 +361,7 @@ decode "addr" field.
      return $socket;
  }
 
-Currently WWW::CurlOO does not honour any changes made to $address, this
+Currently Net::Curl does not honour any changes made to $address, this
 may be fixed some day.
 
 =item CURLOPT_PROGRESSFUNCTION ( CURLOPT_PROGRESSDATA )
@@ -448,16 +448,16 @@ CURLOPT_FNMATCH_DATA value. Must return one of CURL_FNMATCHFUNC_* values.
 
 =back
 
-=head2 WWW::CurlOO::Easy::Code
+=head2 Net::Curl::Easy::Code
 
-Most WWW::CurlOO::Easy methods on failure throw a WWW::CurlOO::Easy::Code error
+Most Net::Curl::Easy methods on failure throw a Net::Curl::Easy::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 
  eval {
      $easy->somemethod();
  };
- if ( ref $@ eq "WWW::CurlOO::Easy::Code" ) {
+ if ( ref $@ eq "Net::Curl::Easy::Code" ) {
      if ( $@ == CURLE_SOME_ERROR_WE_EXPECTED ) {
          warn "Expected error, continuing\n";
      } else {
@@ -470,9 +470,9 @@ function to display a nice message.
 
 =head1 SEE ALSO
 
-L<WWW::CurlOO>
-L<WWW::CurlOO::Multi>
-L<WWW::CurlOO::examples>
+L<Net::Curl>
+L<Net::Curl::Multi>
+L<Net::Curl::examples>
 L<libcurl-easy(3)>
 L<libcurl-errors(3)>
 

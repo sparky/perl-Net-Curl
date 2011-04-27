@@ -21,13 +21,13 @@ Make sure module is loaded before any script that may use it.
 
 use strict;
 use Irssi ();
-use WWW::CurlOO::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
-use base qw(WWW::CurlOO::Multi);
+use Net::Curl::Multi qw(/^CURL_POLL_/ /^CURL_CSELECT_/);
+use base qw(Net::Curl::Multi);
 
 BEGIN {
-	if ( not WWW::CurlOO::Multi->can( 'CURLMOPT_TIMERFUNCTION' ) ) {
-		die "WWW::CurlOO::Multi is missing timer callback,\n" .
-			"rebuild WWW::CurlOO with libcurl 7.16.0 or newer\n";
+	if ( not Net::Curl::Multi->can( 'CURLMOPT_TIMERFUNCTION' ) ) {
+		die "Net::Curl::Multi is missing timer callback,\n" .
+			"rebuild Net::Curl with libcurl 7.16.0 or newer\n";
 	}
 }
 
@@ -37,9 +37,9 @@ sub new
 
 	my $multi = $class->SUPER::new();
 
-	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_SOCKETFUNCTION,
+	$multi->setopt( Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION,
 		\&_cb_socket );
-	$multi->setopt( WWW::CurlOO::Multi::CURLMOPT_TIMERFUNCTION,
+	$multi->setopt( Net::Curl::Multi::CURLMOPT_TIMERFUNCTION,
 		\&_cb_timer );
 
 	$multi->{active} = -1;
@@ -93,7 +93,7 @@ sub _cb_timer
 
 	my $cb = sub {
 		$multi->socket_action(
-			WWW::CurlOO::Multi::CURL_SOCKET_TIMEOUT
+			Net::Curl::Multi::CURL_SOCKET_TIMEOUT
 		);
 	};
 
@@ -141,7 +141,7 @@ sub socket_action
 	$multi->{active} = $active;
 
 	while ( my ( $msg, $easy, $result ) = $multi->info_read() ) {
-		if ( $msg == WWW::CurlOO::Multi::CURLMSG_DONE ) {
+		if ( $msg == Net::Curl::Multi::CURLMSG_DONE ) {
 			$multi->remove_handle( $easy );
 			$easy->finish( $result );
 		} else {
@@ -155,7 +155,7 @@ sub socket_action
 my $multi;
 
 # put the add() function in some package we know
-sub WWW::CurlOO::Multi::add($)
+sub Net::Curl::Multi::add($)
 {
 	unless ( $multi ) {
 		$multi = __PACKAGE__->new();
@@ -164,15 +164,15 @@ sub WWW::CurlOO::Multi::add($)
 }
 
 
-package Irssi::CurlOO::Easy;
+package Irssi::Curl::Easy;
 use strict;
 use warnings;
-use WWW::CurlOO;
-use WWW::CurlOO::Easy qw(/^CURLOPT_/);
-use base qw(WWW::CurlOO::Easy);
+use Net::Curl;
+use Net::Curl::Easy qw(/^CURLOPT_/);
+use base qw(Net::Curl::Easy);
 
-my $has_zlib = ( WWW::CurlOO::version_info()->{features}
-	& WWW::CurlOO::CURL_VERSION_LIBZ ) != 0;
+my $has_zlib = ( Net::Curl::version_info()->{features}
+	& Net::Curl::CURL_VERSION_LIBZ ) != 0;
 
 sub new
 {
@@ -193,7 +193,7 @@ sub new
 	$easy->setopt( CURLOPT_ENCODING, 'gzip,deflate' ) if $has_zlib;
 	$easy->setopt( CURLOPT_SSL_VERIFYPEER, 0 );
 	$easy->setopt( CURLOPT_COOKIEFILE, '' );
-	$easy->setopt( CURLOPT_USERAGENT, 'Irssi + WWW::CurlOO' );
+	$easy->setopt( CURLOPT_USERAGENT, 'Irssi + Net::Curl' );
 
 	return $easy;
 }
@@ -202,7 +202,7 @@ sub finish
 {
 	my ( $easy, $result ) = @_;
 	$easy->{referer} = $easy->getinfo(
-		WWW::CurlOO::Easy::CURLINFO_EFFECTIVE_URL
+		Net::Curl::Easy::CURLINFO_EFFECTIVE_URL
 	);
 
 	my $cb = $easy->{cb};
@@ -220,7 +220,7 @@ sub _common_add
 	$easy->{cb} = $cb;
 	$easy->{body} = '';
 	$easy->{headers} = '';
-	WWW::CurlOO::Multi::add( $easy );
+	Net::Curl::Multi::add( $easy );
 }
 
 # get some uri

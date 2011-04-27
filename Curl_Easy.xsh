@@ -73,7 +73,7 @@ struct perl_curl_easy_s {
 	SV *form_sv;
 };
 
-#include "CurlOO_Easy_callbacks.c"
+#include "Curl_Easy_callbacks.c"
 
 static long
 perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV *value,
@@ -210,14 +210,14 @@ perl_curl_easy_preset( perl_curl_easy_t *easy )
 	} STMT_END
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Easy
+MODULE = Net::Curl	PACKAGE = Net::Curl::Easy
 
 INCLUDE: const-easy-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
+new( sclass="Net::Curl::Easy", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -241,7 +241,7 @@ new( sclass="WWW::CurlOO::Easy", base=HASHREF_BY_DEFAULT )
 
 void
 duphandle( easy, base=HASHREF_BY_DEFAULT )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	SV *base
 	PREINIT:
 		perl_curl_easy_t *clone;
@@ -349,7 +349,7 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 
 void
 reset( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	CODE:
 		perl_curl_easy_delete_mostly( aTHX_ easy );
 		perl_curl_easy_preset( easy );
@@ -357,7 +357,7 @@ reset( easy )
 
 void
 setopt( easy, option, value )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	int option
 	SV *value
 	PREINIT:
@@ -379,7 +379,7 @@ setopt( easy, option, value )
 
 void
 perform( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	PREINIT:
 		CURLcode ret;
 	CODE:
@@ -395,7 +395,7 @@ perform( easy )
 
 SV *
 getinfo( easy, option )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	int option
 	CODE:
 		switch ( option & CURLINFO_TYPEMASK ) {
@@ -459,7 +459,7 @@ getinfo( easy, option )
 
 void
 pause( easy, bitmask )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	int bitmask
 	CODE:
 		CURLcode ret;
@@ -472,7 +472,7 @@ pause( easy, bitmask )
 
 size_t
 send( easy, buffer )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	SV *buffer
 	CODE:
 		CURLcode ret;
@@ -494,7 +494,7 @@ send( easy, buffer )
 
 size_t
 recv( easy, buffer, length )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	SV *buffer
 	size_t length
 	CODE:
@@ -508,7 +508,7 @@ recv( easy, buffer, length )
 		if ( !SvPOK( buffer ) ) {
 			SvPV_nolen( buffer );
 			if ( !SvPOK( buffer ) )
-				croak( "internal WWW::CurlOO error" );
+				croak( "internal Net::Curl error" );
 		}
 
 		Sv_Grow( buffer, SvCUR( buffer ) + length + 1 );
@@ -534,7 +534,7 @@ strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
-			croak( "Usage: WWW::CurlOO::Easy::strerror( [easy], errnum )" );
+			croak( "Usage: Net::Curl::Easy::strerror( [easy], errnum )" );
 		errstr = curl_easy_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
@@ -546,7 +546,7 @@ strerror( ... )
 
 void
 pushopt( easy, option, value )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	int option
 	SV *value
 	PREINIT:
@@ -560,7 +560,7 @@ pushopt( easy, option, value )
 
 char *
 error( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	CODE:
 		RETVAL = easy->errbuf;
 	OUTPUT:
@@ -569,7 +569,7 @@ error( easy )
 
 SV *
 multi( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	CODE:
 		RETVAL = easy->multi ? SELF2PERL( easy->multi ) : &PL_sv_undef;
 	OUTPUT:
@@ -578,7 +578,7 @@ multi( easy )
 
 SV *
 share( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	CODE:
 		RETVAL = easy->share_sv ? newSVsv( easy->share_sv ) : &PL_sv_undef;
 	OUTPUT:
@@ -587,7 +587,7 @@ share( easy )
 
 SV *
 form( easy )
-	WWW::CurlOO::Easy easy
+	Net::Curl::Easy easy
 	CODE:
 		RETVAL = easy->form_sv ? newSVsv( easy->form_sv ) : &PL_sv_undef;
 	OUTPUT:

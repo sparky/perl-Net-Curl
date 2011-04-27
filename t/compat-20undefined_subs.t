@@ -2,7 +2,7 @@
 use strict;
 use Test::More tests => 4;
 
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 use WWW::Curl::Share;
 use WWW::Curl::Multi;

@@ -14,7 +14,7 @@ favor and show how bad threads really are.
 
 =item *
 
-WWW::CurlOO::Share is the only package that allows sharing between threads.
+Net::Curl::Share is the only package that allows sharing between threads.
 Others (Easy, Multi, Form) are usable only in their creating thread.
 
 =item *
@@ -24,7 +24,7 @@ base object as shared if you want to use the data elsewhere.
 
 =item *
 
-Shared WWW::CurlOO::Share does not support lock and unlock callbacks.
+Shared Net::Curl::Share does not support lock and unlock callbacks.
 However, locking is done internally, so no worries about corruption.
 
 =item *
@@ -53,8 +53,8 @@ package Share::Threads;
 use threads;
 use threads::shared;
 use Thread::Semaphore;
-use WWW::CurlOO::Share qw(:constants);
-use base qw(WWW::CurlOO::Share);
+use Net::Curl::Share qw(:constants);
+use base qw(Net::Curl::Share);
 
 
 sub new
@@ -71,7 +71,7 @@ sub new
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 	$self->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS );
 
-	# WWW::CurlOO::Share locks each datum automatically, this will
+	# Net::Curl::Share locks each datum automatically, this will
 	# prevent memory corruption.
 	#
 	# we use semaphore to lock share completely
@@ -114,8 +114,8 @@ name resolution and until headers are completely received.
 package Easy::Threads;
 use strict;
 use warnings;
-use WWW::CurlOO::Easy qw(/^CURLOPT_.*/);
-use base qw(WWW::CurlOO::Easy);
+use Net::Curl::Easy qw(/^CURLOPT_.*/);
+use base qw(Net::Curl::Easy);
 
 sub new
 {

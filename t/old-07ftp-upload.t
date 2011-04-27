@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use Test::More skip_all => "Not performing ftp upload tests";
 
-BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
-use WWW::CurlOO::Easy qw(:constants);
+BEGIN { use_ok( 'Net::Curl::Easy' ); }
+use Net::Curl::Easy qw(:constants);
 
 my $count=1;
 
@@ -20,7 +20,7 @@ if (!$url) {
 print "1..8\n"; 
 
 # Init the curl session
-my $curl = WWW::CurlOO::Easy->new();
+my $curl = Net::Curl::Easy->new();
 if ($curl == 0) {
     print "not ";
 }

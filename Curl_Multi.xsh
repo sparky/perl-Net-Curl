@@ -157,14 +157,14 @@ static MGVTBL perl_curl_multi_vtbl = {
 	} STMT_END
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Multi
+MODULE = Net::Curl	PACKAGE = Net::Curl::Multi
 
 INCLUDE: const-multi-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
+new( sclass="Net::Curl::Multi", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -192,8 +192,8 @@ new( sclass="WWW::CurlOO::Multi", base=HASHREF_BY_DEFAULT )
 
 void
 add_handle( multi, easy )
-	WWW::CurlOO::Multi multi
-	WWW::CurlOO::Easy easy
+	Net::Curl::Multi multi
+	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
@@ -213,8 +213,8 @@ add_handle( multi, easy )
 
 void
 remove_handle( multi, easy )
-	WWW::CurlOO::Multi multi
-	WWW::CurlOO::Easy easy
+	Net::Curl::Multi multi
+	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
@@ -229,7 +229,7 @@ remove_handle( multi, easy )
 			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
 				PTR2nat( easy ) );
 			if ( !easysv )
-				croak( "internal WWW::CurlOO error" );
+				croak( "internal Net::Curl error" );
 			sv_2mortal( easysv );
 		}
 		easy->multi = NULL;
@@ -243,7 +243,7 @@ remove_handle( multi, easy )
 
 void
 info_read( multi )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	PREINIT:
 		int queue;
 		CURLMsg *msg;
@@ -252,7 +252,7 @@ info_read( multi )
 		while ( (msg = curl_multi_info_read( multi->handle, &queue ) ) ) {
 			/* most likely CURLMSG_DONE */
 			if ( msg->msg != CURLMSG_NONE && msg->msg != CURLMSG_LAST ) {
-				WWW__CurlOO__Easy easy;
+				Net__Curl__Easy easy;
 				SV *errsv;
 
 				curl_easy_getinfo( msg->easy_handle,
@@ -263,7 +263,7 @@ info_read( multi )
 				mPUSHs( SELF2PERL( easy ) );
 
 				errsv = sv_newmortal();
-				sv_setref_iv( errsv, "WWW::CurlOO::Easy::Code",
+				sv_setref_iv( errsv, "Net::Curl::Easy::Code",
 					msg->data.result );
 				PUSHs( errsv );
 
@@ -287,7 +287,7 @@ info_read( multi )
 
 void
 fdset( multi )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	PREINIT:
 		CURLMcode ret;
 		fd_set fdread, fdwrite, fdexcep;
@@ -334,7 +334,7 @@ fdset( multi )
 
 long
 timeout( multi )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	PREINIT:
 		long timeout;
 		CURLMcode ret;
@@ -348,7 +348,7 @@ timeout( multi )
 
 void
 setopt( multi, option, value )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	int option
 	SV *value
 	PREINIT:
@@ -396,7 +396,7 @@ setopt( multi, option, value )
 
 int
 perform( multi )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	PREINIT:
 		int remaining;
 		CURLMcode ret;
@@ -419,7 +419,7 @@ perform( multi )
 
 int
 socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	int sockfd
 	int ev_bitmask
 	PREINIT:
@@ -447,7 +447,7 @@ socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 
 void
 assign( multi, sockfd, value=NULL )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	unsigned long sockfd
 	SV *value
 	PREINIT:
@@ -459,7 +459,7 @@ assign( multi, sockfd, value=NULL )
 			valueptr = perl_curl_simplell_add( aTHX_ &multi->socket_data,
 				sockfd );
 			if ( !valueptr )
-				croak( "internal WWW::CurlOO error" );
+				croak( "internal Net::Curl error" );
 			if ( *valueptr )
 				sv_2mortal( *valueptr );
 			sockptr = *valueptr = newSVsv( value );
@@ -483,7 +483,7 @@ strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
-			croak( "Usage: WWW::CurlOO::Multi::strerror( [multi], errnum )" );
+			croak( "Usage: Net::Curl::Multi::strerror( [multi], errnum )" );
 		errstr = curl_multi_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:
@@ -495,7 +495,7 @@ strerror( ... )
 
 void
 handles( multi )
-	WWW::CurlOO::Multi multi
+	Net::Curl::Multi multi
 	PREINIT:
 			simplell_t *now;
 	PPCODE:

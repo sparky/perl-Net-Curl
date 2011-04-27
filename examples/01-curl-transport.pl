@@ -6,12 +6,12 @@ This module shows:
 
 =item buildtime version check
 
-Required features will be missing if libcurl was too old at WWW::CurlOO
+Required features will be missing if libcurl was too old at Net::Curl
 compilation.
 
 =item basic inheritance
 
-Use WWW::Curl::* as base for your modules.
+Use Net::Curl::* as base for your modules.
 
 =item exception handling
 
@@ -33,18 +33,18 @@ package Curl::Transport;
 
 use strict;
 use warnings;
-use WWW::CurlOO::Easy qw(/^CURLE_/);
-use base qw(WWW::CurlOO::Easy);
+use Net::Curl::Easy qw(/^CURLE_/);
+use base qw(Net::Curl::Easy);
 
 BEGIN {
-	if ( WWW::CurlOO::LIBCURL_VERSION_NUM() < 0x071202 ) {
-		my $ver = WWW::CurlOO::LIBCURL_VERSION();
+	if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x071202 ) {
+		my $ver = Net::Curl::LIBCURL_VERSION();
 		die "curl $ver does not support send() and recv()";
 	}
 	# alternatively you can write:
-	if ( not WWW::CurlOO::Easy->can( "send" )
-			or not WWW::CurlOO::Easy->can( "recv" ) ) {
-		die "WWW::CurlOO is missing send() and recv()\n"
+	if ( not Net::Curl::Easy->can( "send" )
+			or not Net::Curl::Easy->can( "recv" ) ) {
+		die "Net::Curl is missing send() and recv()\n"
 	}
 }
 
@@ -67,14 +67,14 @@ sub new
 
 	my $self = $class->SUPER::new( $base );
 
-	$self->setopt( WWW::CurlOO::Easy::CURLOPT_URL, $uri );
-	$self->setopt( WWW::CurlOO::Easy::CURLOPT_CONNECT_ONLY, 1 );
+	$self->setopt( Net::Curl::Easy::CURLOPT_URL, $uri );
+	$self->setopt( Net::Curl::Easy::CURLOPT_CONNECT_ONLY, 1 );
 
 	# will die if fails
 	$self->perform();
 
 	$self->[ B_SOCKET ] = $self->getinfo(
-		WWW::CurlOO::Easy::CURLINFO_LASTSOCKET
+		Net::Curl::Easy::CURLINFO_LASTSOCKET
 	);
 
 	# prepare select vector

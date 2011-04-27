@@ -5,15 +5,15 @@ use warnings;
 use Test::More tests => 8;
 use File::Temp qw/tempfile/;
 
-BEGIN { use_ok( 'WWW::CurlOO::Easy' ); }
-use WWW::CurlOO::Easy qw(:constants);
+BEGIN { use_ok( 'Net::Curl::Easy' ); }
+use Net::Curl::Easy qw(:constants);
 
 my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
 
 # Init the curl session
-my $curl = WWW::CurlOO::Easy->new();
+my $curl = Net::Curl::Easy->new();
 ok($curl, 'Curl session initialize returns something');
-ok(ref($curl) eq 'WWW::CurlOO::Easy', 'Curl session looks like an object from the WWW::CurlOO::Easy module');
+ok(ref($curl) eq 'Net::Curl::Easy', 'Curl session looks like an object from the Net::Curl::Easy module');
 
 $curl->setopt(CURLOPT_NOPROGRESS, 1);
 $curl->setopt(CURLOPT_FOLLOWLOCATION, 1);

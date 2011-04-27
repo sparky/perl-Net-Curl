@@ -1,23 +1,23 @@
-package WWW::CurlOO::Share;
+package Net::Curl::Share;
 use strict;
 use warnings;
 
-use WWW::CurlOO ();
+use Net::Curl ();
 use Exporter 'import';
 
-*VERSION = \*WWW::CurlOO::VERSION;
+*VERSION = \*Net::Curl::VERSION;
 
-our @EXPORT_OK = grep /^CURL/, keys %{WWW::CurlOO::Share::};
+our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Share::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
-package WWW::CurlOO::Share::Code;
+package Net::Curl::Share::Code;
 
 use overload
 	'0+' => sub {
 		return ${(shift)};
 	},
 	'""' => sub {
-		return WWW::CurlOO::Share::strerror( ${(shift)} );
+		return Net::Curl::Share::strerror( ${(shift)} );
 	},
 	fallback => 1;
 
@@ -27,13 +27,13 @@ __END__
 
 =head1 NAME
 
-WWW::CurlOO::Share - Perl interface for curl_share_* functions
+Net::Curl::Share - Perl interface for curl_share_* functions
 
 =head1 SYNOPSIS
 
- use WWW::CurlOO::Share qw(:constants);
+ use Net::Curl::Share qw(:constants);
 
- my $share = WWW::CurlOO::Share->new();
+ my $share = Net::Curl::Share->new();
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS );
 
@@ -47,7 +47,7 @@ This module wraps share handle from libcurl and all related functions and
 constants. It does not export by default anything, but constants can be
 exported upon request.
 
- use WWW::CurlOO::Share qw(:constants);
+ use Net::Curl::Share qw(:constants);
 
 =head2 CONSTRUCTOR
 
@@ -55,12 +55,12 @@ exported upon request.
 
 =item new( [BASE] )
 
-Creates new WWW::CurlOO::Share object. If BASE is specified it will be used
+Creates new Net::Curl::Share object. If BASE is specified it will be used
 as object base, otherwise an empty hash will be used. BASE must be a valid
 reference which has not been blessed already. It will not be used by the
 object.
 
- my $share = WWW::CurlOO::Share->new( [qw(my very private data)] );
+ my $share = Net::Curl::Share->new( [qw(my very private data)] );
 
 Calls L<curl_share_init(3)>.
 
@@ -78,7 +78,7 @@ VALUE depends on whatever that option expects.
  $share->setopt( CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE );
 
 Calls L<curl_share_setopt(3)>.
-Throws L</WWW::CurlOO::Share::Code> on error.
+Throws L</Net::Curl::Share::Code> on error.
 
 =back
 
@@ -92,7 +92,7 @@ None of those functions are exported, you must use fully qualified names.
 
 Return a string for error code CODE.
 
- my $message = WWW::CurlOO::Share::strerror( CURLSHE_BAD_OPTION );
+ my $message = Net::Curl::Share::strerror( CURLSHE_BAD_OPTION );
 
 See L<curl_share_strerror(3)> for more info.
 
@@ -136,18 +136,18 @@ Not supported. (Un)Locking is done internally.
 
 =back
 
-=head2 WWW::CurlOO::Share::Code
+=head2 Net::Curl::Share::Code
 
-WWW::CurlOO::Share setopt method on failure throws a WWW::CurlOO::Share::Code error
+Net::Curl::Share setopt method on failure throws a Net::Curl::Share::Code error
 object. It has both numeric value and, when used as string, it calls strerror()
 function to display a nice message.
 
 =head1 SEE ALSO
 
-L<WWW::CurlOO>
-L<WWW::CurlOO::Easy>
-L<WWW::CurlOO::Multi>
-L<WWW::CurlOO::examples>
+L<Net::Curl>
+L<Net::Curl::Easy>
+L<Net::Curl::Multi>
+L<Net::Curl::examples>
 L<libcurl-share(3)>
 L<libcurl-errors(3)>
 

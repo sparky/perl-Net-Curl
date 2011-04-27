@@ -105,18 +105,18 @@ split_xs( "Form" );
 split_xs( "Multi" );
 split_xs( "Share" );
 
-write_examples_pod( 'lib/WWW/CurlOO/examples.pod' );
+write_examples_pod( 'lib/Net/Curl/examples.pod' );
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
 my $l_ = $] >= 5.010 ? "ł" : "l";
 WriteMakefile(
-	NAME 		=> 'WWW::CurlOO',
-	VERSION_FROM	=> 'lib/WWW/CurlOO.pm',
-	ABSTRACT_FROM	=> 'lib/WWW/CurlOO.pm',
+	NAME 		=> 'Net::Curl',
+	VERSION_FROM	=> 'lib/Net/Curl.pm',
+	ABSTRACT_FROM	=> 'lib/Net/Curl.pm',
 	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
 	META_MERGE	=> {
 		resources => {
-			repository => 'https://github.com/sparky/perl-WWW-CurlOO'
+			repository => 'https://github.com/sparky/perl-Net-Curl'
 		},
 	},
 	CCFLAGS		=> $devel_cflags . $curl{cflags},
@@ -138,13 +138,13 @@ WriteMakefile(
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
-		'$(FIRST_MAKEFILE)' => join ( " ", qw(CurlOO_Easy.xsh CurlOO_Form.xsh
-			CurlOO_Multi.xsh CurlOO_Share.xsh CurlOO_Easy_setopt.c
-			CurlOO_Easy_callbacks.c inc/symbols-in-versions),
+		'$(FIRST_MAKEFILE)' => join ( " ", qw(Curl_Easy.xsh Curl_Form.xsh
+			Curl_Multi.xsh Curl_Share.xsh Curl_Easy_setopt.c
+			Curl_Easy_callbacks.c inc/symbols-in-versions),
 			glob "examples/*.pl" ),
 	},
 	clean		=> {
-		FILES => 'const-*.inc curloo-*.inc lib/WWW/CurlOO/examples.pod'
+		FILES => 'const-*.inc curl-*.inc lib/Net/Curl/examples.pod'
 	},
 	DIR			=> [], # no other Makefile.PL
 );
@@ -287,17 +287,17 @@ sub divide_constants
 sub split_xs
 {
 	my $name = shift;
-	my $in = "CurlOO_$name.xsh";
+	my $in = "Curl_$name.xsh";
 
 	open my $fin, '<', $in
 		or die "Can't open $in: $!\n";
 
-	my $outc = "curloo-$name-c.inc";
+	my $outc = "curl-$name-c.inc";
 	open my $foutc, '>', $outc
 		or die "Can't create $outc: $!\n";
 	print "Writing $outc\n";
 
-	my $outxs = "curloo-$name-xs.inc";
+	my $outxs = "curl-$name-xs.inc";
 	open my $foutxs, '>', $outxs
 		or die "Can't create $outxs: $!\n";
 	print "Writing $outxs\n";
@@ -327,7 +327,7 @@ sub write_constants
 		or die "Can't create $out: $!\n";
 
 	$name .= '::' if $name;
-	my $symbol_table = "WWW::CurlOO::$name";
+	my $symbol_table = "Net::Curl::$name";
 	print $foutxs <<"EOBOOT";
 BOOT:
 	{
@@ -376,7 +376,7 @@ sub write_examples_pod
 	print "Writing $out\n";
 	open my $o, ">", $out;
 	print $o "=head1 NAME\n\n";
-	print $o "WWW::CurlOO::examples - sample modules and test code for WWW::CurlOO\n\n";
+	print $o "Net::Curl::examples - sample modules and test code for Net::Curl\n\n";
 
 	foreach my $script ( sort glob "examples/*.pl" ) {
 		my $nopod = 0;
@@ -439,7 +439,7 @@ sub all_target {
 	return <<'MAKE_EXT';
 all :: pure_all manifypods
 	$(NOECHO) echo "Module loads OK ?"
-	$(PERLRUNINST) -le 'use WWW::CurlOO; print WWW::CurlOO::LIBCURL_VERSION'
+	$(PERLRUNINST) -le 'use Net::Curl; print Net::Curl::LIBCURL_VERSION'
 	$(NOECHO) $(NOOP)
 MAKE_EXT
 

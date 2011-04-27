@@ -91,7 +91,7 @@ perl_curl_share_magic_dup( pTHX_ MAGIC *mg, CLONE_PARAMS *param )
 	share->threads++;
 	MUTEX_UNLOCK( &share->mutex_threads );
 #else
-	warn( "WWW::CurlOO::Share does supports cloning only under ithreads\n" );
+	warn( "Net::Curl::Share does supports cloning only under ithreads\n" );
 	mg->mg_ptr = NULL;
 #endif
 	return 0;
@@ -147,14 +147,14 @@ static MGVTBL perl_curl_share_vtbl = {
 };
 
 
-MODULE = WWW::CurlOO	PACKAGE = WWW::CurlOO::Share
+MODULE = Net::Curl	PACKAGE = Net::Curl::Share
 
 INCLUDE: const-share-xs.inc
 
 PROTOTYPES: ENABLE
 
 void
-new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
+new( sclass="Net::Curl::Share", base=HASHREF_BY_DEFAULT )
 	const char *sclass
 	SV *base
 	PREINIT:
@@ -177,7 +177,7 @@ new( sclass="WWW::CurlOO::Share", base=HASHREF_BY_DEFAULT )
 
 void
 setopt( share, option, value )
-	WWW::CurlOO::Share share
+	Net::Curl::Share share
 	int option
 	SV * value
 	PREINIT:
@@ -209,7 +209,7 @@ strerror( ... )
 		const char *errstr;
 	CODE:
 		if ( items < 1 || items > 2 )
-			croak( "Usage: WWW::CurlOO::Share::strerror( [share], errnum )" );
+			croak( "Usage: Net::Curl::Share::strerror( [share], errnum )" );
 		errstr = curl_share_strerror( SvIV( ST( items - 1 ) ) );
 		RETVAL = newSVpv( errstr, 0 );
 	OUTPUT:

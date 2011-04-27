@@ -7,7 +7,7 @@ use lib 'blib/lib';
 use lib 'blib/arch';
 use Test::More tests => 25;
 use File::Temp qw/tempfile/;
-use WWW::CurlOO::Compat;
+use Net::Curl::Compat;
 use WWW::Curl::Easy;
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";

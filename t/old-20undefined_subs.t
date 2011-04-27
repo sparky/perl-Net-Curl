@@ -2,19 +2,19 @@
 use strict;
 use Test::More tests => 4;
 
-use WWW::CurlOO::Easy;
-use WWW::CurlOO::Share;
-use WWW::CurlOO::Multi;
-use WWW::CurlOO::Form;
+use Net::Curl::Easy;
+use Net::Curl::Share;
+use Net::Curl::Multi;
+use Net::Curl::Form;
 
-eval { WWW::CurlOO::Easy->no_such_method0 };
+eval { Net::Curl::Easy->no_such_method0 };
 like $@, qr/\b no_such_method0 \b/xms;
 
-eval { WWW::CurlOO::Share->no_such_method1 };
+eval { Net::Curl::Share->no_such_method1 };
 like $@, qr/\b no_such_method1 \b/xms;
 
-eval { WWW::CurlOO::Multi->no_such_method2 };
+eval { Net::Curl::Multi->no_such_method2 };
 like $@, qr/\b no_such_method2 \b/xms;
 
-eval { WWW::CurlOO::Form->no_such_method3 };
+eval { Net::Curl::Form->no_such_method3 };
 like $@, qr/\b no_such_method3 \b/xms;

@@ -3,9 +3,9 @@ use strict;
 use warnings;
 use Test::More tests => 11;
 
-use WWW::CurlOO::Form qw(:constants);
+use Net::Curl::Form qw(:constants);
 
-my $form = WWW::CurlOO::Form->new();
+my $form = Net::Curl::Form->new();
 
 eval {
 	$form->add(

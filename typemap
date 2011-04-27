@@ -5,7 +5,7 @@ T_PTROBJ_CURL
 		\"$var\", \"$ntype\" );
 
 TYPEMAP
-WWW::CurlOO::Easy T_PTROBJ_CURL
-WWW::CurlOO::Form T_PTROBJ_CURL
-WWW::CurlOO::Multi T_PTROBJ_CURL
-WWW::CurlOO::Share T_PTROBJ_CURL
+Net::Curl::Easy T_PTROBJ_CURL
+Net::Curl::Form T_PTROBJ_CURL
+Net::Curl::Multi T_PTROBJ_CURL
+Net::Curl::Share T_PTROBJ_CURL
