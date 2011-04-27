@@ -80,9 +80,7 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV 
 		int clear )
 /*{{{*/ {
 	int si = 0;
-	AV *array;
-	int array_len;
-	struct curl_slist **pslist, *slist;
+	struct curl_slist **pslist;
 
 	for ( si = 0; si < perl_curl_easy_option_slist_num; si++ ) {
 		if ( perl_curl_easy_option_slist[ si ] == option )
@@ -92,24 +90,19 @@ perl_curl_easy_setoptslist( pTHX_ perl_curl_easy_t *easy, CURLoption option, SV 
 
 found:
 
-	/* This is an option specifying a list, which we put in a curl_slist struct */
-	array = (AV *) SvRV( value );
-	array_len = av_len( array );
-
 	/* We have to find out which list to use... */
 	pslist = perl_curl_simplell_add( aTHX_ &easy->slists, option );
-	slist = *pslist;
 
-	if ( slist && clear ) {
-		curl_slist_free_all( slist );
-		slist = NULL;
+	if ( *pslist && clear ) {
+		curl_slist_free_all( *pslist );
+		*pslist = NULL;
 	}
 
 	/* copy perl values into this slist */
-	*pslist = slist = perl_curl_array2slist( aTHX_ slist, value );
+	*pslist = perl_curl_array2slist( aTHX_ *pslist, value );
 
 	/* pass the list into curl_easy_setopt() */
-	return curl_easy_setopt( easy->handle, option, slist );
+	return curl_easy_setopt( easy->handle, option, *pslist );
 } /*}}}*/
 
 static perl_curl_easy_t *
