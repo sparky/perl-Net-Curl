@@ -66,14 +66,7 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 	if ( multi->handle )
 		curl_multi_cleanup( multi->handle );
 
-	if ( multi->socket_data ) {
-		simplell_t *next, *now = multi->socket_data;
-		do {
-			next = now->next;
-			sv_2mortal( (SV *) now->value );
-			Safefree( now );
-		} while ( ( now = next ) != NULL );
-	}
+	SIMPLELL_FREE( multi->socket_data, sv_2mortal );
 
 	for( i = 0; i < CB_MULTI_LAST; i++ ) {
 		sv_2mortal( multi->cb[i].func );

@@ -140,23 +140,8 @@ perl_curl_easy_delete_mostly( pTHX_ perl_curl_easy_t *easy )
 		sv_2mortal( easy->cb[i].data );
 	}
 
-	if ( easy->strings ) {
-		simplell_t *next, *now = easy->strings;
-		do {
-			next = now->next;
-			Safefree( now->value );
-			Safefree( now );
-		} while ( ( now = next ) != NULL );
-	}
-
-	if ( easy->slists ) {
-		simplell_t *next, *now = easy->slists;
-		do {
-			next = now->next;
-			curl_slist_free_all( now->value );
-			Safefree( now );
-		} while ( ( now = next ) != NULL );
-	}
+	SIMPLELL_FREE( easy->strings, Safefree );
+	SIMPLELL_FREE( easy->slists, curl_slist_free_all );
 
 	if ( easy->form_sv )
 		sv_2mortal( easy->form_sv );
