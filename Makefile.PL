@@ -419,8 +419,14 @@ sub write_examples_pod
 sub MY::postamble
 {
 	return <<'EOM';
-.PHONY: update_symbols
-update_symbols:
+.PHONY: testall disttestall symbols_update
+testall:
+	TEST_AUTHOR=1 TEST_EXTENDED=1 $(MAKE) test
+
+disttestall:
+	TEST_AUTHOR=1 TEST_EXTENDED=1 $(MAKE) disttest
+
+symbols_update:
 	curl https://github.com/bagder/curl/raw/master/docs/libcurl/symbols-in-versions -o inc/symbols-in-versions
 EOM
 }
