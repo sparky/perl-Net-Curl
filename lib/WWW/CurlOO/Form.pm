@@ -97,20 +97,15 @@ object.
 
 Adds new section to form object. See L<curl_formadd(3)> for more info.
 
-Working options include: CURLFORM_COPYNAME, CURLFORM_NAMELENGTH,
-CURLFORM_COPYCONTENTS, CURLFORM_CONTENTSLENGTH, CURLFORM_FILECONTENT,
-CURLFORM_FILE, CURLFORM_CONTENTTYPE, CURLFORM_FILENAME.
-
 Unlike in libcurl function, there is no need to add CURLFORM_END as the last
 argument.
 
 On error this method dies with L</WWW::CurlOO::Form::Code> error object.
 
-Options CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS automatibally set
-appropriate their length values (CURLFORM_NAMELENGTH and CURLFORM_CONTENTSLENGTH
-respectively) so there is no need to set length even if there is a NUL
+Buffer and name options automatibally set their length values
+so there is no need to set length even if there is a NUL
 character in the data. If you want to shorten the buffer CURLFORM_*LENGTH
-options must be set inmediatelly after their CURLFORM_COPY* options, otherwise
+options must be set inmediatelly after their buffer option, otherwise
 an CURL_FORMADD_OPTION_TWICE exception will occur.
 
  $form->add(
@@ -118,9 +113,9 @@ an CURL_FORMADD_OPTION_TWICE exception will occur.
      CURLFORM_COPYCONTENTS() => "content\0binary"
  );
  $form->add(
-     CURLFORM_COPYNAME() => "name",
+     CURLFORM_PTRNAME() => "name",
      CURLFORM_NAMELENGTH() => 2,
-     CURLFORM_COPYCONTENTS() => "content",
+     CURLFORM_PTRCONTENTS() => "content",
      CURLFORM_CONTENTSLENGTH() => 4,
  );
  $form->add(
@@ -231,7 +226,9 @@ String is extracted from error constant name.
 
 =item CURLFORM_*
 
-Most of those constants can be used in add() method.
+Most of those constants can be used in add() method. Currently CURLFORM_STREAM
+and CURLFORM_ARRAY are not supported. Others will behave in the way described
+in L<curl_formadd(3)>.
 
 =item CURL_FORMADD_*
 
@@ -253,6 +250,7 @@ function to display a nice message.
 
 L<WWW::CurlOO>
 L<WWW::CurlOO::Easy>
+L<curl_formadd(3)>
 
 =head1 COPYRIGHT
 
