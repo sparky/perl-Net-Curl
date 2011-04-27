@@ -204,6 +204,19 @@ perl_curl_simplell_del( pTHX_ simplell_t **start, PTRV key )
 	return NULL;
 }
 
+#define SIMPLELL_FREE( list, freefunc )			\
+	STMT_START {								\
+		if ( list ) {							\
+			simplell_t *next, *now = list;		\
+			do {								\
+				next = now->next;				\
+				freefunc( now->value );			\
+				Safefree( now );				\
+			} while ( ( now = next ) != NULL );	\
+		}										\
+	} STMT_END
+
+
 /* generic function for our callback calling needs */
 static IV
 perl_curl_call( pTHX_ callback_t *cb, int argnum, SV **args )
