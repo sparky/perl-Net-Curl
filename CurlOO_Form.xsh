@@ -18,6 +18,10 @@ struct perl_curl_form_s {
 	struct curl_httppost *post, *last;
 
 	callback_t cb[ CB_FORM_LAST ];
+
+	long adds;
+	simplell_t *buffers;
+	simplell_t *slists;
 };
 
 static perl_curl_form_t *
@@ -27,6 +31,8 @@ perl_curl_form_new( void )
 	Newxz( form, 1, perl_curl_form_t );
 	form->post = NULL;
 	form->last = NULL;
+	form->adds = 0;
+
 	return form;
 }
 
@@ -35,6 +41,9 @@ perl_curl_form_delete( pTHX_ perl_curl_form_t *form )
 {
 	if ( form->post )
 		curl_formfree( form->post );
+
+	SIMPLELL_FREE( form->buffers, Safefree );
+	SIMPLELL_FREE( form->slists, curl_slist_free_all );
 
 	Safefree( form );
 }
@@ -138,30 +147,50 @@ add( form, ... )
 	CODE:
 		if ( !( items & 1 ) && (
 				!SvOK( ST( items - 1 ) ) ||
-				sv_iv( ST( items - 1 ) ) != CURLFORM_END ) )
+				SvIV( ST( items - 1 ) ) != CURLFORM_END ) )
 			croak( "Expected even number of arguments" );
+
+		form->adds++;
 
 		/* items is about twice as much as we'll normally use */
 		Newx( farray, items, struct curl_forms );
 
 		for ( i_in = 1, i_out = 0; i_in < items - 1; i_in += 2 ) {
-			int option = sv_iv( ST( i_in ) );
-			int option_len;
-			STRLEN len;
+			int option = SvIV( ST( i_in ) );
+			SV *value = ST( i_in + 1 );
+			int option_len = 0;
+			char *buf = NULL;
+			STRLEN len = 0;
 			switch ( option ) {
 				/* set string and its length */
+				case CURLFORM_PTRNAME:
+					option = CURLFORM_COPYNAME;
 				case CURLFORM_COPYNAME:
 					option_len = CURLFORM_NAMELENGTH;
+					buf = SvPV( value, len );
 					goto case_datawithzero;
+
+				case CURLFORM_PTRCONTENTS:
+					option = CURLFORM_COPYCONTENTS;
 				case CURLFORM_COPYCONTENTS:
 					option_len = CURLFORM_CONTENTSLENGTH;
-				/*	TODO: must make a copy of the buffer
+					buf = SvPV( value, len );
 					goto case_datawithzero;
+
 				case CURLFORM_BUFFERPTR:
-					option_len = CURLFORM_BUFFERLENGTH;*/
-case_datawithzero:
+					option_len = CURLFORM_BUFFERLENGTH;
+					if ( SvOK( value ) && SvROK( value ) )
+						value = SvRV( value );
+					{
+						char **bufp = perl_curl_simplell_add( aTHX_
+							&form->buffers, ( form->adds << 16 | i_out ) );
+						char *src = SvPV( value, len );
+						*bufp = buf = savepvn( src, len );
+					}
+
+				case_datawithzero:
 					farray[ i_out ].option = option;
-					farray[ i_out ].value = SvPV( ST( i_in + 1 ), len );
+					farray[ i_out ].value = buf;
 					i_out++;
 					farray[ i_out ].option = option_len;
 					farray[ i_out ].value = (void *) len;
@@ -170,11 +199,14 @@ case_datawithzero:
 
 				case CURLFORM_NAMELENGTH:
 				case CURLFORM_CONTENTSLENGTH:
-				/*case CURLFORM_BUFFERLENGTH:*/
-					if ( i_out > 0 && farray[ i_out - 1 ].option == option )
+				case CURLFORM_BUFFERLENGTH:
+					if ( i_out > 0 && farray[ i_out - 1 ].option == option ) {
+						if ( (IV) farray[ i_out - 1 ].value < SvIV( value ) )
+							croak( "specified length larger than data size" );
 						i_out--;
+					}
 					farray[ i_out ].option = option;
-					farray[ i_out ].value = (void *) sv_iv( ST( i_in + 1 ) );
+					farray[ i_out ].value = (void *) SvIV( value );
 					i_out++;
 					break;
 
@@ -182,25 +214,24 @@ case_datawithzero:
 				case CURLFORM_FILE:
 				case CURLFORM_CONTENTTYPE:
 				case CURLFORM_FILENAME:
-				/*case CURLFORM_BUFFER:*/
+				case CURLFORM_BUFFER:
 					farray[ i_out ].option = option;
-					farray[ i_out ].value = SvPV_nolen( ST( i_in + 1 ) );
+					farray[ i_out ].value = SvPV_nolen( value );
 					i_out++;
 					break;
 
-				/*case CURLFORM_CONTENTHEADER:
-					* This may be a problem:
-					*
-					* When you’ve passed the HttpPost pointer to curl_easy_setopt
-					* (using the CURLOPT_HTTPPOST option), you must not free the
-					* list until after you’ve called curl_easy_cleanup( for the
-					* curl handle.
+				case CURLFORM_CONTENTHEADER:
+					{
+						struct curl_slist **pslist;
+						pslist = perl_curl_simplell_add( aTHX_ &form->slists,
+							( form->adds << 16 | i_out ) );
+						*pslist = perl_curl_array2slist( aTHX_ NULL, value );
 
-					farray[ i_out ].option = option;
-					farray[ i_out ].value = SvPV_nolen( ST( i_in + 1 ) );
-					i_out++;
+						farray[ i_out ].option = option;
+						farray[ i_out ].value = (void *) *pslist;
+						i_out++;
+					}
 					break;
-					*/
 
 				default:
 					croak( "curl_formadd option %d is not supported", option );
