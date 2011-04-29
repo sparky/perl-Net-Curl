@@ -415,7 +415,7 @@ sub write_examples_pod
 			}
 		}
 
-		print $o "\n\n";
+		print $o "\n=cut\n";
 	}
 }
 

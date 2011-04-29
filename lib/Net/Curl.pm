@@ -179,3 +179,5 @@ L<Net::Curl::Compat>
 L<Net::Curl::examples>
 L<http://curl.haxx.se>
 L<libcurl(3)>
+
+=cut
