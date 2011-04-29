@@ -1,6 +1,7 @@
 use strict;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
+use File::Find;
 
 # you can set those manually if curl-config is not working for you
 my %curl = (
@@ -106,6 +107,7 @@ split_xs( "Multi" );
 split_xs( "Share" );
 
 write_examples_pod( 'lib/Net/Curl/examples.pod' );
+write_compat_maybe( 'lib/Net/Curl/Compat.pm', 'inc/Compat' );
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
 my $l_ = $] >= 5.010 ? "ł" : "l";
@@ -128,6 +130,7 @@ WriteMakefile(
 		"ExtUtils::MakeMaker" => 0,
 		"ExtUtils::MakeMaker::Config" => 0,
 		#"ExtUtils::PkgConfig" => 0,
+		"File::Find" => 0,
 	},
 	PREREQ_PM => {
 		"Test::More" => 0,
@@ -414,6 +417,38 @@ sub write_examples_pod
 
 		print $o "\n\n";
 	}
+}
+
+sub write_compat_maybe
+{
+	my ( $name_out, $name_in ) = @_;
+
+	return unless -r $name_in;
+
+	open my $fout, '>', $name_out
+		or die "Cannot write to $name_out: $!\n";
+	print "Writing $name_out\n";
+
+	my @pm;
+	find( sub{ push @pm, $File::Find::name if /\.pm$/ }, $name_in );
+
+	local $/ = undef;
+	my $data = "";
+	my @sections;
+	foreach ( sort @pm ) {
+		open my $fin, '<', $_ or die;
+		s#\Q$name_in\E/##;
+		my $pos = length $data;
+		push @sections, "\t'$_' => $pos,";
+		$data .= <$fin> . "\n__END__\n\n";
+	}
+
+	open my $fin, '<', $name_in . ".pm" or die;
+	$_ = <$fin>;
+	local $" = "\n";
+	s/#MODULES#/@sections/;
+
+	print $fout $_ . $data;
 }
 
 sub MY::postamble
