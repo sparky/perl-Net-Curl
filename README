@@ -1,5 +1,20 @@
 This package is working and the interface is mostly stable.
 
+** WWW::Curl compatibility **
+
+For packages requiring WWW::Curl you can use Net::Curl instead of WWW::Curl
+if you don't want to install WWW::Curl in your system. Can be useful in
+space-constrained systems if you already have something that requires
+Net::Curl anyways.
+
+Set environment variable WWW_COMPAT to "ext" before calling Makefile.PL
+to install WWW/Curl/* wrapper files directly.
+
+By default build system creates Net::Curl::Compat package which can be used
+to enable WWW::Curl compatibility in Net::Cutl, but it must be loaded manually
+before something tries to use WWW::Curl.
+
+
 ** WARNING **
 - pushopt() may disappear yet.
 
