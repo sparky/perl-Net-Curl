@@ -118,7 +118,7 @@ if ( $www_compat ) {
 	if ( $www_compat eq "exp" ) {
 		deep_copy( 'inc/Compat/WWW', 'lib' );
 		open my $f, '>', 'lib/Net/Curl/Compat.pm';
-		print $f "'compat is explicit';";
+		print $f "'compat is explicit';\n";
 	} else {
 		write_compat_maybe( 'lib/Net/Curl/Compat.pm', 'inc/Compat' );
 	}
