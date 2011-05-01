@@ -14,6 +14,12 @@ examples/02-multi-simple.pl
 examples/03-multi-event.pl
 examples/04-share-threads.pl
 examples/05-irssi-downloader.pl
+inc/Compat.pm
+inc/Compat/WWW/Curl.pm
+inc/Compat/WWW/Curl/Easy.pm
+inc/Compat/WWW/Curl/Form.pm
+inc/Compat/WWW/Curl/Multi.pm
+inc/Compat/WWW/Curl/Share.pm
 lib/Net/Curl.pm
 lib/Net/Curl/Compat.pm
 lib/Net/Curl/Easy.pm

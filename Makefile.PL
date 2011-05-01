@@ -11,6 +11,13 @@ my %curl = (
 	version => ''	# 7.21.0
 );
 
+my $www_compat = 1;
+# 0, "" - no WWW::Curl compat
+# "exp" - explicit compatibility modules, will conflict with WWW::Curl
+# true  - compat through Net::Curl::Compat (default)
+if ( exists $ENV{WWW_COMPAT} ) {
+	$www_compat = $ENV{WWW_COMPAT};
+}
 
 # - this version added curl_multi_socket_action() and many symbols
 my $minimum_libcurl_ver = "7.15.4";
@@ -107,7 +114,15 @@ split_xs( "Multi" );
 split_xs( "Share" );
 
 write_examples_pod( 'lib/Net/Curl/examples.pod' );
-write_compat_maybe( 'lib/Net/Curl/Compat.pm', 'inc/Compat' );
+if ( $www_compat ) {
+	if ( $www_compat eq "exp" ) {
+		deep_copy( 'inc/Compat/WWW', 'lib' );
+		open my $f, '>', 'lib/Net/Curl/Compat.pm';
+		print $f "'compat is explicit';";
+	} else {
+		write_compat_maybe( 'lib/Net/Curl/Compat.pm', 'inc/Compat' );
+	}
+}
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
 my $l_ = $] >= 5.010 ? "ł" : "l";
@@ -147,7 +162,8 @@ WriteMakefile(
 			glob "examples/*.pl" ),
 	},
 	clean		=> {
-		FILES => 'const-*.inc curl-*.inc lib/Net/Curl/examples.pod'
+		FILES => join " ", qw(const-*.inc curl-*.inc lib/WWW
+			lib/Net/Curl/examples.pod lib/Net/Curl/Compat.pm),
 	},
 	DIR			=> [], # no other Makefile.PL
 );
@@ -449,6 +465,18 @@ sub write_compat_maybe
 	s/#MODULES#/@sections/;
 
 	print $fout $_ . $data;
+}
+
+sub deep_copy
+{
+	my ( $src, $dst ) = @_;
+
+	system "cp", "-a", $src, $dst;
+	if ( $? ) {
+		require File::Copy::Recursive;
+		( my $name = $src ) =~ s#.*/##;
+		File::Copy::Recursive::dircopy( $src, "$dst/$name" );
+	}
 }
 
 sub MY::postamble
