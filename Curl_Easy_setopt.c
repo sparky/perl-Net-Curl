@@ -337,15 +337,13 @@ perl_curl_easy_setopt_off_t( pTHX_ perl_curl_easy_t *easy, long option,
 		SV *value )
 {
 	CURLcode ret = CURLE_OK;
-	curl_off_t v = 0;
+	/* this should be curl_off_t, but there is a bug in older curl - 7.18.2 */
+	long long v = 0;
 
 	if ( SvOK( value ) ) {
-#if IVSIZE >= CURL_SIZEOF_CURL_OFF_T
 		if ( SvIOK( value ) ) {
 			v = SvIV( value );
-		} else
-#endif
-		if ( looks_like_number( value ) ) {
+		} else if ( looks_like_number( value ) ) {
 			char *pv = SvPV_nolen( value );
 			char *pdummy;
 			v = strtoll( pv, &pdummy, 10 );
