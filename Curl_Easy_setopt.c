@@ -344,9 +344,13 @@ perl_curl_easy_setopt_off_t( pTHX_ perl_curl_easy_t *easy, long option,
 		if ( SvIOK( value ) ) {
 			v = SvIV( value );
 		} else if ( looks_like_number( value ) ) {
+#if IVSIZE == 8
+			v = SvIV( value );
+#else
 			char *pv = SvPV_nolen( value );
 			char *pdummy;
 			v = strtoll( pv, &pdummy, 10 );
+#endif
 		}
 	}
 
