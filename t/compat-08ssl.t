@@ -4,7 +4,10 @@ use strict;
 use warnings;
 use Test::More;
 use File::Temp qw/tempfile/;
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+}
 use WWW::Curl::Easy;
 
 unless ( $ENV{'TEST_EXTENDED'} ) {

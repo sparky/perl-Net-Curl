@@ -2,8 +2,12 @@
 
 use strict;
 use warnings;
-use Test::More tests => 20;
-use Net::Curl::Compat;
+use Test::More;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+	plan tests => 20;
+}
 use WWW::Curl::Easy;
 use WWW::Curl::Multi;
 use File::Temp qw/tempfile/;

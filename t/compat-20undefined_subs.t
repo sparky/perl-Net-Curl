@@ -1,8 +1,12 @@
 #!perl -w
 use strict;
-use Test::More tests => 4;
+use Test::More;
 
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+	plan tests => 4;
+}
 use WWW::Curl::Easy;
 use WWW::Curl::Share;
 use WWW::Curl::Multi;

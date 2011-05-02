@@ -122,6 +122,9 @@ if ( $www_compat ) {
 	} else {
 		write_compat_maybe( 'lib/Net/Curl/Compat.pm', 'inc/Compat' );
 	}
+} else {
+	open my $f, '>', 'lib/Net/Curl/Compat.pm';
+	print $f qq[die "WWW::Curl compatibility disabled\\n";\n];
 }
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?

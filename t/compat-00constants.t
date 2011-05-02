@@ -2,7 +2,10 @@
 use strict;
 use warnings;
 use Test::More;
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+}
 use WWW::Curl::Easy;
 
 my $ver_num_raw = WWW::Curl::Easy::version();

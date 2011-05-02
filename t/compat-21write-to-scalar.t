@@ -1,9 +1,13 @@
 #!perl
 use strict;
 use warnings;
-use Test::More 'no_plan';
+use Test::More;
 
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+	plan 'no_plan';
+}
 use WWW::Curl::Easy;
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";

@@ -5,10 +5,14 @@ use warnings;
 use lib 'inc';
 use lib 'blib/lib';
 use lib 'blib/arch';
-use Test::More tests => 17;
+use Test::More;
 use File::Temp qw/tempfile/;
 
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+	plan tests => 17;
+}
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";

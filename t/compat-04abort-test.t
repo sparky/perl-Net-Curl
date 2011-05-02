@@ -2,10 +2,14 @@
 
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More;
 use File::Temp qw/tempfile/;
 
-use Net::Curl::Compat;
+BEGIN {
+	eval 'use Net::Curl::Compat;';
+	plan skip_all => $@ if $@;
+	plan tests => 8;
+}
 BEGIN { use_ok( 'WWW::Curl::Easy' ); }
 
 my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
