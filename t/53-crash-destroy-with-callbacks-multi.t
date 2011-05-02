@@ -4,7 +4,7 @@
 #
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Net::Curl::Easy qw(:constants);
 
 my $ftp_uri = 'ftp://ftp.cpan.org/pub/CPAN/README';
@@ -26,18 +26,42 @@ sub DESTROY {
 my $out = "";
 
 my $curl = Net::Curl::Easy->new();
+my $multi = Net::Curl::Multi->new();
 { $curl->{guard} = bless \my $foo, __PACKAGE__; }
+{ $multi->{guard} = bless \my $bar, __PACKAGE__; }
 $curl->setopt( CURLOPT_FILE, \$out );
 $curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_header );
 $curl->setopt( CURLOPT_URL, $ftp_uri );
 cmp_ok( $destroyed, '==', 0, 'object resources in place' );
-$curl->perform();
+
+$multi->add_handle( $curl );
+$curl = undef;
 
 cmp_ok( $destroyed, '==', 0, 'object resources in place' );
+
+while ( $multi->handles ) {
+	my $t = $multi->timeout;
+	if ( $t != 0 ) {
+		$t = 10000 if $t < 0;
+		my ( $r, $w, $e ) = $multi->fdset;
+
+		select $r, $w, $e, $t / 1000;
+	}
+
+	my $ret = $multi->perform();
+	if ( ! $ret ) {
+		while ( my ( $msg, $easy, $result ) = $multi->info_read() ) {
+			$multi->remove_handle( $easy );
+		}
+	}
+};
+
+cmp_ok( $destroyed, '>', 0, 'object resources freed' );
 cmp_ok( $headercnt, '>', 5, "got headers" );
 cmp_ok( length $out, '>', 1000, "got file" );
 is( $reftype, 'Net::Curl::Easy', 'callback received correct object type' );
 
+$destroyed = 0;
 $headercnt = 0;
 $reftype = "";
 
@@ -45,7 +69,7 @@ $reftype = "";
 #
 # this will trigger some more header callbacks, which may crash the
 # interpreter
-$curl = undef;
+$multi = undef;
 
 pass( "did not die" );
 cmp_ok( $headercnt, '==', 0, "not received more headers" );

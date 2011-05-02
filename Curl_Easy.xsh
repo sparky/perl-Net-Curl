@@ -149,6 +149,13 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	 * we want it while easy handle is still alive */
 	curl_easy_setopt( easy->handle, CURLOPT_SHARE, NULL );
 
+	/* when using multi handle, the connection may stay open in that multi,
+	 * but the easy will be long dead. In case of ftp for instance, connection
+	 * closing will send a trailer with no apparent destination */
+	/* this also disables header callback if not using multi, SORRY */
+	curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION, NULL );
+	curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, NULL );
+
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );
 
