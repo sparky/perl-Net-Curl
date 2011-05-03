@@ -1,4 +1,7 @@
 package WWW::Curl::Form;
+
+use strict;
+use warnings;
 use WWW::Curl ();
 use Net::Curl::Form ();
 use Exporter ();

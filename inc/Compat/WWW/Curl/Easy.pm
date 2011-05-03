@@ -1,5 +1,7 @@
 package WWW::Curl::Easy;
 
+use strict;
+use warnings;
 use WWW::Curl ();
 use Net::Curl::Easy ();
 use Exporter ();

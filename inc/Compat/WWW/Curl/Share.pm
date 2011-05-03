@@ -1,4 +1,7 @@
 package WWW::Curl::Share;
+
+use strict;
+use warnings;
 use WWW::Curl ();
 use Net::Curl::Share ();
 use Exporter ();

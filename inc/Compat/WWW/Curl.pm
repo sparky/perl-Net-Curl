@@ -1,5 +1,7 @@
 package WWW::Curl;
 
+use strict;
+use warnings;
 use Net::Curl ();
 
 our $VERSION = '4.15';
@@ -8,7 +10,7 @@ our $VERSION = '4.15';
 sub _copy_constants
 {
 	my $EXPORT = shift;
-	my $dest = shift . "::";
+	my $dest = (shift) . "::";
 	my $source = shift;
 
 	no strict 'refs';

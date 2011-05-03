@@ -1,4 +1,7 @@
 package WWW::Curl::Multi;
+
+use strict;
+use warnings;
 use WWW::Curl ();
 use Net::Curl::Multi ();
 our @ISA = qw(Net::Curl::Multi);
