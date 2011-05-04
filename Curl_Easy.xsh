@@ -449,8 +449,10 @@ getinfo( easy, option )
 						entry = entry->next;
 					}
 					curl_slist_free_all( vlist );
+					RETVAL = newRV( sv_2mortal( (SV *) items ) );
+				} else {
+					RETVAL = &PL_sv_undef;
 				}
-				RETVAL = newRV( sv_2mortal( (SV *) items ) );
 				break;
 			}
 			default: {
