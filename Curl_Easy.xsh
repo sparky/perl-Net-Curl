@@ -410,9 +410,9 @@ getinfo( easy, option )
 			{
 				CURLcode ret;
 				char * vchar;
-				if ( option == CURLINFO_PRIVATE ) {
+				if ( option == CURLINFO_PRIVATE )
 					croak( "CURLINFO_PRIVATE is not available, use your base object" );
-				}
+
 				ret = curl_easy_getinfo( easy->handle, option, &vchar );
 				EASY_DIE( ret );
 				RETVAL = newSVpv( vchar, 0 );
@@ -441,10 +441,10 @@ getinfo( easy, option )
 				CURLcode ret;
 				struct curl_slist *vlist, *entry;
 				AV *items = NULL;
-
-				if ( option == CURLINFO_CERTINFO ) {
+#ifdef CURLINFO_CERTINFO
+				if ( option == CURLINFO_CERTINFO )
 					croak( "CURLINFO_CERTINFO is not supported" );
-				}
+#endif
 				ret = curl_easy_getinfo( easy->handle, option, &vlist );
 				EASY_DIE( ret );
 
