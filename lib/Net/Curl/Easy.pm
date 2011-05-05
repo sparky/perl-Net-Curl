@@ -446,6 +446,10 @@ CURLOPT_FNMATCH_DATA value. Must return one of CURL_FNMATCHFUNC_* values.
          : CURL_FNMATCHFUNC_NOMATCH );
  }
 
+=item CURLOPT_SSH_KEYFUNCTION ( CURLOPT_SSH_KEYDATA ) 7.19.6+
+
+Not supported yet.
+
 =back
 
 =head2 Net::Curl::Easy::Code
