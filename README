@@ -1,4 +1,22 @@
-This package is working and the interface is mostly stable.
+STATUS: This package is working and the interface is mostly stable.
+
+** BUILDING **
+- you need libcurl 7.15.4 or newer, try to get one as recent as you can
+  * it is highly suggested to build libcurl with asynchdns (c-ares) support
+    (besides the usual extensions: libz, ssl)
+
+- you should have ExtUtils::PkgConfig installed, it should pick all the
+  libcurl options needed to build this module
+  * if the above isn't working for you, you can edit Makefile.PL,
+    there is a %curl hash on the top of the file, which should be filled
+    with correct value
+
+- have in mind that tests depend on network availability and may not cover
+  all the quirks found in your operating system, some of them even depend on
+  proper timing, so sometimes they could fail without an apparent reason
+  (in case of very slow network connection or very heavily loaded system)
+
+
 
 ** WWW::Curl compatibility **
 
