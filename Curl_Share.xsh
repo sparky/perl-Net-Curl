@@ -54,29 +54,31 @@ static curl_unlock_function pct_unlock __attribute__((unused)) = cb_share_unlock
 static perl_curl_share_t *
 perl_curl_share_new( pTHX )
 {
-	int i;
 	perl_curl_share_t *share;
 	Newxz( share, 1, perl_curl_share_t );
 	share->handle = curl_share_init();
 
 #ifdef USE_ITHREADS
-	for ( i = CURL_LOCK_DATA_NONE; i < CURL_LOCK_DATA_LAST; i++ )
-		MUTEX_INIT( &(share->mutex[ i ]) );
-	MUTEX_INIT( &share->mutex_threads );
-	share->threads = 1;
+	{
+		int i;
+		for ( i = CURL_LOCK_DATA_NONE; i < CURL_LOCK_DATA_LAST; i++ )
+			MUTEX_INIT( &(share->mutex[ i ]) );
+		MUTEX_INIT( &share->mutex_threads );
+		share->threads = 1;
 
-	curl_share_setopt( share->handle,
-		CURLSHOPT_LOCKFUNC,
-		cb_share_lock
-	);
-	curl_share_setopt( share->handle,
-		CURLSHOPT_UNLOCKFUNC,
-		cb_share_unlock
-	);
-	curl_share_setopt( share->handle,
-		CURLSHOPT_USERDATA,
-		share
-	);
+		curl_share_setopt( share->handle,
+			CURLSHOPT_LOCKFUNC,
+			cb_share_lock
+		);
+		curl_share_setopt( share->handle,
+			CURLSHOPT_UNLOCKFUNC,
+			cb_share_unlock
+		);
+		curl_share_setopt( share->handle,
+			CURLSHOPT_USERDATA,
+			share
+		);
+	}
 #endif
 	return share;
 }
