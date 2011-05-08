@@ -3,10 +3,14 @@
 # problems may appear if someone tried to destroy last reference from a callback.
 use strict;
 use warnings;
-use Test::More tests => 7;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl/";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 7;
 
 my $destroyed = 0;
 sub DESTROY {
@@ -21,7 +25,7 @@ my $curl = Net::Curl::Easy->new();
 { $curl->{guard} = bless \my $foo, __PACKAGE__; }
 $curl->setopt( CURLOPT_FILE, \$out );
 $curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_header );
-$curl->setopt( CURLOPT_URL, $url );
+$curl->setopt( CURLOPT_URL, $server->uri );
 cmp_ok( $destroyed, '==', 0, 'object resources in place' );
 
 $curl->perform();
@@ -40,6 +44,6 @@ sub cb_header {
 pass( "did not die" );
 ok( ! defined $curl, 'curl destroyed' );
 cmp_ok( $destroyed, '>', 0, 'object resources freed' );
-cmp_ok( $headercnt, '>', 5, "got headers" );
-cmp_ok( length $out, '>', 100, "got file" );
+cmp_ok( $headercnt, '==', 5, "got headers" );
+cmp_ok( length $out, '==', 26, "got file" );
 is( $reftype, 'Net::Curl::Easy', 'callback received correct object type' );

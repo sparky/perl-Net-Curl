@@ -2,15 +2,17 @@
 # Stupid bug in getinfo
 use strict;
 use warnings;
-use Test::More tests => 4;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
-# must be some uri that sets cookies
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com/";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 4;
 
 my $easy = Net::Curl::Easy->new();
-$easy->setopt( CURLOPT_URL, $url );
-$easy->setopt( CURLOPT_FOLLOWLOCATION, 1 );
+$easy->setopt( CURLOPT_URL, $server->uri . "cookie" );
 $easy->setopt( CURLOPT_COOKIEFILE, '' );
 $easy->setopt( CURLOPT_WRITEDATA, \my $body );
 
@@ -28,3 +30,13 @@ is( ref $slist, 'ARRAY', 'slist is an array' );
 
 $" = "\n- ";
 #diag( "- @$slist\n" );
+
+sub HTTP::Server::Request::cookie
+{
+	my $self = shift;
+	my $expdate = $self->_http_time( time + 600 );
+	$self->{out_headers}->{set_cookie} =
+		"test_cookie=true; expires=$expdate GMT; path=/";
+
+	return "OK\n";
+}

@@ -2,10 +2,14 @@
 # This may crash if we also destroy the last ref.
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More tests => 6;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl/";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 6;
 
 my $destroyed = 0;
 sub DESTROY {
@@ -31,7 +35,7 @@ is( ref $base, '', 'base has no object' );
 { $curl->{guard} = bless \my $foo, __PACKAGE__; }
 $curl->setopt( CURLOPT_FILE, \$out );
 $curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_header );
-$curl->setopt( CURLOPT_URL, $url );
+$curl->setopt( CURLOPT_URL, $server->uri );
 
 $curl->perform();
 
