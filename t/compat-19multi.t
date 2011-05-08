@@ -41,7 +41,7 @@ sub action_wait {
 	$rin = fhbits($re);
 	$win = fhbits($wr);
 	$ein = $rin | $win;
-	my ($nfound,$timeleft) = select($rin, $win, $ein, 1);
+	my ($nfound,$timeleft) = select($rin, $win, $ein, 0.02);
 }
 
     my $curl = new WWW::Curl::Easy;

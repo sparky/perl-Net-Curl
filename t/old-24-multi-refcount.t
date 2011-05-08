@@ -20,7 +20,7 @@ sub action_wait {
 	my ($rin, $win, $ein) = $curlm->fdset;
 	my $timeout = $curlm->timeout;
 	if ( $timeout > 0 ) {
-		my ($nfound,$timeleft) = select($rin, $win, $ein, $timeout);
+		my ($nfound,$timeleft) = select($rin, $win, $ein, $timeout / 1000);
 	}
 }
 

@@ -113,8 +113,9 @@ $sock_read_all = 0;
 #warn "main loop\n";
 do {
 	my $active_now;
-	my ($cnt, $timeout) = select $vec_r = $vec_read, $vec_w = $vec_write,
+	my ($cnt, $timeleft) = select $vec_r = $vec_read, $vec_w = $vec_write,
 		$vec_e = $vec_read | $vec_write, $timeout;
+	$timeout = $timeleft;
 	if ( $cnt ) {
 		my $maxfd = 8 * length( $vec_e ) - 1;
 		foreach my $i ( 0..$maxfd ) {
