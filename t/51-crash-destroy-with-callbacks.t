@@ -4,8 +4,13 @@
 #
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More;
 use Net::Curl::Easy qw(:constants);
+
+plan skip_all => "This test requires reliable Internet connection. "
+	. "Set TEST_HAS_INTERNETS env variable to run this test."
+	unless $ENV{TEST_HAS_INTERNETS};
+plan tests => 8;
 
 my $ftp_uri = 'ftp://ftp.cpan.org/pub/CPAN/README';
 
