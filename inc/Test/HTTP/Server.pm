@@ -45,7 +45,7 @@ sub new
 sub uri
 {
 	my $self = shift;
-	return "http://localhost:$self->{port}/";
+	return "http://127.0.0.1:$self->{port}/";
 }
 
 sub _sigchld
