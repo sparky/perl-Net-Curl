@@ -238,6 +238,7 @@ sub out_all
 		$body = $self->$func();
 	};
 	if ( $@ ) {
+		warn "Server error: $@\n";
 		$self->out_response( "404 Not Found" );
 		$self->out_headers(
 			%default_headers
