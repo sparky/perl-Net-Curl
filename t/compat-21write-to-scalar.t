@@ -1,16 +1,21 @@
 #!perl
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More;
+use Test::HTTP::Server;
 
 BEGIN {
 	eval 'use Net::Curl::Compat;';
 	plan skip_all => $@ if $@;
-	plan 'no_plan';
 }
 use WWW::Curl::Easy;
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 12;
+
+my $url = $server->uri;
 
 # Init the curl session
 my $curl = WWW::Curl::Easy->new();

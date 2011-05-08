@@ -2,22 +2,27 @@
 
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More;
+use Test::HTTP::Server;
 BEGIN {
 	eval 'use Net::Curl::Compat;';
 	plan skip_all => $@ if $@;
-	plan tests => 20;
 }
 use WWW::Curl::Easy;
 use WWW::Curl::Multi;
 use File::Temp qw/tempfile/;
+
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 20;
 
 my $header = tempfile();
 my $header2 = tempfile();
 my $body = tempfile();
 my $body2 = tempfile();
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $url = $server->uri;
 
 sub fhbits {
 	my $fhlist = shift;

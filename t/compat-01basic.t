@@ -2,18 +2,22 @@
 
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
 
 BEGIN {
 	eval 'use Net::Curl::Compat;';
 	plan skip_all => $@ if $@;
-	plan tests => 19;
 }
-BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy;
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 18;
 
+my $url = $server->uri . "cookie";
 
 # Init the curl session
 my $curl = WWW::Curl::Easy->new();
@@ -54,7 +58,6 @@ my $httpcode = $curl->getinfo(CURLINFO_HTTP_CODE);
 ok( $httpcode, "getinfo returns CURLINFO_HTTP_CODE");
 
 SKIP: {
-    skip "Only testing cookies against google.com", 2 unless $url eq "http://www.google.com";
     my $cookielist_const = $curl->const_string("CURLINFO_COOKIELIST");
     skip "libcurl doesn't have the CURLINFO_COOKIELIST constant", 2 unless $cookielist_const;
     my $cookies = $curl->getinfo($cookielist_const);
@@ -65,3 +68,13 @@ SKIP: {
 #diag ("Bytes: $bytes");
 #diag ("realurl: $realurl");
 #diag ("httpcode: $httpcode");
+
+sub HTTP::Server::Request::cookie
+{
+	my $self = shift;
+	my $expdate = $self->_http_time( time + 600 );
+	$self->{out_headers}->{set_cookie} =
+		"test_cookie=true; expires=$expdate GMT; path=/";
+
+	return "OK\n" x 1000;
+}

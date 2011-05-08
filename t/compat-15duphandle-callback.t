@@ -3,18 +3,20 @@
 use strict;
 use warnings;
 use lib 'inc';
-use lib 'blib/lib';
-use lib 'blib/arch';
 use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
 BEGIN {
 	eval 'use Net::Curl::Compat;';
 	plan skip_all => $@ if $@;
-	plan tests => 25;
 }
 use WWW::Curl::Easy;
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 25;
+
+my $url = $server->uri;
 my $other_handle;
 my $head = tempfile();
 my $hcall;

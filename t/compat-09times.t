@@ -2,17 +2,22 @@
 
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
 
 BEGIN {
 	eval 'use Net::Curl::Compat;';
 	plan skip_all => $@ if $@;
-	plan tests => 19;
 }
-BEGIN { use_ok( 'WWW::Curl::Easy' ); }
+use WWW::Curl::Easy;
 
-my $url = $ENV{CURL_TEST_URL} || "http://www.google.com";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 17;
+
+my $url = $server->uri;
 
 # Init the curl session
 my $curl = WWW::Curl::Easy->new();
@@ -54,8 +59,7 @@ ok ($start, "Valid transfer start time");
 my $total = $curl->getinfo(CURLINFO_TOTAL_TIME);
 ok ($total, "defined total transfer time");
 my $dns = $curl->getinfo(CURLINFO_NAMELOOKUP_TIME);
-ok ($dns || $^O eq "cygwin" || $^O eq "MSWin32",
-	"NSLOOKUP time is defined: $dns @ $^O");
+diag( "DNS LOOKUP time is $dns @ $^O");
 my $conn = $curl->getinfo(CURLINFO_CONNECT_TIME);
 ok ($conn, "Connect time defined");
 my $pre = $curl->getinfo(CURLINFO_PRETRANSFER_TIME);
