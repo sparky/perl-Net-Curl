@@ -20,6 +20,7 @@ inc/Compat/WWW/Curl/Easy.pm
 inc/Compat/WWW/Curl/Form.pm
 inc/Compat/WWW/Curl/Multi.pm
 inc/Compat/WWW/Curl/Share.pm
+inc/Test/HTTP/Server.pm
 lib/Net/Curl.pm
 lib/Net/Curl/Compat.pm
 lib/Net/Curl/Easy.pm
