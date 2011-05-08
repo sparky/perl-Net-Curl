@@ -51,6 +51,7 @@ sub uri
 sub _sigchld
 {
 	my $kid;
+	local $?;
 	do {
 		$kid = waitpid -1, WNOHANG;
 	} while ( $kid > 0 );
