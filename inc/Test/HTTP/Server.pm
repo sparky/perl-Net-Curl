@@ -37,8 +37,8 @@ sub new
 	} else {
 		$SIG{CHLD} = \&_sigchld;
 		HTTP::Server::_main_loop( $socket, @_ );
-		exit 0;
-		die "Should run main loop\n";
+		exec "true";
+		die "Should not be here\n";
 	}
 }
 
@@ -74,7 +74,8 @@ package HTTP::Server;
 
 sub _term
 {
-	exit 0;
+	exec "true";
+	die "Should not be here\n";
 }
 
 sub _main_loop
@@ -91,7 +92,7 @@ sub _main_loop
 			close $client;
 		} else {
 			HTTP::Server::Request->open( $client, @_ );
-			exit 0;
+			_term();
 		}
 	}
 }
