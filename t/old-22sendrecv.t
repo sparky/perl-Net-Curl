@@ -1,7 +1,9 @@
 #!perl
 use strict;
 use warnings;
+use lib 'inc';
 use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
 my $vi = Net::Curl::version_info();
@@ -9,10 +11,13 @@ if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x071202 ) {
 	my $ver = Net::Curl::LIBCURL_VERSION();
 	plan skip_all => "curl $ver does not support send and recv";
 }
+
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
 plan tests => 7;
 
 # host must support keep-alive connections
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $url = $server->uri;
 
 ( my $host = $url ) =~ s#^.*?://##;
 

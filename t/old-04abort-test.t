@@ -2,13 +2,15 @@
 
 use strict;
 use warnings;
-use Test::More tests => 8;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
-
-BEGIN { use_ok( 'Net::Curl::Easy' ); }
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 7;
 
 # Init the curl session
 my $curl = Net::Curl::Easy->new();
@@ -25,7 +27,7 @@ ok(! $curl->setopt(CURLOPT_WRITEHEADER, $head), "Setting CURLOPT_WRITEHEADER");
 my $body = tempfile();
 ok(! $curl->setopt(CURLOPT_FILE,$body), "Setting CURLOPT_FILE");
 
-ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
+ok(! $curl->setopt(CURLOPT_URL, $server->uri), "Setting CURLOPT_URL");
 
 my $body_abort_called = 0;
 sub body_abort_callback { $body_abort_called++; return -1 };

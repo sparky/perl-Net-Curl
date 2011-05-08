@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use lib 'inc';
-use Test::More tests => 6;
+use Test::More;
 use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 

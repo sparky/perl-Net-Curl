@@ -2,12 +2,14 @@
 
 use strict;
 use warnings;
-use Test::More tests => 12;
-
-BEGIN { use_ok( 'Net::Curl::Easy' ); }
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 11;
 
 my $header_called = 0;
 sub header_callback { $header_called++; return length($_[1]) };
@@ -41,7 +43,7 @@ for my $handle ($curl1,$curl2) {
 
 
 ok(! $curl1->setopt(CURLOPT_URL, "zxxypz://whoa"), "Setting deliberately bad protocol succeeds - should return error on perform"); # deliberate error
-ok(! $curl2->setopt(CURLOPT_URL, $url), "Setting OK url");
+ok(! $curl2->setopt(CURLOPT_URL, $server->uri), "Setting OK url");
 
 eval { $curl1->perform(); };
 

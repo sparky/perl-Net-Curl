@@ -2,13 +2,15 @@
 
 use strict;
 use warnings;
-use Test::More tests => 14;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
-
-BEGIN { use_ok( 'Net::Curl::Easy' ); }
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 13;
 
 # Init the curl session
 my $curl = Net::Curl::Easy->new();
@@ -26,7 +28,7 @@ ok(! $curl->setopt(CURLOPT_WRITEHEADER, $head), "Setting CURLOPT_WRITEHEADER");
 my $body = tempfile();
 ok(! $curl->setopt(CURLOPT_FILE, $body), "Setting CURLOPT_FILE");
 
-ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
+ok(! $curl->setopt(CURLOPT_URL, $server->uri), "Setting CURLOPT_URL");
 
 my ( $new_error, $tempname ) = tempfile();
 ok(! $curl->setopt(CURLOPT_STDERR, $new_error), "Setting CURLOPT_STDERR");
@@ -44,5 +46,3 @@ chomp $line;
 ok( $line eq "* Protocol badprotocol not supported or disabled in libcurl", "Reading redirected STDERR" );
 
 unlink $tempname;
-
-exit;

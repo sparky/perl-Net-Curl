@@ -8,7 +8,7 @@ use File::Temp qw/tempfile/;
 BEGIN { use_ok( 'Net::Curl::Easy' ); }
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $url = $ENV{CURL_TEST_URL};
 
 # Init the curl session
 my $curl = Net::Curl::Easy->new();

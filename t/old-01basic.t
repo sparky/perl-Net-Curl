@@ -2,13 +2,16 @@
 
 use strict;
 use warnings;
-use Test::More tests => 19;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
 
-BEGIN { use_ok( 'Net::Curl::Easy' ); }
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl/tools/userscript/config";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 18;
 
 
 # Init the curl session
@@ -29,7 +32,7 @@ ok(! $curl->setopt(CURLOPT_WRITEHEADER, $head), "Setting CURLOPT_WRITEHEADER");
 my $body = tempfile();
 ok(! $curl->setopt(CURLOPT_WRITEDATA,$body), "Setting CURLOPT_WRITEDATA");
 
-ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
+ok(! $curl->setopt(CURLOPT_URL, $server->uri . "cookie" ), "Setting CURLOPT_URL");
 
 my @myheaders;
 $myheaders[0] = "Server: www";
@@ -56,3 +59,14 @@ ok(@$cookies > 0, "Got 1 or more cookies");
 #diag ("Bytes: $bytes");
 #diag ("realurl: $realurl");
 #diag ("httpcode: $httpcode");
+
+
+sub HTTP::Server::Request::cookie
+{
+	my $self = shift;
+	my $expdate = $self->_http_time( time + 600 );
+	$self->{out_headers}->{set_cookie} =
+	"test_cookie=true; expires=$expdate GMT; path=/";
+
+	return "OK\n" x 1000;
+}

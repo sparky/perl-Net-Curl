@@ -1,11 +1,14 @@
 #!perl
 use strict;
 use warnings;
-use Test::More 'no_plan';
-
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 12;
 
 # Init the curl session
 my $curl = Net::Curl::Easy->new();
@@ -23,7 +26,7 @@ ok(! $curl->setopt(CURLOPT_WRITEHEADER, \$head), "Setting CURLOPT_WRITEHEADER");
 my $body = '';
 ok(! $curl->setopt(CURLOPT_WRITEDATA, \$body), "Setting CURLOPT_WRITEDATA");
 
-ok(! $curl->setopt(CURLOPT_URL, $url), "Setting CURLOPT_URL");
+ok(! $curl->setopt(CURLOPT_URL, $server->uri), "Setting CURLOPT_URL");
 
 eval { $curl->perform(); };
 diag( "Not ok: $@: " . $curl->error . "\n" ) if $@;

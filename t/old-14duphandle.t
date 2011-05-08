@@ -3,15 +3,16 @@
 use strict;
 use warnings;
 use lib 'inc';
-use lib 'blib/lib';
-use lib 'blib/arch';
-use Test::More tests => 17;
+use Test::More;
+use Test::HTTP::Server;
 use File::Temp qw/tempfile/;
-
-BEGIN { use_ok( 'Net::Curl::Easy' ); }
 use Net::Curl::Easy qw(:constants);
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 16;
+
+my $url = $server->uri;
 
 {
 my $other_handle;

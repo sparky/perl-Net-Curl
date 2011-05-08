@@ -2,13 +2,18 @@
 
 use strict;
 use warnings;
-use Test::More tests => 5;
+use lib 'inc';
+use Test::More;
+use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 use Scalar::Util qw(weaken);
 
+my $server = Test::HTTP::Server->new;
+plan skip_all => "Could not run http server\n" unless $server;
+plan tests => 5;
 
-my $url = $ENV{CURL_TEST_URL} || "http://rsget.pl";
+my $url = $server->uri;
 
 sub action_wait {
 	my $curlm = shift;
