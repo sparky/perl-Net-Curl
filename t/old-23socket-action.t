@@ -108,7 +108,6 @@ $curlm->add_handle( $curl2 );
 # init
 my $active = $curlm->socket_action();
 ok( defined $timeout, "timeout set" );
-$sock_read_all = 0;
 
 #warn "main loop\n";
 do {
