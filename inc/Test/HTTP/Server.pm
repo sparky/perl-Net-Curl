@@ -100,7 +100,19 @@ sub _main_loop
 
 package HTTP::Server::Connection;
 
-use URI::Escape qw(uri_unescape);
+BEGIN {
+	eval {
+		require URI::Escape;
+		URI::Escape->import( qw(uri_unescape) );
+	};
+	if ( $@ ) {
+		*uri_unescape = sub {
+			local $_ = shift;
+			s/%(..)/chr hex $1/eg;
+			return $_;
+		};
+	}
+}
 
 use constant {
 	DNAME => [qw(Sun Mon Tue Wed Thu Fri Sat)],
@@ -337,17 +349,53 @@ __END__
 
 =head1 NAME
 
-Test::HTTPServer - simple forking http server
+Test::HTTP::Server - simple forking http server
 
 =head1 SYNOPSIS
 
- my $server = Test::HTTPServer->new();
+ my $server = Test::HTTP::Server->new();
 
- client_get( $server->uri );
+ client_get( $server->uri . "my_request" );
+
+ sub HTTP::Server::Request::my_request
+ {
+     my $self = shift;
+     return "foobar!\n"
+ }
 
 =head1 DESCRIPTION
 
 This package provices a simple forking http server which can be used for
 testing http clients.
+
+=head1 DEFAULT METHODS
+
+=over
+
+=item index
+
+Lists user methods.
+
+=item echo / TYPE
+
+Returns whole request in the body. If TYPE is "head", only request head will
+be echoed, if TYPE is "body" (i.g. post requests) only body will be sent.
+
+ system "wget", $server->uri . "echo/head";
+
+=item cookie / REPEAT / PATTERN
+
+Sets a cookie. REPEAT is the number of cookies to be sent. PATTERN is the
+cookie pattern.
+
+ system "wget", $server->uri . "cookie/3";
+
+=item repeat / REPEAT / PATTERN
+
+Sends a pattern.
+
+ system "wget", $server->uri . "repeat/2/foobar";
+
+=back
 
 =cut
