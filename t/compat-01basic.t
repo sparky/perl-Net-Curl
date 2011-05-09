@@ -68,13 +68,3 @@ SKIP: {
 #diag ("Bytes: $bytes");
 #diag ("realurl: $realurl");
 #diag ("httpcode: $httpcode");
-
-sub HTTP::Server::Request::cookie
-{
-	my $self = shift;
-	my $expdate = $self->_http_time( time + 600 );
-	$self->{out_headers}->{set_cookie} =
-		"test_cookie=true; expires=$expdate GMT; path=/";
-
-	return "OK\n" x 1000;
-}

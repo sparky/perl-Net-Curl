@@ -30,13 +30,3 @@ is( ref $slist, 'ARRAY', 'slist is an array' );
 
 $" = "\n- ";
 #diag( "- @$slist\n" );
-
-sub HTTP::Server::Request::cookie
-{
-	my $self = shift;
-	my $expdate = $self->_http_time( time + 600 );
-	$self->{out_headers}->{set_cookie} =
-		"test_cookie=true; expires=$expdate GMT; path=/";
-
-	return "OK\n";
-}

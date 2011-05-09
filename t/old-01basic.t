@@ -32,7 +32,7 @@ ok(! $curl->setopt(CURLOPT_WRITEHEADER, $head), "Setting CURLOPT_WRITEHEADER");
 my $body = tempfile();
 ok(! $curl->setopt(CURLOPT_WRITEDATA,$body), "Setting CURLOPT_WRITEDATA");
 
-ok(! $curl->setopt(CURLOPT_URL, $server->uri . "cookie" ), "Setting CURLOPT_URL");
+ok(! $curl->setopt(CURLOPT_URL, $server->uri . "cookie/3" ), "Setting CURLOPT_URL");
 
 my @myheaders;
 $myheaders[0] = "Server: www";
@@ -54,19 +54,8 @@ ok( $httpcode, "getinfo returns CURLINFO_HTTP_CODE");
 
 my $cookies = $curl->getinfo( CURLINFO_COOKIELIST );
 is(ref $cookies, "ARRAY", "Returned array reference");
-ok(@$cookies > 0, "Got 1 or more cookies");
+ok(@$cookies == 3, "Got 3 cookies");
 
 #diag ("Bytes: $bytes");
 #diag ("realurl: $realurl");
 #diag ("httpcode: $httpcode");
-
-
-sub HTTP::Server::Request::cookie
-{
-	my $self = shift;
-	my $expdate = $self->_http_time( time + 600 );
-	$self->{out_headers}->{set_cookie} =
-	"test_cookie=true; expires=$expdate GMT; path=/";
-
-	return "OK\n" x 1000;
-}
