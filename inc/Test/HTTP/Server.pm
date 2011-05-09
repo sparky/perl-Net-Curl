@@ -158,17 +158,21 @@ sub in_all
 
 sub in_request
 {
+	my $self = shift;
 	local $/ = "\r\n";
 	$_ = <STDIN>;
+	$self->{head} = $_;
 	chomp;
 	return [ split /\s+/, $_ ];
 }
 
 sub in_headers
 {
+	my $self = shift;
 	local $/ = "\r\n";
 	my @headers;
 	while ( <STDIN> ) {
+		$self->{head} .= $_;
 		chomp;
 		last unless length $_;
 		s/(\S+):\s*//;
@@ -205,7 +209,14 @@ sub out_headers
 	my $self = shift;
 	while ( my ( $name, $value ) = splice @_, 0, 2 ) {
 		$name = join "-", map { ucfirst lc $_ } split /[_-]+/, $name;
-		print "$name: $value\r\n";
+		if ( ref $value ) {
+			# must be an array
+			foreach my $val ( @$value ) {
+				print "$name: $val\r\n";
+			}
+		} else {
+			print "$name: $value\r\n";
+		}
 	}
 }
 
@@ -268,7 +279,54 @@ sub index
 		keys %{HTTP::Server::Request::} )
 		|| "NONE\n";
 	return $body;
-};
+}
+
+sub echo
+{
+	my $self = shift;
+	my $type = shift;
+	my $body = "";
+	if ( not $type or $type eq "head" ) {
+		$body .= $self->{head};
+	}
+	if ( ( not $type or $type eq "body" ) and defined $self->{body} ) {
+		$body .= $self->{body};
+	}
+	return $body;
+}
+
+sub cookie
+{
+	my $self = shift;
+	my $num = shift || 1;
+	my $template = shift ||
+		"test_cookie%n=true; expires=%date(+600); path=/";
+
+	my $expdate = sub {
+		my $time = shift;
+		$time += time if $time =~ m/^[+-]/;
+		return $self->_http_time( $time );
+	};
+	my @cookies;
+	foreach my $n ( 1..$num ) {
+		$_ = $template;
+		s/%n/$n/;
+		s/%date\(\s*([+-]?\d+)\s*\)/$expdate->( $1 )/e;
+		push @cookies, $_;
+	}
+	$self->{out_headers}->{set_cookie} = \@cookies;
+
+	return "Sent $num cookies matching template:\n$template\n";
+}
+
+sub repeat
+{
+	my $self = shift;
+	my $num = shift || 1024;
+	my $pattern = shift || "=";
+
+	return $pattern x $num;
+}
 
 package HTTP::Server::Request;
 our @ISA = qw(HTTP::Server::Connection);
