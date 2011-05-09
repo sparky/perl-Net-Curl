@@ -100,6 +100,8 @@ sub _main_loop
 
 package HTTP::Server::Connection;
 
+use URI::Escape qw(uri_unescape);
+
 use constant {
 	DNAME => [qw(Sun Mon Tue Wed Thu Fri Sat)],
 	MNAME => [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)],
@@ -229,14 +231,15 @@ sub out_all
 	);
 	$self->{out_headers} = { %default_headers };
 
-	my $func = $self->{request}->[1];
-	$func =~ s#^/+##;
-	$func =~ s#/.*##;
+	my $req = $self->{request}->[1];
+	$req =~ s#^/##;
+	my @args = map { uri_unescape $_ } split m#/#, $req;
+	my $func = shift @args;
 	$func = "index" unless length $func;
 
 	my $body;
 	eval {
-		$body = $self->$func();
+		$body = $self->$func( @args );
 	};
 	if ( $@ ) {
 		warn "Server error: $@\n";
@@ -254,6 +257,7 @@ sub out_all
 	}
 }
 
+# default handlers
 sub index
 {
 	my $self = shift;
