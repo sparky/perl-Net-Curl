@@ -134,25 +134,33 @@ WriteMakefile(
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
 	ABSTRACT_FROM	=> 'lib/Net/Curl.pm',
 	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
-	META_MERGE	=> {
-		resources => {
-			repository => 'https://github.com/sparky/perl-Net-Curl'
-		},
-	},
 	CCFLAGS		=> $devel_cflags . $curl{cflags},
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
+	META_MERGE	=> {
+		resources => {
+			repository => 'https://github.com/sparky/perl-Net-Curl'
+		},
+		configure_requires => {
+			# install but do not enforce
+			"ExtUtils::PkgConfig" => 0,
+		},
+		requires => {
+			# we have our own copy
+			"Test::HTTP::Server" => 0,
+			# rather useless
+			"Test::CPAN::Meta" => 0,
+		},
+	},
 	MIN_PERL_VERSION => 5.008001,
 	CONFIGURE_REQUIRES => {
 		"ExtUtils::MakeMaker" => 0,
 		"ExtUtils::MakeMaker::Config" => 0,
-		#"ExtUtils::PkgConfig" => 0,
 		"File::Find" => 0,
 	},
 	PREREQ_PM => {
 		"Test::More" => 0,
-		"Test::CPAN::Meta" => 0,
 		"Test::Pod" => 0,
 		"File::Temp" => 0,
 		"Scalar::Util" => 0,
