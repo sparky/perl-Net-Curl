@@ -7,7 +7,10 @@ use POSIX ":sys_wait_h";
 
 sub _open_socket
 {
-	my $port = $ENV{HTTP_PORT} || $$;
+	my $frompid = $$;
+	$frompid %= 63 * 1024;
+	$frompid += 63 * 1024 if $frompid < 1024;
+	my $port = $ENV{HTTP_PORT} || $frompid;
 	foreach ( 0..100 ) {
 		my $socket = IO::Socket::INET->new(
 			Proto => 'tcp',
