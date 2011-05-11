@@ -1,9 +1,15 @@
 package Test::HTTP::Server;
 #
+# 2011 (c) Przemysław Iskra <sparky@pld-linux.org>
+#		This program is free software,
+# you may distribute it under the same terms as Perl.
+#
 use strict;
 use warnings;
 use IO::Socket;
 use POSIX ":sys_wait_h";
+
+our $VERSION = '0.02';
 
 sub _open_socket
 {
@@ -39,7 +45,7 @@ sub new
 		return bless $self, $class;
 	} else {
 		$SIG{CHLD} = \&_sigchld;
-		HTTP::Server::_main_loop( $socket, @_ );
+		_main_loop( $socket, @_ );
 		exec "true";
 		die "Should not be here\n";
 	}
@@ -74,8 +80,6 @@ sub DESTROY
 	}
 }
 
-package HTTP::Server;
-
 sub _term
 {
 	exec "true";
@@ -95,13 +99,13 @@ sub _main_loop
 		if ( $pid ) {
 			close $client;
 		} else {
-			HTTP::Server::Request->open( $client, @_ );
+			Test::HTTP::Server::Request->open( $client, @_ );
 			_term();
 		}
 	}
 }
 
-package HTTP::Server::Connection;
+package Test::HTTP::Server::Connection;
 
 BEGIN {
 	eval {
@@ -261,7 +265,7 @@ sub out_all
 	$req =~ s#^/##;
 	my @args = map { uri_unescape $_ } split m#/#, $req;
 	my $func = shift @args;
-	$func = "index" unless length $func;
+	$func = "index" unless defined $func and length $func;
 
 	my $body;
 	eval {
@@ -290,8 +294,8 @@ sub index
 	my $body = "Available functions:\n";
 	$body .= ( join "", map "- $_\n", sort { $a cmp $b}
 		grep { not __PACKAGE__->can( $_ ) }
-		grep { HTTP::Server::Request->can( $_ ) }
-		keys %{HTTP::Server::Request::} )
+		grep { Test::HTTP::Server::Request->can( $_ ) }
+		keys %{Test::HTTP::Server::Request::} )
 		|| "NONE\n";
 	return $body;
 }
@@ -343,8 +347,8 @@ sub repeat
 	return $pattern x $num;
 }
 
-package HTTP::Server::Request;
-our @ISA = qw(HTTP::Server::Connection);
+package Test::HTTP::Server::Request;
+our @ISA = qw(Test::HTTP::Server::Connection);
 
 1;
 
@@ -360,7 +364,7 @@ Test::HTTP::Server - simple forking http server
 
  client_get( $server->uri . "my_request" );
 
- sub HTTP::Server::Request::my_request
+ sub Test::HTTP::Server::Request::my_request
  {
      my $self = shift;
      return "foobar!\n"
