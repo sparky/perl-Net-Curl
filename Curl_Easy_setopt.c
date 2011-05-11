@@ -120,7 +120,7 @@ perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
 # endif
 #endif
 		default:
-			croak( "unrecognized function option %d", option );
+			croak( "unrecognized function option %ld", option );
 	}
 
 	if ( cbnum != CB_EASY_LAST )
