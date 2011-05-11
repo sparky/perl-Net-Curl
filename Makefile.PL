@@ -493,7 +493,7 @@ sub deep_copy
 sub MY::postamble
 {
 	return <<'EOM';
-.PHONY: testall disttestall version_update symbols_update
+.PHONY: testall disttestall version_update symbols_update test_update inc_update
 testall:
 	TEST_HAS_INTERNETS=1 TEST_AUTHOR=1 TEST_EXTENDED=1 $(MAKE) test
 
@@ -505,6 +505,11 @@ version_update:
 
 symbols_update:
 	curl https://github.com/bagder/curl/raw/master/docs/libcurl/symbols-in-versions -o inc/symbols-in-versions
+
+test_update:
+	curl https://github.com/sparky/perl-Test-HTTP-Server/raw/master/lib/Test/HTTP/Server.pm -o inc/Test/HTTP/Server.pm
+
+inc_update: symbols_update test_update
 EOM
 }
 
