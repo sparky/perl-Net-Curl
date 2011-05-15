@@ -46,13 +46,16 @@ if ( not $@ ) {
     ok($httpcode, "HTTP status code check");
 }
 
+# looks like mirbsd has a very shitty timer granularity
+my $ignore = $^O eq "mirbsd";
+
 my $start = $curl->getinfo(CURLINFO_STARTTRANSFER_TIME);
-ok ($start, "Valid transfer start time");
+ok ($start || $ignore, "Valid transfer start time");
 my $total = $curl->getinfo(CURLINFO_TOTAL_TIME);
-ok ($total, "defined total transfer time");
+ok ($total || $ignore, "defined total transfer time");
 my $dns = $curl->getinfo(CURLINFO_NAMELOOKUP_TIME);
 diag( "DNS LOOKUP time is $dns @ $^O");
 my $conn = $curl->getinfo(CURLINFO_CONNECT_TIME);
-ok ($conn, "Connect time defined");
+ok ($conn || $ignore, "Connect time defined");
 my $pre = $curl->getinfo(CURLINFO_PRETRANSFER_TIME);
-ok ($pre, "Pre-transfer time nonzero, defined");
+ok ($pre || $ignore, "Pre-transfer time nonzero, defined");
