@@ -9,7 +9,7 @@ use warnings;
 use IO::Socket;
 use POSIX ":sys_wait_h";
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub _open_socket
 {
@@ -41,7 +41,11 @@ sub new
 	die "Could not fork\n"
 		unless defined $pid;
 	if ( $pid ) {
-		my $self = { port => $port, pid => $pid };
+		my $self = {
+			address => "127.0.0.1",
+			port => $port,
+			pid => $pid,
+		};
 		return bless $self, $class;
 	} else {
 		$SIG{CHLD} = \&_sigchld;
@@ -54,7 +58,22 @@ sub new
 sub uri
 {
 	my $self = shift;
-	return "http://127.0.0.1:$self->{port}/";
+	return "http://$self->{address}:$self->{port}/";
+}
+
+sub port
+{
+	my $self = shift;
+	$self->{port};
+}
+
+sub address
+{
+	my $self = shift;
+	if ( @_ ) {
+		$self->{address} = shift;
+	}
+	$self->{address};
 }
 
 sub _sigchld
@@ -121,10 +140,8 @@ BEGIN {
 	}
 }
 
-use constant {
-	DNAME => [qw(Sun Mon Tue Wed Thu Fri Sat)],
-	MNAME => [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)],
-};
+use constant DNAME => [qw(Sun Mon Tue Wed Thu Fri Sat)];
+use constant MNAME => [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
 
 sub _http_time
 {
