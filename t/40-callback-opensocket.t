@@ -43,10 +43,8 @@ sub cb_opensocket {
 	# must save a reference somewhere, otherwise perl will close it
 	$easy->{ "fd$f" } = $s;
 
-	my $uri = $server->uri;
-	$uri =~ m#:(\d+)/$#;
-	my $newport = $1;
-	$addr->{addr} = pack_sockaddr_in( $newport, inet_aton( '127.0.0.1' ) );
+	$addr->{addr} = pack_sockaddr_in( $server->port,
+		inet_aton( $server->address ) );
 	
 	return $f;
 }
