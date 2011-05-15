@@ -59,7 +59,4 @@ Share:
 - write more documentation
 
 tests:
-- use some pure-perl http server, should do for most tests
 - review and renumerate
-- add more crash tests (remove last reference while performing,
-  forced destrution, etc)
