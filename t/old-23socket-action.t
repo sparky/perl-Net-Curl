@@ -178,5 +178,5 @@ ok( $sock_change == 0, "nothing unexpected happened: socket" );
 
 ok( length $head1, "received head1" );
 ok( length $head2, "received head2" );
-ok( length $body1, "received body1" );
-ok( length $body2, "received body2" );
+ok( 12000 == length $body1, "received body1" );
+ok( 12000 == length $body2, "received body2" );
