@@ -322,7 +322,7 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	easy = (perl_curl_easy_t *) userptr;
 	callback_t *cb = &easy->cb[ CB_EASY_OPENSOCKET ];
 	curl_socket_t ret;
-	HV *ah;
+	HV *ah = NULL;
 
 	SV *args[] = {
 		SELF2PERL( easy ),
@@ -335,7 +335,6 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 		(void) hv_stores( ah, "socktype", newSViv( address->socktype ) );
 		(void) hv_stores( ah, "protocol", newSViv( address->protocol ) );
 		(void) hv_stores( ah, "addrlen", newSVuv( address->addrlen ) );
-		/* XXX: is this correct ? */
 		(void) hv_stores( ah, "addr", newSVpvn( (const char *) &address->addr,
 			sizeof( struct sockaddr ) ) );
 		args[2] = newRV( sv_2mortal( (SV *) ah ) );
@@ -344,7 +343,27 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 	ret = PERL_CURL_CALL( cb, args );
 
 	if ( address ) {
-		/* TODO: finish this - callback is allowed to overwrite address values */
+		SV **tmp;
+
+		tmp = hv_fetchs( ah, "family", 0 );
+		if ( tmp && *tmp && SvOK( *tmp ) )
+			address->family = SvIV( *tmp );
+
+		tmp = hv_fetchs( ah, "socktype", 0 );
+		if ( tmp && *tmp && SvOK( *tmp ) )
+			address->socktype = SvIV( *tmp );
+
+		tmp = hv_fetchs( ah, "protocol", 0 );
+		if ( tmp && *tmp && SvOK( *tmp ) )
+			address->protocol = SvIV( *tmp );
+
+		tmp = hv_fetchs( ah, "addrlen", 0 );
+		if ( tmp && *tmp && SvOK( *tmp ) )
+			address->addrlen = SvUV( *tmp );
+
+		tmp = hv_fetchs( ah, "addr", 0 );
+		if ( tmp && *tmp && SvOK( *tmp ) )
+			Copy( SvPV_nolen( *tmp ), (char *) &address->addr, 1, struct sockaddr );
 	}
 
 	return ret;
