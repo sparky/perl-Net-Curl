@@ -32,6 +32,7 @@ inc/symbols-in-versions
 t/00-info.t
 t/01-constants.t
 t/02-methods.t
+t/40-callback-opensocket.t
 t/50-crash-lastref.t
 t/51-crash-destroy-with-callbacks.t
 t/52-alter-base.t
