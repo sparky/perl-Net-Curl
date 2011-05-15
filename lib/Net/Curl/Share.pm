@@ -5,7 +5,7 @@ use warnings;
 use Net::Curl ();
 use Exporter 'import';
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Share::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
