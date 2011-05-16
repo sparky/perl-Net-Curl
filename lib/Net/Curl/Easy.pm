@@ -448,7 +448,14 @@ CURLOPT_FNMATCH_DATA value. Must return one of CURL_FNMATCHFUNC_* values.
 
 =item CURLOPT_SSH_KEYFUNCTION ( CURLOPT_SSH_KEYDATA ) 7.19.6+
 
-Not supported yet.
+sshkey callback receives 4 arguments: easy object, known key, found key,
+khmatch status and CURLOPT_SSH_KEYDATA value.
+Must return one of CURLKHSTAT_* values.
+
+ sub cb_sshkey {
+     my ( $easy, $knownkey, $foundkey, $khmatch, $uservar ) = @_;
+     return CURLKHSTAT_FINE_ADD_TO_FILE;
+ }
 
 =back
 
