@@ -31,6 +31,9 @@
 #ifndef hv_stores
 # define hv_stores(hv,key,val) hv_store( hv, key, sizeof( key ) - 1, val, 0 )
 #endif
+#ifndef hv_fetchs
+# define hv_fetchs(hv,key,store) hv_fetch( hv, key, sizeof( key ) - 1, store );
+#endif
 
 #ifndef CLEAR_ERRSV
 # define CLEAR_ERRSV()					\
