@@ -516,6 +516,47 @@ cb_easy_fnmatch( void *userptr, const char *pattern, const char *string )
 #endif
 
 
+#ifdef CURLKHMATCH_OK
+/* SSH_KEYFUNCTION -- SSH_KEYDATA */
+static SV *
+perl_curl_khkey2hash( pTHX_ const struct curl_khkey *key )
+{
+	HV *h;
+
+	if ( !key )
+		return &PL_sv_undef;
+
+	h = newHV();
+	(void) hv_stores( h, "key", newSVpv( key->key, key->len ) );
+	(void) hv_stores( h, "len", newSVuv( key->len ) );
+	(void) hv_stores( h, "keytype", newSViv( key->keytype ) );
+
+	return newRV( sv_2mortal( (SV *) h ) );
+}
+
+static int
+cb_easy_sshkey( CURL *easy_handle, const struct curl_khkey *knownkey,
+	const struct curl_khkey *foundkey, enum curl_khmatch khmatch,
+	void *userptr )
+{
+	dTHX;
+
+	perl_curl_easy_t *easy;
+	easy = (perl_curl_easy_t *) userptr;
+	callback_t *cb = &easy->cb[ CB_EASY_SSHKEY ];
+
+	SV *args[] = {
+		SELF2PERL( easy ),
+		perl_curl_khkey2hash( aTHX_ knownkey ),
+		perl_curl_khkey2hash( aTHX_ foundkey ),
+		newSViv( khmatch ),
+	};
+
+	return PERL_CURL_CALL( cb, args );
+}
+#endif
+
+
 #ifdef CALLBACK_TYPECHECK
 static curl_progress_callback t_progress __attribute__((unused)) = cb_easy_progress;
 static curl_write_callback t_write __attribute__((unused)) = cb_easy_write;
@@ -528,4 +569,5 @@ static curl_sockopt_callback t_sockopt __attribute__((unused)) = cb_easy_sockopt
 static curl_opensocket_callback t_opensocket __attribute__((unused)) = cb_easy_opensocket;
 static curl_ioctl_callback t_ioctl __attribute__((unused)) = cb_easy_ioctl;
 static curl_debug_callback t_debug __attribute__((unused)) = cb_easy_debug;
+static curl_sshkeycallback t_sshkey __attribute__((unused)) = cb_easy_sshkey;
 #endif

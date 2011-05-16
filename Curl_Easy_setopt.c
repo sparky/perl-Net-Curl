@@ -119,6 +119,15 @@ perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
 			break;
 # endif
 #endif
+#ifdef CURLOPT_SSH_KEYDATA
+# ifdef CURLOPT_SSH_KEYFUNCTION
+		case CURLOPT_SSH_KEYFUNCTION:
+			funcptr = cb_easy_sshkey;
+			dataopt = CURLOPT_SSH_KEYDATA;
+			cbnum = CB_EASY_SSHKEY;
+			break;
+# endif
+#endif
 		default:
 			croak( "unrecognized function option %ld", option );
 	}
@@ -218,6 +227,11 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 #ifdef CURLOPT_FNMATCH_DATA
 		case CURLOPT_FNMATCH_DATA:
 			cbnum = CB_EASY_FNMATCH;
+			break;
+#endif
+#ifdef CURLOPT_SSH_KEYDATA
+		case CURLOPT_SSH_KEYDATA:
+			cbnum = CB_EASY_SSHKEY;
 			break;
 #endif
 

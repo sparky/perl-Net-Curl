@@ -46,7 +46,6 @@ XS:
 Easy:
 - test callback arguments just before perform (maybe only for default writers)
 - write more documentation
-- CURLOPT_SSH_KEYFUNCTION
 
 Form:
 - implement read callback

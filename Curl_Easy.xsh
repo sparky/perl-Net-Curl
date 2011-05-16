@@ -21,6 +21,7 @@ typedef enum {
 	CB_EASY_CHUNK_BGN,
 	CB_EASY_CHUNK_END,
 	CB_EASY_FNMATCH,
+	CB_EASY_SSHKEY,
 	CB_EASY_LAST
 } perl_curl_easy_callback_code_t;
 
