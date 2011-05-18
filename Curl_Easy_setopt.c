@@ -85,6 +85,15 @@ perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
 			break;
 # endif
 #endif
+#ifdef CURLOPT_CLOSESOCKETDATA
+# ifdef CURLOPT_CLOSESOCKETFUNCTION
+		case CURLOPT_CLOSESOCKETFUNCTION:
+			funcptr = cb_easy_closesocket;
+			dataopt = CURLOPT_CLOSESOCKETDATA;
+			cbnum = CB_EASY_CLOSESOCKET;
+			break;
+# endif
+#endif
 #ifdef CURLOPT_INTERLEAVEDATA
 # ifdef CURLOPT_INTERLEAVEFUNCTION
 		case CURLOPT_INTERLEAVEFUNCTION:
@@ -197,6 +206,11 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 #ifdef CURLOPT_OPENSOCKETDATA
 		case CURLOPT_OPENSOCKETDATA:
 			cbnum = CB_EASY_OPENSOCKET;
+			break;
+#endif
+#ifdef CURLOPT_CLOSESOCKETDATA
+		case CURLOPT_CLOSESOCKETDATA:
+			cbnum = CB_EASY_CLOSESOCKET;
 			break;
 #endif
 #ifdef CURLOPT_INTERLEAVEDATA

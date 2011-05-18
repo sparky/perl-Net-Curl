@@ -371,6 +371,29 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 #endif
 
 
+#ifdef CURLOPT_CLOSESOCKETFUNCTION
+/* CLOSESOCKETFUNCTION -- CLOSESOCKETDATA */
+static void
+cb_easy_closesocket( void *userptr, curl_socket_t item )
+{
+	dTHX;
+
+	perl_curl_easy_t *easy;
+	easy = (perl_curl_easy_t *) userptr;
+	callback_t *cb = &easy->cb[ CB_EASY_CLOSESOCKET ];
+
+	SV *args[] = {
+		SELF2PERL( easy ),
+		newSViv( item ),
+	};
+
+	PERL_CURL_CALL( cb, args );
+
+	return;
+}
+#endif
+
+
 #ifdef CURLOPT_INTERLEAVEFUNCTION
 /* INTERLEAVEFUNCTION -- INTERLEAVEDATA */
 static size_t
@@ -567,6 +590,7 @@ static curl_seek_callback t_seek __attribute__((unused)) = cb_easy_seek;
 static curl_read_callback t_read __attribute__((unused)) = cb_easy_read;
 static curl_sockopt_callback t_sockopt __attribute__((unused)) = cb_easy_sockopt;
 static curl_opensocket_callback t_opensocket __attribute__((unused)) = cb_easy_opensocket;
+static curl_closesocket_callback t_closesocket __attribute__((unused)) = cb_easy_closesocket;
 static curl_ioctl_callback t_ioctl __attribute__((unused)) = cb_easy_ioctl;
 static curl_debug_callback t_debug __attribute__((unused)) = cb_easy_debug;
 static curl_sshkeycallback t_sshkey __attribute__((unused)) = cb_easy_sshkey;
