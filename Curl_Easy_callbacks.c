@@ -334,9 +334,8 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 		(void) hv_stores( ah, "family", newSViv( address->family ) );
 		(void) hv_stores( ah, "socktype", newSViv( address->socktype ) );
 		(void) hv_stores( ah, "protocol", newSViv( address->protocol ) );
-		(void) hv_stores( ah, "addrlen", newSVuv( address->addrlen ) );
 		(void) hv_stores( ah, "addr", newSVpvn( (const char *) &address->addr,
-			sizeof( struct sockaddr ) ) );
+			address->addrlen ) );
 		args[2] = newRV( sv_2mortal( (SV *) ah ) );
 	}
 
@@ -357,13 +356,15 @@ cb_easy_opensocket( void *userptr, curlsocktype purpose,
 		if ( tmp && *tmp && SvOK( *tmp ) )
 			address->protocol = SvIV( *tmp );
 
-		tmp = hv_fetchs( ah, "addrlen", 0 );
-		if ( tmp && *tmp && SvOK( *tmp ) )
-			address->addrlen = SvUV( *tmp );
-
 		tmp = hv_fetchs( ah, "addr", 0 );
-		if ( tmp && *tmp && SvOK( *tmp ) )
-			Copy( SvPV_nolen( *tmp ), (char *) &address->addr, 1, struct sockaddr );
+		if ( tmp && *tmp && SvOK( *tmp ) ) {
+			STRLEN len;
+			char *source = SvPV( *tmp, len );
+			if ( len > sizeof( struct sockaddr_storage ) )
+				len = sizeof( struct sockaddr_storage );
+			Copy( source, (char *) &address->addr, len, char );
+			address->addrlen = len;
+		}
 	}
 
 	return ret;
