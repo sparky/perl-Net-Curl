@@ -351,7 +351,7 @@ values.
 opensocket callback receives 4 arguments: easy object, socket purpose,
 address structure (in form of a hashref), and CURLOPT_OPENSOCKETDATA value.
 The address structure has following numeric values: "family", "socktype",
-"protocol", "addrlen"; and "addr" in binary form. Use Socket module to
+"protocol"; and "addr" in binary form. Use Socket module to
 decode "addr" field. You are also allowed to change those values.
 
 Callback must return fileno of the socket or CURL_SOCKET_BAD on error.
