@@ -46,6 +46,8 @@ XS:
 Easy:
 - test callback arguments just before perform (maybe only for default writers)
 - write more documentation
+- in case of multi interface CLOSESOCKET will be called long after destroying
+  the easy handle, this will be deadly
 
 Form:
 - implement read callback
