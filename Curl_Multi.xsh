@@ -428,8 +428,13 @@ socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 	CODE:
 		CLEAR_ERRSV();
 		do {
+#ifdef CURL_CSELECT_IN
 			ret = curl_multi_socket_action( multi->handle,
 				(curl_socket_t) sockfd, ev_bitmask, &remaining );
+#else
+			ret = curl_multi_socket( multi->handle,
+				(curl_socket_t) sockfd, &remaining );
+#endif
 		} while ( ret == CURLM_CALL_MULTI_PERFORM );
 
 		/* rethrow errors */
