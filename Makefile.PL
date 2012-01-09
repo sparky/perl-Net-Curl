@@ -25,7 +25,7 @@ my $constant_names;
 
 # XXX: some compilers may not support those flags
 my $devel_cflags = "-Wall ";
-$devel_cflags .= "-Werror -DCALLBACK_TYPECHECK " if -d ".git";
+#$devel_cflags .= "-Werror -DCALLBACK_TYPECHECK " if -d ".git";
 
 if ( $curl{libs} and $curl{version} ) {
 	print "Using manually introduced curl options:\n";
