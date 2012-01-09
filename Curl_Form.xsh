@@ -201,12 +201,12 @@ add( form, ... )
 				case CURLFORM_CONTENTSLENGTH:
 				case CURLFORM_BUFFERLENGTH:
 					if ( i_out > 0 && farray[ i_out - 1 ].option == option ) {
-						if ( (IV) farray[ i_out - 1 ].value < SvIV( value ) )
+						if ( PTR2IV( farray[ i_out - 1 ].value ) < SvIV( value ) )
 							croak( "specified length larger than data size" );
 						i_out--;
 					}
 					farray[ i_out ].option = option;
-					farray[ i_out ].value = (void *) SvIV( value );
+					farray[ i_out ].value = INT2PTR( void *, SvIV( value ) );
 					i_out++;
 					break;
 
