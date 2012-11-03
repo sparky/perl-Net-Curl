@@ -66,7 +66,6 @@ t/old-07ftp-upload.t
 t/old-08ssl.t
 t/old-09times.t
 t/old-10errbuf.t
-t/old-13slowleak.t
 t/old-14duphandle.t
 t/old-15duphandle-callback.t
 t/old-16formpost.t
