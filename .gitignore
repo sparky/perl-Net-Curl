@@ -7,3 +7,4 @@ blib/*
 lib/Net/Curl/Compat.pm
 lib/Net/Curl/examples.pod
 pm_to_blib
+Net-Curl-*
