@@ -64,10 +64,10 @@ test_leak {
     $curl->setopt(CURLOPT_FOLLOWLOCATION, 1);
     $curl->setopt(CURLOPT_TIMEOUT, 30);
 
-    open(HEAD, "+>", undef);
-    Net::Curl::Easy::setopt($curl, CURLOPT_WRITEHEADER, \*HEAD);
-    open(BODY, "+>", undef);
-    Net::Curl::Easy::setopt($curl, CURLOPT_FILE, \*BODY);
+    open(my $head, "+>", undef);
+    Net::Curl::Easy::setopt($curl, CURLOPT_WRITEHEADER, $head);
+    open(my $body, "+>", undef);
+    Net::Curl::Easy::setopt($curl, CURLOPT_WRITEDATA, $body);
 
     $curl->setopt(CURLOPT_URL, $url);
     $curl->setopt(CURLOPT_SHARE, $share);
@@ -83,6 +83,6 @@ test_leak {
     }
 } q(old-13slowleak.t);
 my $n2 = Devel::Leak::CheckSV($handle);
-cmp_ok($n1 + 10, '>=', $n2, q(cross-references));
+cmp_ok($n1, '>=', $n2, q(cross-references));
 
 done_testing(6);
