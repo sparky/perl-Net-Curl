@@ -1,5 +1,4 @@
 use strict;
-use Config;
 use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
 use File::Find;
@@ -36,9 +35,14 @@ if ( $curl{libs} and $curl{version} ) {
 } else {
 	eval {
 		require ExtUtils::PkgConfig;
-		my $pkgconfig = $Config{sitelib_stem};
-		$pkgconfig =~ s/\bsite_perl$/pkgconfig/;
-		local $ENV{PKG_CONFIG_PATH} = $pkgconfig;
+		my $pkgconfig = `which curl`;
+		unless ( $? ) {
+			chomp $pkgconfig;
+			$pkgconfig =~ s/\bbin(.+?)curl$/lib\1pkgconfig/i;
+			$ENV{PKG_CONFIG_PATH} = $pkgconfig;
+		} else {
+			print STDERR "which failed:\n$@\n";
+		}
 		%curl = ExtUtils::PkgConfig->find( 'libcurl' );
 		$curl{version} = $curl{modversion};
 	};
