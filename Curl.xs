@@ -370,14 +370,16 @@ perl_curl_constant_add( pTHX_ HV *hash, const char *name, I32 namelen,
 {
 #if PERL_REVISION == 5 && PERL_VERSION >= 9
 	SV **sv = hv_fetch( hash, name, namelen, TRUE );
-	int tmp;
 	if ( !sv )
 		croak( "Could not add key '%s' to %%Net::Curl::", name );
 
 	if ( SvOK( *sv ) || SvTYPE( *sv ) == SVt_PVGV ) {
 		newCONSTSUB( hash, name, value );
 	} else {
-		tmp = SvUPGRADE( *sv, SVt_RV );
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-value"
+		SvUPGRADE( *sv, SVt_RV );
+#pragma clang diagnostic pop
 		SvRV_set( *sv, value );
 		SvROK_on( *sv );
 		SvREADONLY_on( value );
