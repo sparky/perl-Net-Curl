@@ -41,8 +41,8 @@ test_leak { my $form = Net::Curl::Form->new or die }
     q(Net::Curl::Form->new);
 
 my $multi = Net::Curl::Multi->new;
-test_leak { my $multi = Net::Curl::Multi->new or die }
-    q(Net::Curl::Multi->new);
+#test_leak { my $multi = Net::Curl::Multi->new or die }
+#    q(Net::Curl::Multi->new);
 
 my $share = Net::Curl::Share->new;
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
@@ -72,7 +72,7 @@ test_leak {
     $curl->setopt(CURLOPT_URL, $url);
     $curl->setopt(CURLOPT_SHARE, $share);
 
-    eval { $curl->perform() };
+    eval { $multi->perform() };
     if (not $@) {
         my $bytes = $curl->getinfo(CURLINFO_SIZE_DOWNLOAD);
         my $realurl = $curl->getinfo(CURLINFO_EFFECTIVE_URL);
@@ -85,4 +85,4 @@ test_leak {
 my $n2 = Devel::Leak::CheckSV($handle);
 cmp_ok($n1, '>=', $n2, q(cross-references));
 
-done_testing(6);
+done_testing(5);
