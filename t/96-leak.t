@@ -41,8 +41,12 @@ test_leak { my $form = Net::Curl::Form->new or die }
     q(Net::Curl::Form->new);
 
 my $multi = Net::Curl::Multi->new;
-#test_leak { my $multi = Net::Curl::Multi->new or die }
-#    q(Net::Curl::Multi->new);
+SKIP: {
+    skip q(libcurl/7.29.0 crashes here: http://sourceforge.net/p/curl/bugs/1194/), 1
+        if Net::Curl::version_info()->{version} eq q(7.29.0);
+    test_leak { my $multi = Net::Curl::Multi->new or die }
+       q(Net::Curl::Multi->new);
+}
 
 my $share = Net::Curl::Share->new;
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
@@ -85,4 +89,4 @@ test_leak {
 my $n2 = Devel::Leak::CheckSV($handle);
 cmp_ok($n1, '>=', $n2, q(cross-references));
 
-done_testing(5);
+done_testing(6);
