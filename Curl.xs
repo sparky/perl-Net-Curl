@@ -376,7 +376,10 @@ perl_curl_constant_add( pTHX_ HV *hash, const char *name, I32 namelen,
 	if ( SvOK( *sv ) || SvTYPE( *sv ) == SVt_PVGV ) {
 		newCONSTSUB( hash, name, value );
 	} else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-value"
 		SvUPGRADE( *sv, SVt_RV );
+#pragma clang diagnostic pop
 		SvRV_set( *sv, value );
 		SvROK_on( *sv );
 		SvREADONLY_on( value );
@@ -409,7 +412,7 @@ typedef perl_curl_multi_t *Net__Curl__Multi;
 typedef perl_curl_share_t *Net__Curl__Share;
 
 /* default base object */
-#define HASHREF_BY_DEFAULT		newRV_noinc( sv_2mortal( (SV *) newHV() ) )
+#define HASHREF_BY_DEFAULT		sv_2mortal( newRV_noinc( (SV *) newHV() ) )
 
 #include "curl-Easy-c.inc"
 #include "curl-Form-c.inc"

@@ -38,6 +38,7 @@ t/51-crash-destroy-with-callbacks.t
 t/52-alter-base.t
 t/53-crash-destroy-with-callbacks-multi.t
 t/54-crash-getinfo-slist.t
+t/96-leak.t
 t/97-pod.t
 t/98-pod-coverage.t
 t/99-symbols.t
@@ -65,7 +66,6 @@ t/old-07ftp-upload.t
 t/old-08ssl.t
 t/old-09times.t
 t/old-10errbuf.t
-t/old-13slowleak.t
 t/old-14duphandle.t
 t/old-15duphandle-callback.t
 t/old-16formpost.t

@@ -571,8 +571,6 @@ pushopt( easy, option, value )
 		CURLcode ret;
 	CODE:
 		ret = perl_curl_easy_setoptslist( aTHX_ easy, option, value, 0 );
-		if ( ret < 0 )
-			ret = CURLE_BAD_FUNCTION_ARGUMENT;
 		EASY_DIE( ret );
 
 

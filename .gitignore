@@ -1,0 +1,16 @@
+Curl.bs
+Curl.[co]
+MYMETA.*
+Makefile
+blib/*
+*.inc
+lib/Net/Curl/Compat.pm
+lib/Net/Curl/examples.pod
+pm_to_blib
+Net-Curl-*/*
+*.gz
+*.bak
+*.old
+*~
+nytprof*
+cover_db/*
