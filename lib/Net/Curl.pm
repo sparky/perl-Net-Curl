@@ -1,6 +1,7 @@
 package Net::Curl;
 
 use strict;
+use warnings;
 use Exporter 'import';
 
 our @ISA;
