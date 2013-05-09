@@ -7,7 +7,7 @@ use Net::Curl::Form ();
 use Exporter ();
 our @ISA = qw(Net::Curl::Form Exporter);
 
-our $VERSION = '4.15';
+our $VERSION = 4.15;
 
 our @EXPORT;
 

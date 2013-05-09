@@ -58,6 +58,8 @@ methods that do not yet form part of official WWW::Curl distribution.
 use strict;
 use warnings;
 
+our $VERSION = 4.15;
+
 my %packages = (
 #MODULES#
 );

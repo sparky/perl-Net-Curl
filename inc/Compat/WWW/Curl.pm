@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Net::Curl ();
 
-our $VERSION = '4.15';
+our $VERSION = 4.15;
 
 # copies constants to current namespace
 sub _copy_constants

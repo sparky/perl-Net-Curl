@@ -7,7 +7,7 @@ use Net::Curl::Easy ();
 use Exporter ();
 our @ISA = qw(Net::Curl::Easy Exporter);
 
-our $VERSION = '4.15';
+our $VERSION = 4.15;
 our @EXPORT;
 
 BEGIN {
