@@ -1,1 +1,7 @@
-Visit https://github.com/sparky/perl-Net-Curl/commits/master for complete changes list.
+Changelog for Net-Curl
+
+v0.26 Sun May 5 23:20:46 2013 -0300
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed "Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction.";
+ - ExtUtils::PkgConfig now recognizes libcurl installed anywhere;
+ - Updated inc/symbols-in-versions from libcurl/7.30.0.
