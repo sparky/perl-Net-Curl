@@ -40,7 +40,7 @@ if ( $curl{libs} and $curl{version} ) {
 		my $pkgconfig = `which curl`;
 		unless ( $? ) {
 			chomp $pkgconfig;
-			$pkgconfig =~ s/\bbin(.+?)curl$/lib\1pkgconfig/i;
+			$pkgconfig =~ s/\bbin(.+?)curl$/lib$1pkgconfig/i;
 			$ENV{PKG_CONFIG_PATH} = $pkgconfig;
 		} else {
 			print STDERR "which failed:\n$@\n";
@@ -139,7 +139,7 @@ if ( $www_compat ) {
 }
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
-my $l_ = $] >= 5.010 ? "ł" : "l";
+my $l_ = $] >= 5.010 ? "\x{142}" : "l";
 WriteMakefile(
 	NAME 		=> 'Net::Curl',
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
@@ -151,30 +151,15 @@ WriteMakefile(
 	LICENSE		=> 'mit',
 	META_MERGE	=> {
 		resources => {
-			repository => 'https://github.com/sparky/perl-Net-Curl'
-		},
-		configure_requires => {
-			# install but do not enforce
-			"ExtUtils::PkgConfig" => 0,
-		},
-		requires => {
-			# we have our own copy
-			"Test::HTTP::Server" => 0,
-			# rather useless
-			"Test::CPAN::Meta" => 0,
+			bugtracker	=> 'https://github.com/sparky/perl-Net-Curl/issues',
+			homepage	=> 'https://github.com/sparky/perl-Net.Curl',
+			repository	=> 'git://github.com/sparky/perl-Net-Curl.git',
 		},
 	},
 	MIN_PERL_VERSION => 5.008001,
 	CONFIGURE_REQUIRES => {
-		"ExtUtils::MakeMaker" => 0,
 		"ExtUtils::MakeMaker::Config" => 0,
-		"File::Find" => 0,
-	},
-	PREREQ_PM => {
-		"Test::More" => 0,
-		"Test::Pod" => 0,
-		"File::Temp" => 0,
-		"Scalar::Util" => 0,
+		"ExtUtils::PkgConfig" => 0,
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
