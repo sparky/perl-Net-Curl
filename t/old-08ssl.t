@@ -7,9 +7,9 @@ use File::Temp qw/tempfile/;
 use Net::Curl qw(:constants);
 use Net::Curl::Easy qw(:constants);
 
-unless ( $ENV{'TEST_EXTENDED'} ) {
+unless ( $ENV{'EXTENDED_TESTING'} ) {
 	my $msg = 'Not that useful test. ' .
-		' Set $ENV{TEST_EXTENDED} to a true value to run.';
+		' Set $ENV{EXTENDED_TESTING} to a true value to run.';
 	plan skip_all => $msg;
 }
 

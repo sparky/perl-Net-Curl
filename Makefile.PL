@@ -505,10 +505,10 @@ sub MY::postamble
 	return <<'EOM';
 .PHONY: testall disttestall version_update symbols_update test_update inc_update
 testall:
-	TEST_HAS_INTERNETS=1 TEST_AUTHOR=1 TEST_EXTENDED=1 $(MAKE) test
+	AUTOMATED_TESTING=1 AUTHOR_TESTING=1 EXTENDED_TESTING=1 $(MAKE) test
 
 disttestall:
-	TEST_HAS_INTERNETS=1 TEST_AUTHOR=1 TEST_EXTENDED=1 $(MAKE) disttest
+	AUTOMATED_TESTING=1 AUTHOR_TESTING=1 EXTENDED_TESTING=1 $(MAKE) disttest
 
 version_update:
 	sed -i "/VERSION\s*=/s/=\s*'.*'/= '$(VERSION)'/" lib/Net/Curl/*.pm
