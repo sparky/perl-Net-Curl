@@ -8,10 +8,9 @@ use FindBin qw($Bin $Script);
 BEGIN {
     eval {
         require Devel::Leak;
-        require Test::More;
     };
     if ($@) {
-        print "1..0 # Skip Devel::Leak and Test::More required\n";
+        print "1..0 # Skip Devel::Leak required\n";
         exit 0;
     }
 }
@@ -19,7 +18,7 @@ BEGIN {
 use Test::More;
 
 sub test_leak (&$;$) {
-    my ($code, $descr, $maxleak) = (@_, 0);
+    my ($code, $descr, $maxleak) = (@_, ($] >= 5.017) ? 5 : 0);
     my $n1 = Devel::Leak::NoteSV(my $handle);
     $code->() for 1 .. 10_000;
     my $n2 = Devel::Leak::CheckSV($handle);
