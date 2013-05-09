@@ -4,8 +4,8 @@ Curl_Easy.xsh
 Curl_Easy_callbacks.c
 Curl_Easy_setopt.c
 Curl_Form.xsh
-Curl_Share.xsh
 Curl_Multi.xsh
+Curl_Share.xsh
 LICENSE
 MANIFEST
 Makefile.PL
@@ -22,6 +22,7 @@ inc/Compat/WWW/Curl/Form.pm
 inc/Compat/WWW/Curl/Multi.pm
 inc/Compat/WWW/Curl/Share.pm
 inc/Test/HTTP/Server.pm
+inc/symbols-in-versions
 lib/Net/Curl.pm
 lib/Net/Curl/Compat.pm
 lib/Net/Curl/Easy.pm
@@ -29,7 +30,6 @@ lib/Net/Curl/Form.pm
 lib/Net/Curl/Multi.pm
 lib/Net/Curl/Share.pm
 lib/Net/Curl/examples.pod
-inc/symbols-in-versions
 t/00-info.t
 t/01-constants.t
 t/02-methods.t
@@ -40,9 +40,8 @@ t/52-alter-base.t
 t/53-crash-destroy-with-callbacks-multi.t
 t/54-crash-getinfo-slist.t
 t/96-leak.t
-t/97-pod.t
-t/98-pod-coverage.t
 t/99-symbols.t
+t/author-critic.t
 t/compat-00constants.t
 t/compat-01basic.t
 t/compat-02callbacks.t
@@ -57,8 +56,8 @@ t/compat-18twinhandles.t
 t/compat-19multi.t
 t/compat-20undefined_subs.t
 t/compat-21write-to-scalar.t
-t/old-02-form.t
 t/old-01basic.t
+t/old-02-form.t
 t/old-02callbacks.t
 t/old-04abort-test.t
 t/old-05progress.t
@@ -78,4 +77,13 @@ t/old-21write-to-scalar.t
 t/old-22sendrecv.t
 t/old-23socket-action.t
 t/old-24-multi-refcount.t
+t/release-cpan-changes.t
+t/release-distmeta.t
+t/release-kwalitee.t
+t/release-mojibake.t
+t/release-pod-coverage.t
+t/release-pod-linkcheck.t
+t/release-pod-syntax.t
+t/release-portability.t
+t/release-test-version.t
 typemap
