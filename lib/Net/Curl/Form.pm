@@ -7,24 +7,25 @@ use Exporter 'import';
 
 our $VERSION = '0.26';
 
-our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Form::};
+our @EXPORT_OK = grep { /^CURL/x } keys %{Net::Curl::Form::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
 sub strerror
 {
 	# first arg may be an object, package, or nothing
-	my $code = pop @_;
+	my (undef, $code) = @_;
 
-	foreach my $c ( grep /^CURL_FORMADD_/, keys %{Net::Curl::Form::} ) {
+	foreach my $c ( grep { /^CURL_FORMADD_/x } keys %{Net::Curl::Form::} ) {
 		next unless Net::Curl::Form->$c() == $code;
 		local $_ = $c;
-		s/^CURL_FORMADD_//;
+		s/^CURL_FORMADD_//x;
 		tr/_/ /;
 		return ucfirst lc $_;
 	}
 	return "Invalid formadd error code";
 }
 
+## no critic (ProhibitMultiplePackages)
 package Net::Curl::Form::Code;
 
 use overload

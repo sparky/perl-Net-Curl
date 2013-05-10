@@ -7,9 +7,10 @@ use Exporter 'import';
 
 our $VERSION = '0.26';
 
-our @EXPORT_OK = grep /^CURL/, keys %{Net::Curl::Multi::};
+our @EXPORT_OK = grep { /^CURL/x } keys %{Net::Curl::Multi::};
 our %EXPORT_TAGS = ( constants => \@EXPORT_OK );
 
+## no critic (ProhibitMultiplePackages)
 package Net::Curl::Multi::Code;
 
 use overload

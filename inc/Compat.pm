@@ -58,6 +58,8 @@ methods that do not yet form part of official WWW::Curl distribution.
 use strict;
 use warnings;
 
+use Carp qw(croak);
+
 our $VERSION = 4.15;
 
 my %packages = (
@@ -68,7 +70,7 @@ my $start = tell *DATA;
 unshift @INC, sub {
 	my $pkg = $packages{ $_[1] };
 	return unless defined $pkg;
-	open my $fh, '<&', *DATA;
+	open(my $fh, '<&', *DATA) or croak "can't read from __DATA__";
 	seek $fh, $start + $pkg, 0;
 	return $fh;
 };
