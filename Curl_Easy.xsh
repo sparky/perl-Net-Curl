@@ -360,7 +360,7 @@ void
 reset( easy )
 	Net::Curl::Easy easy
 	CODE:
-		perl_curl_easy_delete_mostly( aTHX_ easy );
+		curl_easy_reset( easy->handle );
 		perl_curl_easy_preset( easy );
 
 
