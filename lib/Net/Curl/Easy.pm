@@ -133,7 +133,7 @@ Throws L</Net::Curl::Easy::Code> on error.
 
 =item reset( )
 
-Reinitializes easy handle.
+Reinitializes easy handle B<(was broken before v0.27!)>.
 
  $easy->reset();
 
