@@ -139,7 +139,7 @@ if ( $www_compat ) {
 }
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
-my $l_ = $] >= 5.010 ? "\x{142}" : "l";
+my ($l_, $a_) = ($] >= 5.010) ? ("\x{142}", "\x{e1}") : qw(l a);
 WriteMakefile(
 	NAME 		=> 'Net::Curl',
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
@@ -155,6 +155,12 @@ WriteMakefile(
 			homepage	=> 'https://github.com/sparky/perl-Net.Curl',
 			repository	=> 'git://github.com/sparky/perl-Net-Curl.git',
 		},
+		x_contributors	=> [
+			"B${a_}lint Szilakszi",
+			"Fuji, Goro",
+			"Przemys${l_}aw Iskra",
+			"Stanislaw Pusep",
+		],
 	},
 	MIN_PERL_VERSION => 5.008001,
 	CONFIGURE_REQUIRES => {
