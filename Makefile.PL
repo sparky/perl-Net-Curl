@@ -152,7 +152,7 @@ WriteMakefile(
 	META_MERGE	=> {
 		resources => {
 			bugtracker	=> 'https://github.com/sparky/perl-Net-Curl/issues',
-			homepage	=> 'https://github.com/sparky/perl-Net.Curl',
+			homepage	=> 'https://github.com/sparky/perl-Net-Curl',
 			repository	=> 'git://github.com/sparky/perl-Net-Curl.git',
 		},
 		x_contributors	=> [
