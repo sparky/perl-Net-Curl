@@ -150,7 +150,10 @@ WriteMakefile(
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
 	META_MERGE	=> {
-		resources => {
+		recommends		=> {
+			"ExtUtils::PkgConfig" => 0,
+		},
+		resources		=> {
 			bugtracker	=> 'https://github.com/sparky/perl-Net-Curl/issues',
 			homepage	=> 'https://github.com/sparky/perl-Net-Curl',
 			repository	=> 'git://github.com/sparky/perl-Net-Curl.git',
@@ -165,7 +168,12 @@ WriteMakefile(
 	MIN_PERL_VERSION => 5.008001,
 	CONFIGURE_REQUIRES => {
 		"ExtUtils::MakeMaker::Config" => 0,
-		"ExtUtils::PkgConfig" => 0,
+	},
+	PREREQ_PM 	=> {
+		"Carp" => 0,
+		"overload" => 0,
+		"strict" => 0,
+		"warnings" => 0,
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
