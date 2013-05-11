@@ -152,6 +152,7 @@ WriteMakefile(
 	META_MERGE	=> {
 		recommends		=> {
 			"ExtUtils::PkgConfig" => 0,
+			"XSLoader" => 0,
 		},
 		resources		=> {
 			bugtracker	=> 'https://github.com/sparky/perl-Net-Curl/issues',
@@ -171,6 +172,8 @@ WriteMakefile(
 	},
 	PREREQ_PM 	=> {
 		"Carp" => 0,
+		"DynaLoader" => 0,
+		"Exporter" => 0,
 		"overload" => 0,
 		"strict" => 0,
 		"warnings" => 0,
