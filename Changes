@@ -1,6 +1,11 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+v0.28 Sun May 12 11:46:53 2013 -0300
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Implemented curl_multi_wait() as Net::Curl::Multi::wait() method;
+ - META/documentation fixes.
+
 v0.27 Sat May 11 12:54:58 2013 -0300
  [Stanislaw Pusep <stas@sysd.org>]
  - Net::Curl::Easy::reset() now works;
