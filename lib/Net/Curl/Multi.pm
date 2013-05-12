@@ -152,6 +152,18 @@ Calls L<curl_multi_perform(3)>.
 Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Multi::Code> on error.
 
+=item wait( TIMEOUT_MS )
+
+This method polls on all file descriptors used by the curl easy handles contained in the given multi handle set.
+It will block until activity is detected on at least one of the handles or TIMEOUT_MS has passed.
+
+ my $active = $multi->wait(1000);
+
+Calls L<curl_multi_wait(3)>
+(L<available since libcurl/7.28.0|http://curl.haxx.se/libcurl/c/curl_multi_wait.html>).
+Rethrows exceptions from callbacks.
+Throws L</Net::Curl::Multi::Code> on error.
+
 =item socket_action( [SOCKET], [BITMASK] )
 
 Signalize action on a socket.

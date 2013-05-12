@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use Net::Curl;
 use Net::Curl::Easy;
@@ -26,6 +26,11 @@ while ( my ($pkg, $methods) = each %methods ) {
 	can_ok( $pkg, @$methods );
 }
 
+if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x071C00 ) {
+	ok( Net::Curl::Multi->can( "wait" ), "Multi has wait method" );
+} else {
+	ok( ! Net::Curl::Multi->can( "wait" ), "Multi does not have wait method" );
+}
 if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x070F05 ) {
 	ok( Net::Curl::Multi->can( "assign" ), "Multi has assign method" );
 } else {

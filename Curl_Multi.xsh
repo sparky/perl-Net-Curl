@@ -417,6 +417,33 @@ perform( multi )
 		RETVAL
 
 
+#if LIBCURL_VERSION_NUM >= 0x071C00
+
+int
+wait( multi, timeout )
+	Net::Curl::Multi multi
+	long timeout
+	PREINIT:
+		int remaining;
+		CURLMcode ret;
+	CODE:
+		CLEAR_ERRSV();
+
+		ret = curl_multi_wait( multi->handle, NULL, 0, timeout, &remaining );
+
+		/* rethrow errors */
+		if ( SvTRUE( ERRSV ) )
+			croak( NULL );
+
+		MULTI_DIE( ret );
+
+		RETVAL = remaining;
+	OUTPUT:
+		RETVAL
+
+#endif
+
+
 int
 socket_action( multi, sockfd=CURL_SOCKET_BAD, ev_bitmask=0 )
 	Net::Curl::Multi multi
