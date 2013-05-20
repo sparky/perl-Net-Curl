@@ -42,7 +42,6 @@ ok( $@, "Non-zero return code indicates the expected failure");
 
 seek $new_error, 0, 0;
 my $line = <$new_error>;
-chomp $line;
-ok( $line eq "* Protocol badprotocol not supported or disabled in libcurl", "Reading redirected STDERR" );
+like( $line, qr/^\* (?:Protocol badprotocol not supported or disabled in libcurl|Unsupported protocol: badprotocol)$/, "Reading redirected STDERR" );
 
 unlink $tempname;

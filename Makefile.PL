@@ -22,7 +22,7 @@ if ( exists $ENV{WWW_COMPAT} ) {
 }
 
 # - this version added curl_multi_socket_action() and many symbols
-my $minimum_libcurl_ver = "7.15.4";
+my $minimum_libcurl_ver = "7.15.5";
 my $constant_names;
 
 # XXX: some compilers may not support those flags

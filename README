@@ -1,7 +1,7 @@
 STATUS: This package is working and the interface is mostly stable.
 
 ** BUILDING **
-- you need libcurl 7.15.4 or newer, try to get one as recent as you can
+- you need libcurl 7.15.5 or newer, try to get one as recent as you can
   * it is highly suggested to build libcurl with asynchdns (c-ares) support
     (besides the usual extensions: libz, ssl)
 

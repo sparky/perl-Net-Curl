@@ -22,6 +22,14 @@
 #include <curl/multi.h>
 #include "const-defenums-h.inc"
 
+#ifndef LIBCURL_COPYRIGHT
+# define LIBCURL_COPYRIGHT "1996 - 2013 Daniel Stenberg, <daniel@haxx.se>."
+#endif
+
+#ifndef LIBCURL_TIMESTAMP
+# define LIBCURL_TIMESTAMP "DEV"
+#endif
+
 #ifndef Newx
 # define Newx(v,n,t)	New(0,v,n,t)
 # define Newxc(v,n,t,c)	Newc(0,v,n,t,c)

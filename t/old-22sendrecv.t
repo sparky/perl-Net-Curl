@@ -61,6 +61,6 @@ alarm 2;
 eval {
 	1 while $c->recv( $buffer, 1024 * 16 );
 };
-ok( $@ && ( $@ == CURLE_AGAIN || $@ == CURLE_UNSUPPORTED_PROTOCOL ),
+ok( $@ && ( $@ == CURLE_AGAIN() || $@ == CURLE_UNSUPPORTED_PROTOCOL() ),
 	"no more data to read" );
 

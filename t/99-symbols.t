@@ -8,7 +8,7 @@ unless ( $ENV{'AUTHOR_TESTING'} ) {
 	plan skip_all => $msg;
 }
 
-my $cver = v7.15.4;
+my $cver = v7.15.5;
 my @files = qw(
 Curl.xs
 Curl_Easy.xsh
