@@ -1,19 +1,19 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
-v0.28 Sun May 12 11:46:53 2013 -0300
+0.28 Sun May 12 11:46:53 2013 -0300
  [Stanislaw Pusep <stas@sysd.org>]
  - Implemented curl_multi_wait() as Net::Curl::Multi::wait() method;
  - META/documentation fixes.
 
-v0.27 Sat May 11 12:54:58 2013 -0300
+0.27 Sat May 11 12:54:58 2013 -0300
  [Stanislaw Pusep <stas@sysd.org>]
  - Net::Curl::Easy::reset() now works;
  - Fixed the leak test for Perl >= 5.017;
  - Few steps towards Modern Perl (checked with Perl::Critic, updated META, added real change log);
  - Minor cleanups.
 
-v0.26 Sun May 5 23:20:46 2013 -0300
+0.26 Sun May 5 23:20:46 2013 -0300
  [Stanislaw Pusep <stas@sysd.org>]
  - Fixed "Attempt to free unreferenced scalar: SV 0xdeadbeef during global destruction.";
  - ExtUtils::PkgConfig now recognizes libcurl installed anywhere;
