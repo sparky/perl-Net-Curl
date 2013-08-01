@@ -13,6 +13,8 @@ BEGIN {
 }
 use WWW::Curl::Easy;
 
+local $ENV{no_proxy} = '*';
+
 my $server = Test::HTTP::Server->new;
 plan skip_all => "Could not run http server\n" unless $server;
 plan tests => 18;

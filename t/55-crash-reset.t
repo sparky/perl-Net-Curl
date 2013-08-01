@@ -5,6 +5,8 @@ use Test::More;
 use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
+local $ENV{no_proxy} = '*';
+
 my $server = Test::HTTP::Server->new;
 plan tests => 4;
 

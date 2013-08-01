@@ -8,6 +8,8 @@ use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 
+local $ENV{no_proxy} = '*';
+
 BEGIN {
 	plan skip_all => "libcurl 7.16.0+ is required"
 		if Net::Curl::LIBCURL_VERSION_NUM < 0x071000;

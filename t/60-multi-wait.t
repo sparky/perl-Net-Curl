@@ -9,6 +9,8 @@ use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Multi qw(:constants);
 
+local $ENV{no_proxy} = '*';
+
 plan skip_all => "curl_multi_wait() is implemented since libcurl/7.28.0"
     if Net::Curl::LIBCURL_VERSION_NUM() < 0x071C00;
 
