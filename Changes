@@ -1,6 +1,14 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.29 2013-08-01T11:39:27Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed compatibility down to libcurl/7.15.5 (7.15.4 is not compatible);
+ - Updated the Changes file to conform with the CPAN::Changes Kwalitee
+   Service;
+ - Synced symbols-in-versions from libcurl/7.31.0;
+ - Attempt to fix tests failing behind a proxy.
+
 0.28 2013-05-12T11:46:53Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Implemented curl_multi_wait() as Net::Curl::Multi::wait() method;
