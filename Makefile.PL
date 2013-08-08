@@ -138,6 +138,10 @@ if ( $www_compat ) {
 	print $f qq[die "WWW::Curl compatibility disabled\\n";\n];
 }
 
+my $bits = (length(pack(p => 0)) < 8)
+    ? ' -D_FILE_OFFSET_BITS=64'
+    : '';
+
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
 my ($l_, $a_) = ($] >= 5.010) ? ("\x{142}", "\x{e1}") : qw(l a);
 WriteMakefile(
@@ -145,7 +149,7 @@ WriteMakefile(
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
 	ABSTRACT_FROM	=> 'lib/Net/Curl.pm',
 	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
-	CCFLAGS		=> $devel_cflags . $curl{cflags},
+	CCFLAGS		=> $devel_cflags . $curl{cflags} . $bits,
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
