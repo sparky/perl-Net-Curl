@@ -4,12 +4,15 @@
 #
 use strict;
 use warnings;
+use Config;
 use Test::More;
 use Net::Curl::Easy qw(:constants);
 
 plan skip_all => "This test requires reliable Internet connection. "
 	. "Set AUTOMATED_TESTING env variable to run this test."
 	unless $ENV{AUTOMATED_TESTING};
+plan skip_all => "FreeBSD stock libcurl might have broken proxy support. "
+    if $Config{osname} eq 'freebsd';
 plan tests => 8;
 
 my $ftp_uri = 'ftp://ftp.cpan.org/pub/CPAN/README';
