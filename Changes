@@ -1,6 +1,11 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.30 2013-08-09T09:35:42Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed compiling on 32-bit Debian Linux systems;
+ - More failing text fixes.
+
 0.29 2013-08-01T11:39:27Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Fixed compatibility down to libcurl/7.15.5 (7.15.4 is not compatible);
