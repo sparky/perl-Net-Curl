@@ -16,7 +16,7 @@ plan skip_all => "curl_multi_wait() is implemented since libcurl/7.28.0"
 
 my $server = Test::HTTP::Server->new;
 my $multi = Net::Curl::Multi->new;
-my $n = 10;
+my $n = 5;
 
 for my $i (1 .. $n) {
     my $easy = Net::Curl::Easy->new() or die "cannot curl";
