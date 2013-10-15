@@ -1,6 +1,10 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.32 2013-10-15T09:48:06Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Silencing some noisy tests.
+
 0.31 2013-08-15T19:03:19Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Fixed compatibility with libcurl/7.32.0.
@@ -8,7 +12,7 @@ https://github.com/sparky/perl-Net-Curl/commits/master
 0.30 2013-08-09T09:35:42Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Fixed compiling on 32-bit Debian Linux systems;
- - More failing text fixes.
+ - More failing test fixes.
 
 0.29 2013-08-01T11:39:27Z
  [Stanislaw Pusep <stas@sysd.org>]
