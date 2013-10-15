@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Config;
 use Test::More;
 use File::Temp qw/tempfile/;
 use Net::Curl qw(:constants);
