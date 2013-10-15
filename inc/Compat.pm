@@ -60,7 +60,7 @@ use warnings;
 
 use Carp qw(croak);
 
-our $VERSION = 4.15;
+our $VERSION = 0.32;
 
 my %packages = (
 #MODULES#
