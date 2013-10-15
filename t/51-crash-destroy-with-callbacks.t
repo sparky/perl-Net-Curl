@@ -15,7 +15,8 @@ plan skip_all => "FreeBSD stock libcurl might have broken proxy support. "
     if $Config{osname} eq 'freebsd';
 plan tests => 8;
 
-my $ftp_uri = 'ftp://ftp.cpan.org/pub/CPAN/README';
+# my $ftp_uri = 'ftp://ftp.cpan.org/pub/CPAN/README';
+my $ftp_uri = 'http://www.cpan.org/README';
 
 my $headercnt = 0;
 my $reftype;
