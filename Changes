@@ -1,6 +1,12 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.33 2014-01-17T10:38:11Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed Net-Curl test failures on FreeBSD 9.2 (cookies related);
+ - Fixed slight versioning bug in Net::Curl + Net::Curl::Compat;
+ - Synced symbols-in-versions from libcurl/7.34.0.
+
 0.32 2013-10-15T09:48:06Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Silencing some noisy tests.
