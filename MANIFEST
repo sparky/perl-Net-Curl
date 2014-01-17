@@ -22,6 +22,7 @@ inc/Compat/WWW/Curl/Form.pm
 inc/Compat/WWW/Curl/Multi.pm
 inc/Compat/WWW/Curl/Share.pm
 inc/Test/HTTP/Server.pm
+inc/Test/UnConstant.pm
 inc/symbols-in-versions
 lib/Net/Curl.pm
 lib/Net/Curl/Compat.pm
@@ -33,6 +34,7 @@ lib/Net/Curl/examples.pod
 t/00-info.t
 t/01-constants.t
 t/02-methods.t
+t/03-cookies.t
 t/40-callback-opensocket.t
 t/50-crash-lastref.t
 t/51-crash-destroy-with-callbacks.t
