@@ -57,7 +57,7 @@ if ( $curl{libs} and $curl{version} ) {
 		};
 		if ( $@ ) {
 			print STDERR "curl-config failed:\n$@\n\n",
-				"libcurl development fils do not seem to be available\n",
+				"libcurl development files do not seem to be available\n",
 				"You must install libcurl $minimum_libcurl_ver or newer to\n",
 				"build this module\n\n";
 			print STDERR "NA: Unable to build distribution on this platform.\n";
