@@ -168,6 +168,7 @@ WriteMakefile(
 			"Fuji, Goro",
 			"Przemys${l_}aw Iskra",
 			"Stanislaw Pusep",
+			"Olaf Alders",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
