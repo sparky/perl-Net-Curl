@@ -169,6 +169,7 @@ WriteMakefile(
 			"Przemys${l_}aw Iskra",
 			"Stanislaw Pusep",
 			"Olaf Alders",
+			"Maksym Davydov",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,

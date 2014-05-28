@@ -2,6 +2,9 @@ Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
 0.34 2014-04-03T10:33:00Z
+ [Maksym Davydov <max@mdavydov.com>]
+ - Added functions escape() and unescape() to Net::Curl::Easy
+
  [Olaf Alders <olaf@wundersolutions.com>]
  - Fixed typo in Makefile.PL error message.
 
