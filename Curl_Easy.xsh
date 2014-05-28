@@ -559,6 +559,43 @@ strerror( ... )
 		RETVAL
 
 
+#if LIBCURL_VERSION_NUM >= 0x071504
+
+SV *
+unescape( easy, url )
+	Net::Curl::Easy easy
+	SV *url
+	PREINIT:
+		STRLEN length;
+		char *in_string;
+		int out_length;
+		char *out_string;
+	CODE:
+		in_string = SvPV( url, length );
+		out_string = curl_easy_unescape( easy->handle, in_string, length, &out_length );
+		RETVAL = newSVpv( out_string, out_length );
+		curl_free( out_string );
+	OUTPUT:
+		RETVAL
+
+SV *
+escape( easy, url )
+	Net::Curl::Easy easy
+	SV *url
+	PREINIT:
+		STRLEN length;
+		char *in_string;
+		char *out_string;
+	CODE:
+		in_string = SvPV( url, length );
+		out_string = curl_easy_escape( easy->handle, in_string, length );
+		RETVAL = newSVpv( out_string, 0 );
+		curl_free( out_string );
+	OUTPUT:
+		RETVAL
+
+#endif
+
 # /* Extensions: Functions that do not have libcurl equivalents. */
 
 

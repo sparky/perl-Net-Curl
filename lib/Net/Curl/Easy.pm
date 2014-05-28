@@ -220,6 +220,22 @@ form object.
 
 Use setopt() with CURLOPT_HTTPPOST option to attach the share object.
 
+=item escape( )
+
+URL encodes the given string.
+
+ my $escaped = $easy->escape( "+foo" );
+
+Calls L<curl_easy_escape(3)> which URL encode the given string.
+
+=item unescape( )
+
+URL decodes the given string.
+
+ my $unescaped = $easy->unescape( "%2Bbar" );
+
+Calls L<curl_easy_unescape(3)> which URL decodes the given string.
+
 =back
 
 =head2 FUNCTIONS
