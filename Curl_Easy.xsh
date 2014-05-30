@@ -568,7 +568,7 @@ strerror( ... )
 		RETVAL
 
 
-#if LIBCURL_VERSION_NUM >= 0x071504
+#if LIBCURL_VERSION_NUM >= 0x070F04
 
 SV *
 unescape( easy, url )

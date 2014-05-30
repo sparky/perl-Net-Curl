@@ -4,6 +4,11 @@ use warnings;
 use Test::More;
 use Net::Curl::Easy;
 
+BEGIN {
+plan skip_all => "escape() and unescape() are not available untill version 7.15.04"
+    if Net::Curl::LIBCURL_VERSION_NUM() < 0x070F04;
+}
+
 my $easy = Net::Curl::Easy->new();
 
 my $tests = [
