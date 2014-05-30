@@ -35,7 +35,7 @@ sub DESTROY {
 my $out = "";
 
 my $curl = Net::Curl::Easy->new();
-{ $curl->{guard} = bless \my $foo, __PACKAGE__; }
+{ $curl->{guard} = bless {}, __PACKAGE__; }
 $curl->setopt( CURLOPT_FILE, \$out );
 $curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_header );
 $curl->setopt( CURLOPT_URL, $ftp_uri );

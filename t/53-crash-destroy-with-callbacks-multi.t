@@ -7,6 +7,7 @@ use warnings;
 use Config;
 use Test::More;
 use Net::Curl::Easy qw(:constants);
+use Net::Curl::Multi qw(:constants);
 
 plan skip_all => "This test requires reliable Internet connection. "
 	. "Set AUTOMATED_TESTING env variable to run this test."
@@ -36,13 +37,14 @@ my $out = "";
 
 my $curl = Net::Curl::Easy->new();
 my $multi = Net::Curl::Multi->new();
-{ $curl->{guard} = bless \my $foo, __PACKAGE__; }
-{ $multi->{guard} = bless \my $bar, __PACKAGE__; }
+{ $curl->{guard} = bless {}, __PACKAGE__; }
+{ $multi->{guard} = bless {}, __PACKAGE__; }
 $curl->setopt( CURLOPT_FILE, \$out );
 $curl->setopt( CURLOPT_HEADERFUNCTION, \&cb_header );
 $curl->setopt( CURLOPT_URL, $ftp_uri );
 cmp_ok( $destroyed, '==', 0, 'object resources in place' );
 
+$multi->setopt( CURLMOPT_SOCKETFUNCTION, sub { 0 } );
 $multi->add_handle( $curl );
 $curl = undef;
 
