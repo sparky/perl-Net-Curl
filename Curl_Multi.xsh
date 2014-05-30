@@ -138,6 +138,37 @@ perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 	return 0;
 }
 
+char **
+perl_curl_multi_blacklist( SV *arrayref )
+{
+	AV *array;
+	int array_len, i;
+	char **blacklist;
+
+	if ( !SvOK( arrayref ) )
+		return NULL;
+	if ( !SvROK( arrayref ) )
+		croak( "not an array" );
+
+	array = (AV *) SvRV( arrayref );
+	array_len = av_len( array );
+	if ( array_len == -1 )
+		return NULL;
+
+	Newxz( blacklist, array_len + 2, char * );
+
+	for ( i = 0; i <= array_len; i++ ) {
+		SV **sv;
+
+		sv = av_fetch( array, i, 0 );
+		if ( !SvOK( *sv ) )
+			continue;
+		blacklist[i] = SvPV_nolen( *sv );
+	}
+
+	return blacklist;
+}
+
 static MGVTBL perl_curl_multi_vtbl = {
 	NULL, NULL, NULL, NULL
 	,perl_curl_multi_magic_free
@@ -353,6 +384,7 @@ setopt( multi, option, value )
 	SV *value
 	PREINIT:
 		CURLMcode ret1 = CURLM_OK, ret2 = CURLM_OK;
+		char **blacklist;
 	CODE:
 		switch ( option ) {
 			case CURLMOPT_SOCKETDATA:
@@ -375,6 +407,19 @@ setopt( multi, option, value )
 				ret2 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION,
 					SvOK( value ) ? cb_multi_timer : NULL );
 				ret1 = curl_multi_setopt( multi->handle, CURLMOPT_TIMERDATA, multi );
+				break;
+#endif
+#endif
+
+			/* introduced in 7.30.0 */
+#ifdef CURLMOPT_PIPELINING_SERVER_BL
+#ifdef CURLMOPT_PIPELINING_SITE_BL
+			case CURLMOPT_PIPELINING_SERVER_BL:
+			case CURLMOPT_PIPELINING_SITE_BL:
+				blacklist = perl_curl_multi_blacklist( value );
+				ret1 = curl_multi_setopt( multi->handle, option, blacklist );
+				if ( blacklist )
+					Safefree( blacklist );
 				break;
 #endif
 #endif

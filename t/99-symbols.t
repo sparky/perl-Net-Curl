@@ -65,7 +65,7 @@ foreach my $file ( @files ) {
 				$ifdef[ $#ifdef ] = undef;
 			} elsif ( $line =~ /#endif/ ) {
 				pop @ifdef;
-			} elsif ( $line =~ /$sym/ ) {
+			} elsif ( $line =~ /\b$sym\b/ ) {
 				my $notbad = 0;
 				foreach my $d ( grep defined, @ifdef ) {
 					if ( $d eq $sym ) {

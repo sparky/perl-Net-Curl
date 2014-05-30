@@ -18,6 +18,35 @@ my $server = Test::HTTP::Server->new;
 my $multi = Net::Curl::Multi->new;
 my $n = 5;
 
+SKIP: {
+    skip q(These pipelining options are implemented since libcurl/7.30.0), 2
+        if Net::Curl::LIBCURL_VERSION_NUM() < 0x071E00;
+
+    $multi->setopt(CURLMOPT_PIPELINING, 1);
+
+    eval {
+        $multi->setopt(CURLMOPT_PIPELINING_SERVER_BL, [
+            'Microsoft-IIS/6.0',
+            'nginx/0.8.54',
+        ]);
+    };
+    ok(!$@, "CURLMOPT_PIPELINING_SERVER_BL set");
+
+    eval {
+        $multi->setopt(CURLMOPT_PIPELINING_SERVER_BL, []);
+    };
+    ok(!$@, "CURLMOPT_PIPELINING_SERVER_BL emptied");
+
+    eval {
+        $multi->setopt(CURLMOPT_PIPELINING_SITE_BL, [
+            '127.0.0.1',
+            'www.haxx.se',
+            'www.example.com:1234',
+        ]);
+    };
+    ok(!$@, "CURLMOPT_PIPELINING_SITE_BL set");
+}
+
 for my $i (1 .. $n) {
     my $easy = Net::Curl::Easy->new() or die "cannot curl";
     $multi->add_handle($easy);
@@ -46,4 +75,4 @@ do {
     }
 } while ($running);
 
-done_testing(3 * $n);
+done_testing(3 + 3 * $n);
