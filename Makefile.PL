@@ -143,7 +143,10 @@ my $bits = (length(pack(p => 0)) < 8)
     : '';
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
-my ($l_, $a_) = ($] >= 5.010) ? ("\x{142}", "\x{e1}") : qw(l a);
+my ($l_, $a_) = ($] >= 5.010)
+    ? ("\x{142}", "\x{e1}")
+    : qw(l a);
+
 WriteMakefile(
 	NAME 		=> 'Net::Curl',
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
@@ -223,7 +226,7 @@ sub get_curl_incdir
 	my @incpath = (
 		( defined $curl{incdir} ? $curl{incdir} : () ),
 		( $curl{cflags} =~ /-I(\S+)/g ),
-		( "$curl{prefix}/include" ),
+		( defined $curl{prefix} ? "$curl{prefix}/include" : () ),
 		( split /\s+/, $Config{usrinc} ),
 		( split /\s+/, $Config{locincpth} ),
 		qw(
