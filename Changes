@@ -1,16 +1,20 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
-0.34 2014-04-03T10:33:00Z
+0.34 2014-05-30T15:40:00Z
  [Maksym Davydov <max@mdavydov.com>]
- - Added support for CURLOPT_XFERINFOFUNCTION callback (and CURLOPT_XFERINFODATA option) to Net::Curl::Easy
- - Added functions escape() and unescape() to Net::Curl::Easy
+ - Added support for CURLOPT_XFERINFOFUNCTION callback (and CURLOPT_XFERINFODATA option) to Net::Curl::Easy;
+ - Added functions escape() and unescape() to Net::Curl::Easy.
 
  [Olaf Alders <olaf@wundersolutions.com>]
  - Fixed typo in Makefile.PL error message.
 
  [Stanislaw Pusep <stas@sysd.org>]
- - Synced symbols-in-versions from libcurl/7.36.0.
+ - Synced symbols-in-versions from libcurl/7.37.0;
+ - Makefile.PL cleanup;
+ - Attempted to silence test noise under -DDEBUGGING;
+ - Attept to fix a test failing on MidnightBSD (and potentially others);
+ - CURLMOPT_PIPELINING_SERVER_BL/CURLMOPT_PIPELINING_SITE_BL support added.
 
 0.33 2014-01-17T10:38:11Z
  [Stanislaw Pusep <stas@sysd.org>]
