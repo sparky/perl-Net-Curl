@@ -12,6 +12,7 @@ typedef enum {
 	CB_EASY_READ,
 	CB_EASY_HEADER,
 	CB_EASY_PROGRESS,
+	CB_EASY_XFERINFO,
 	CB_EASY_DEBUG,
 	CB_EASY_IOCTL,
 	CB_EASY_SEEK,
@@ -272,11 +273,19 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 			curl_easy_setopt( clone->handle, CURLOPT_WRITEHEADER, clone );
 		}
 
-		if ( easy->cb[ CB_EASY_PROGRESS ].func
-				|| easy->cb[ CB_EASY_PROGRESS ].data ) {
+		if ( easy->cb[ CB_EASY_PROGRESS ].func ) {
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSFUNCTION, cb_easy_progress );
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSDATA, clone );
 		}
+		//
+#ifdef CURLOPT_XFERINFOFUNCTION
+# ifdef CURLOPT_XFERINFODATA
+		if ( easy->cb[ CB_EASY_XFERINFO ].func ) {
+			curl_easy_setopt( clone->handle, CURLOPT_XFERINFOFUNCTION, cb_easy_xferinfo );
+			curl_easy_setopt( clone->handle, CURLOPT_XFERINFODATA, clone );
+		}
+# endif
+#endif
 
 		if ( easy->cb[ CB_EASY_DEBUG ].func ) {
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGFUNCTION, cb_easy_debug );

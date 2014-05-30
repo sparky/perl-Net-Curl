@@ -414,6 +414,19 @@ ulnow and CURLOPT_PROGRESSDATA value. It should return 0.
      return 0;
  }
 
+Since CURLOPT_XFERINFODATA is an alias to CURLOPT_PROGRESSDATA,
+they both set the same callback data for both
+CURLOPT_PROGRESSFUNCTION and CURLOPT_PROGRESSFUNCTION callbacks.
+
+=item CURLOPT_XFERINFOFUNCTION ( CURLOPT_XFERINFODATA ) 7.32.0+
+
+Works exactly like CURLOPT_PROGRESSFUNCTION callback, except that dltotal, dlnow, ultotal
+and ulnow are now integer values instead of double.
+
+Since CURLOPT_XFERINFODATA is an alias to CURLOPT_PROGRESSDATA,
+they both set the same callback data for both
+CURLOPT_PROGRESSFUNCTION and CURLOPT_PROGRESSFUNCTION callbacks.
+
 =item CURLOPT_HEADERFUNCTION ( CURLOPT_WRITEHEADER )
 
 Behaviour is the same as in write callback. Callback is called once for

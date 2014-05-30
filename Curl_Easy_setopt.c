@@ -48,6 +48,15 @@ perl_curl_easy_setopt_function( pTHX_ perl_curl_easy_t *easy, long option,
 			dataopt = CURLOPT_PROGRESSDATA;
 			cbnum = CB_EASY_PROGRESS;
 			break;
+#ifdef CURLOPT_XFERINFODATA
+# ifdef CURLOPT_XFERINFOFUNCTION
+		case CURLOPT_XFERINFOFUNCTION:
+			funcptr = cb_easy_xferinfo;
+			dataopt = CURLOPT_XFERINFODATA;
+			cbnum = CB_EASY_XFERINFO;
+			break;
+# endif
+#endif
 		case CURLOPT_DEBUGFUNCTION:
 			funcptr = cb_easy_debug;
 			dataopt = CURLOPT_DEBUGDATA;
@@ -185,6 +194,8 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 			break;
 		case CURLOPT_PROGRESSDATA:
 			cbnum = CB_EASY_PROGRESS;
+			/* duplicate data for CB_EASY_XFERINFO since CURLOPT_XFERINFODATA is an alias for CURLOPT_PROGRESSDATA */
+			SvREPLACE( easy->cb[ CB_EASY_XFERINFO ].data, value );
 			break;
 		case CURLOPT_DEBUGDATA:
 			cbnum = CB_EASY_DEBUG;
