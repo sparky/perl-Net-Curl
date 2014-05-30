@@ -17,12 +17,14 @@ BEGIN {
 
 use Test::More;
 
+my $DEBUGGING = `$^X -Dq -e 1 2>&1` =~ /^Recompile/x ? 0 : 1;
+
 sub test_leak (&$;$) {
     my ($code, $descr, $maxleak) = @_;
     unless (defined $maxleak) {
         $maxleak = 0;
         $maxleak += $] >= 5.017 ? 5 : 0;
-        $maxleak += $^D ? 5 : 0;
+        $maxleak += $DEBUGGING ? 5 : 0;
     }
     my $n1 = Devel::Leak::NoteSV(my $handle);
     $code->() for 1 .. 10_000;
