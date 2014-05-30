@@ -579,9 +579,16 @@ unescape( easy, url )
 		char *in_string;
 		int out_length;
 		char *out_string;
-	CODE:
+	INIT:
+		if( !SvOK( url ) ) {
+			XSRETURN_UNDEF;
+		}
+	CODE:	
 		in_string = SvPV( url, length );
 		out_string = curl_easy_unescape( easy->handle, in_string, length, &out_length );
+		if( !out_string ) {
+			XSRETURN_UNDEF;
+		}
 		RETVAL = newSVpv( out_string, out_length );
 		curl_free( out_string );
 	OUTPUT:
@@ -595,9 +602,16 @@ escape( easy, url )
 		STRLEN length;
 		char *in_string;
 		char *out_string;
+	INIT:
+		if( !SvOK( url ) ) {
+			XSRETURN_UNDEF;
+		}
 	CODE:
 		in_string = SvPV( url, length );
 		out_string = curl_easy_escape( easy->handle, in_string, length );
+		if( !out_string ) {
+			XSRETURN_UNDEF;
+		}
 		RETVAL = newSVpv( out_string, 0 );
 		curl_free( out_string );
 	OUTPUT:

@@ -12,6 +12,7 @@ plan skip_all => "escape() and unescape() are not available untill version 7.15.
 my $easy = Net::Curl::Easy->new();
 
 my $tests = [
+	[undef, undef],
 	["", ""],
 	["\0", "%00"],
 	["foo\0bar", "foo%00bar"],
@@ -22,11 +23,12 @@ my $tests = [
 plan tests => @$tests * 2;
 
 for my $test(@$tests) {
-	my ($raw, $escaped) = @$test;
+	my $raw = $test->[0] // 'undef';
+	my $escaped = $test->[1] // 'undef';
 
-	my $just_escaped = $easy->escape($raw);
+	my $just_escaped = $easy->escape($raw) // 'undef';
 	ok($just_escaped eq $escaped, "escape '$just_escaped' eq '$escaped'");
 
-	my $just_unescaped = $easy->unescape($escaped);
+	my $just_unescaped = $easy->unescape($escaped) // 'undef';
 	ok($just_unescaped eq $raw, "unescape '$just_unescaped' eq '$raw'");
 }
