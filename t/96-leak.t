@@ -32,11 +32,14 @@ sub test_leak (&$;$) {
     cmp_ok($n1 + $maxleak, '>=', $n2, $descr);
 }
 
+use IO::File;
 use Net::Curl qw(:constants);
 use Net::Curl::Easy qw(:constants);
 use Net::Curl::Form qw(:constants);
 use Net::Curl::Multi qw(:constants);
 use Net::Curl::Share qw(:constants);
+
+my $iofile = IO::File->new;
 
 my $easy = Net::Curl::Easy->new;
 test_leak { my $easy_ = Net::Curl::Easy->new or die }
