@@ -18,7 +18,12 @@ BEGIN {
 use Test::More;
 
 sub test_leak (&$;$) {
-    my ($code, $descr, $maxleak) = (@_, ($] >= 5.017) ? 5 : 0);
+    my ($code, $descr, $maxleak) = @_;
+    unless (defined $maxleak) {
+        $maxleak = 0;
+        $maxleak += $] >= 5.017 ? 5 : 0;
+        $maxleak += $^D ? 5 : 0;
+    }
     my $n1 = Devel::Leak::NoteSV(my $handle);
     $code->() for 1 .. 10_000;
     my $n2 = Devel::Leak::CheckSV($handle);
@@ -32,26 +37,26 @@ use Net::Curl::Multi qw(:constants);
 use Net::Curl::Share qw(:constants);
 
 my $easy = Net::Curl::Easy->new;
-test_leak { my $easy = Net::Curl::Easy->new or die }
+test_leak { my $easy_ = Net::Curl::Easy->new or die }
     q(Net::Curl::Easy->new);
 
 my $form = Net::Curl::Form->new;
-test_leak { my $form = Net::Curl::Form->new or die }
+test_leak { my $form_ = Net::Curl::Form->new or die }
     q(Net::Curl::Form->new);
 
 my $multi = Net::Curl::Multi->new;
 SKIP: {
     skip q(libcurl/7.29.0 crashes here: http://sourceforge.net/p/curl/bugs/1194/), 1
         if Net::Curl::version_info()->{version} eq q(7.29.0);
-    test_leak { my $multi = Net::Curl::Multi->new or die }
-       q(Net::Curl::Multi->new);
+    test_leak { my $multi_ = Net::Curl::Multi->new or die }
+        q(Net::Curl::Multi->new);
 }
 
 my $share = Net::Curl::Share->new;
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
 eval { $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION) };
-test_leak { my $share = Net::Curl::Share->new or die }
+test_leak { my $share_ = Net::Curl::Share->new or die }
     q(Net::Curl::Share->new);
 
 my $url = $ENV{CURL_TEST_URL};
