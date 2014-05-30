@@ -3,6 +3,7 @@ https://github.com/sparky/perl-Net-Curl/commits/master
 
 0.34 2014-04-03T10:33:00Z
  [Maksym Davydov <max@mdavydov.com>]
+ - Added support for CURLOPT_XFERINFOFUNCTION callback (and CURLOPT_XFERINFODATA option) to Net::Curl::Easy
  - Added functions escape() and unescape() to Net::Curl::Easy
 
  [Olaf Alders <olaf@wundersolutions.com>]
