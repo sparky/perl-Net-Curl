@@ -12,6 +12,7 @@ typedef enum {
 	CB_EASY_READ,
 	CB_EASY_HEADER,
 	CB_EASY_PROGRESS,
+	CB_EASY_XFERINFO,
 	CB_EASY_DEBUG,
 	CB_EASY_IOCTL,
 	CB_EASY_SEEK,
@@ -272,11 +273,19 @@ duphandle( easy, base=HASHREF_BY_DEFAULT )
 			curl_easy_setopt( clone->handle, CURLOPT_WRITEHEADER, clone );
 		}
 
-		if ( easy->cb[ CB_EASY_PROGRESS ].func
-				|| easy->cb[ CB_EASY_PROGRESS ].data ) {
+		if ( easy->cb[ CB_EASY_PROGRESS ].func ) {
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSFUNCTION, cb_easy_progress );
 			curl_easy_setopt( clone->handle, CURLOPT_PROGRESSDATA, clone );
 		}
+		//
+#ifdef CURLOPT_XFERINFOFUNCTION
+# ifdef CURLOPT_XFERINFODATA
+		if ( easy->cb[ CB_EASY_XFERINFO ].func ) {
+			curl_easy_setopt( clone->handle, CURLOPT_XFERINFOFUNCTION, cb_easy_xferinfo );
+			curl_easy_setopt( clone->handle, CURLOPT_XFERINFODATA, clone );
+		}
+# endif
+#endif
 
 		if ( easy->cb[ CB_EASY_DEBUG ].func ) {
 			curl_easy_setopt( clone->handle, CURLOPT_DEBUGFUNCTION, cb_easy_debug );
@@ -558,6 +567,57 @@ strerror( ... )
 	OUTPUT:
 		RETVAL
 
+
+#if LIBCURL_VERSION_NUM >= 0x070F04
+
+SV *
+unescape( easy, url )
+	Net::Curl::Easy easy
+	SV *url
+	PREINIT:
+		STRLEN length;
+		char *in_string;
+		int out_length;
+		char *out_string;
+	INIT:
+		if( !SvOK( url ) ) {
+			XSRETURN_UNDEF;
+		}
+	CODE:	
+		in_string = SvPV( url, length );
+		out_string = curl_easy_unescape( easy->handle, in_string, length, &out_length );
+		if( !out_string ) {
+			XSRETURN_UNDEF;
+		}
+		RETVAL = newSVpv( out_string, out_length );
+		curl_free( out_string );
+	OUTPUT:
+		RETVAL
+
+SV *
+escape( easy, url )
+	Net::Curl::Easy easy
+	SV *url
+	PREINIT:
+		STRLEN length;
+		char *in_string;
+		char *out_string;
+	INIT:
+		if( !SvOK( url ) ) {
+			XSRETURN_UNDEF;
+		}
+	CODE:
+		in_string = SvPV( url, length );
+		out_string = curl_easy_escape( easy->handle, in_string, length );
+		if( !out_string ) {
+			XSRETURN_UNDEF;
+		}
+		RETVAL = newSVpv( out_string, 0 );
+		curl_free( out_string );
+	OUTPUT:
+		RETVAL
+
+#endif
 
 # /* Extensions: Functions that do not have libcurl equivalents. */
 

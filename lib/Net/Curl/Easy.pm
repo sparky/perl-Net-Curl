@@ -220,6 +220,22 @@ form object.
 
 Use setopt() with CURLOPT_HTTPPOST option to attach the share object.
 
+=item escape( )
+
+URL encodes the given string.
+
+ my $escaped = $easy->escape( "+foo" );
+
+Calls L<curl_easy_escape(3)> which URL encode the given string.
+
+=item unescape( )
+
+URL decodes the given string.
+
+ my $unescaped = $easy->unescape( "%2Bbar" );
+
+Calls L<curl_easy_unescape(3)> which URL decodes the given string.
+
 =back
 
 =head2 FUNCTIONS
@@ -397,6 +413,19 @@ ulnow and CURLOPT_PROGRESSDATA value. It should return 0.
      # ... display progress ...
      return 0;
  }
+
+Since CURLOPT_XFERINFODATA is an alias to CURLOPT_PROGRESSDATA,
+they both set the same callback data for both
+CURLOPT_PROGRESSFUNCTION and CURLOPT_PROGRESSFUNCTION callbacks.
+
+=item CURLOPT_XFERINFOFUNCTION ( CURLOPT_XFERINFODATA ) 7.32.0+
+
+Works exactly like CURLOPT_PROGRESSFUNCTION callback, except that dltotal, dlnow, ultotal
+and ulnow are now integer values instead of double.
+
+Since CURLOPT_XFERINFODATA is an alias to CURLOPT_PROGRESSDATA,
+they both set the same callback data for both
+CURLOPT_PROGRESSFUNCTION and CURLOPT_PROGRESSFUNCTION callbacks.
 
 =item CURLOPT_HEADERFUNCTION ( CURLOPT_WRITEHEADER )
 
