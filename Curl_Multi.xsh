@@ -139,7 +139,7 @@ perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 }
 
 char **
-perl_curl_multi_blacklist( SV *arrayref )
+perl_curl_multi_blacklist( pTHX_ SV *arrayref )
 {
 	AV *array;
 	int array_len, i;
@@ -416,7 +416,7 @@ setopt( multi, option, value )
 #ifdef CURLMOPT_PIPELINING_SITE_BL
 			case CURLMOPT_PIPELINING_SERVER_BL:
 			case CURLMOPT_PIPELINING_SITE_BL:
-				blacklist = perl_curl_multi_blacklist( value );
+				blacklist = perl_curl_multi_blacklist( aTHX_ value );
 				ret1 = curl_multi_setopt( multi->handle, option, blacklist );
 				if ( blacklist )
 					Safefree( blacklist );
