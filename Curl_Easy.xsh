@@ -590,6 +590,7 @@ unescape( easy, url )
 			XSRETURN_UNDEF;
 		}
 		RETVAL = newSVpv( out_string, out_length );
+		SvUTF8_on( RETVAL );
 		curl_free( out_string );
 	OUTPUT:
 		RETVAL
