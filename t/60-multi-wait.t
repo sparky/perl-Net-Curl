@@ -7,7 +7,7 @@ use Test::More;
 use Test::HTTP::Server;
 
 use Net::Curl::Easy qw(:constants);
-use Net::Curl::Multi qw(:constants);
+use Net::Curl::Multi;
 
 local $ENV{no_proxy} = '*';
 
@@ -19,13 +19,13 @@ my $multi = Net::Curl::Multi->new;
 my $n = 5;
 
 SKIP: {
-    skip q(These pipelining options are implemented since libcurl/7.30.0), 2
+    skip q(These pipelining options are implemented since libcurl/7.30.0), 3
         if Net::Curl::LIBCURL_VERSION_NUM() < 0x071E00;
 
-    $multi->setopt(CURLMOPT_PIPELINING, 1);
+    $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING(), 1);
 
     eval {
-        $multi->setopt(CURLMOPT_PIPELINING_SERVER_BL, [
+        $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING_SERVER_BL(), [
             'Microsoft-IIS/6.0',
             'nginx/0.8.54',
         ]);
@@ -33,12 +33,12 @@ SKIP: {
     ok(!$@, "CURLMOPT_PIPELINING_SERVER_BL set");
 
     eval {
-        $multi->setopt(CURLMOPT_PIPELINING_SERVER_BL, []);
+        $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING_SERVER_BL(), []);
     };
     ok(!$@, "CURLMOPT_PIPELINING_SERVER_BL emptied");
 
     eval {
-        $multi->setopt(CURLMOPT_PIPELINING_SITE_BL, [
+        $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING_SITE_BL(), [
             '127.0.0.1',
             'www.haxx.se',
             'www.example.com:1234',
