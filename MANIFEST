@@ -43,6 +43,7 @@ t/53-crash-destroy-with-callbacks-multi.t
 t/54-crash-getinfo-slist.t
 t/55-crash-reset.t
 t/60-multi-wait.t
+t/70-escape-unescape.t
 t/96-leak.t
 t/99-symbols.t
 t/author-critic.t
@@ -81,6 +82,7 @@ t/old-21write-to-scalar.t
 t/old-22sendrecv.t
 t/old-23socket-action.t
 t/old-24-multi-refcount.t
+t/old-25xrefinfo.t
 t/release-cpan-changes.t
 t/release-distmeta.t
 t/release-kwalitee.t
