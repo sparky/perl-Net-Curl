@@ -1,6 +1,13 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.35 2014-06-03T08:54:00Z
+ [Przemysław Iskra <sparky@pld-linux.org>]
+ - Properly handle both UTF-8 and binary data within /(un)?escape/.
+
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed the bugs introduced with the pipelining blacklist feature.
+
 0.34 2014-05-30T15:40:00Z
  [Maksym Davydov <max@mdavydov.com>]
  - Added support for CURLOPT_XFERINFOFUNCTION callback (and CURLOPT_XFERINFODATA option) to Net::Curl::Easy;
