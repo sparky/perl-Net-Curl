@@ -568,8 +568,6 @@ strerror( ... )
 		RETVAL
 
 
-#if LIBCURL_VERSION_NUM >= 0x070F04
-
 SV *
 unescape( easy, url )
 	Net::Curl::Easy easy
@@ -580,17 +578,14 @@ unescape( easy, url )
 		int out_length;
 		char *out_string;
 	INIT:
-		if( !SvOK( url ) ) {
+		if ( !SvOK( url ) )
 			XSRETURN_UNDEF;
-		}
-	CODE:	
+	CODE:
 		in_string = SvPV( url, length );
 		out_string = curl_easy_unescape( easy->handle, in_string, length, &out_length );
-		if( !out_string ) {
+		if ( !out_string )
 			XSRETURN_UNDEF;
-		}
 		RETVAL = newSVpv( out_string, out_length );
-		SvUTF8_on( RETVAL );
 		curl_free( out_string );
 	OUTPUT:
 		RETVAL
@@ -604,21 +599,17 @@ escape( easy, url )
 		char *in_string;
 		char *out_string;
 	INIT:
-		if( !SvOK( url ) ) {
+		if ( !SvOK( url ) )
 			XSRETURN_UNDEF;
-		}
 	CODE:
 		in_string = SvPV( url, length );
 		out_string = curl_easy_escape( easy->handle, in_string, length );
-		if( !out_string ) {
+		if ( !out_string )
 			XSRETURN_UNDEF;
-		}
 		RETVAL = newSVpv( out_string, 0 );
 		curl_free( out_string );
 	OUTPUT:
 		RETVAL
-
-#endif
 
 # /* Extensions: Functions that do not have libcurl equivalents. */
 
@@ -675,7 +666,7 @@ int
 CLONE_SKIP( pkg )
 	SV *pkg
 	CODE:
-		(void ) pkg;
+		(void) pkg;
 		RETVAL = 1;
 	OUTPUT:
 		RETVAL
