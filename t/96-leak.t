@@ -18,6 +18,7 @@ BEGIN {
 use Test::More;
 
 my $DEBUGGING = `$^X -Dq -e 1 2>&1` =~ /^Recompile/x ? 0 : 1;
+$DEBUGGING = 1 if $Devel::Leak::VERSION >= 0.04;
 
 sub test_leak (&$;$) {
     my ($code, $descr, $maxleak) = @_;

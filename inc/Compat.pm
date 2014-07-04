@@ -62,6 +62,12 @@ use Carp qw(croak);
 
 our $VERSION = 4.15;
 
+=for Pod::Coverage
+VERSION
+=cut
+
+sub VERSION { return 0.35 }
+
 my %packages = (
 #MODULES#
 );

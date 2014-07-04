@@ -8,6 +8,7 @@ Curl_Multi.xsh
 Curl_Share.xsh
 LICENSE
 MANIFEST
+MANIFEST.SKIP
 Makefile.PL
 README
 examples/01-curl-transport.pl
@@ -84,12 +85,15 @@ t/old-23socket-action.t
 t/old-24-multi-refcount.t
 t/old-25xrefinfo.t
 t/release-cpan-changes.t
+t/release-dist-manifest.t
 t/release-distmeta.t
 t/release-kwalitee.t
+t/release-minimum-version.t
 t/release-mojibake.t
 t/release-pod-coverage.t
 t/release-pod-linkcheck.t
 t/release-pod-syntax.t
 t/release-portability.t
 t/release-test-version.t
+t/release-unused-vars.t
 typemap
