@@ -84,6 +84,7 @@ t/old-22sendrecv.t
 t/old-23socket-action.t
 t/old-24-multi-refcount.t
 t/old-25xrefinfo.t
+t/release-consistent-version.t
 t/release-cpan-changes.t
 t/release-dist-manifest.t
 t/release-distmeta.t
