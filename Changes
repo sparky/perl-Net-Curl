@@ -1,6 +1,15 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.36 2014-07-05T12:56:26Z
+ [Przemysław Iskra <sparky@pld-linux.org>]
+ - Fixed the tests for libcurl older than 7.21.2.
+
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Added MANIFEST.SKIP;
+ - Added Devel::Leak v0.04 special case to t/t/96-leak.t;
+ - Updated release tests.
+
 0.35 2014-06-03T08:54:00Z
  [Przemysław Iskra <sparky@pld-linux.org>]
  - Properly handle both UTF-8 and binary data within /(un)?escape/.
