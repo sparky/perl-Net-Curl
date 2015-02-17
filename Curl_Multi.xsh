@@ -465,16 +465,74 @@ perform( multi )
 #if LIBCURL_VERSION_NUM >= 0x071C00
 
 int
-wait( multi, timeout )
+wait( multi, timeout, extra_fds=NULL )
 	Net::Curl::Multi multi
 	long timeout
+	SV *extra_fds
 	PREINIT:
 		int remaining;
 		CURLMcode ret;
+		struct curl_waitfd *wait_for = NULL;
+		unsigned int extra_nfds = 0;
 	CODE:
 		CLEAR_ERRSV();
 
-		ret = curl_multi_wait( multi->handle, NULL, 0, timeout, &remaining );
+		if ( extra_fds && SvOK( extra_fds ) )
+		{
+			int i;
+			AV *array;
+			if ( !SvROK( extra_fds ) || SvTYPE( SvRV( extra_fds ) ) != SVt_PVAV )
+				croak( "must be an arrayref" );
+			array = (AV *) SvRV( extra_fds );
+			extra_nfds = av_len( array );
+
+			Newxz( wait_for, extra_nfds, struct curl_waitfd );
+
+			for ( i = 0; i < extra_nfds; i++ )
+			{
+				HV *hash;
+				SV **tmp, **sv;
+				sv = av_fetch( array, i, 0 );
+				if ( !SvOK( *sv ) )
+					continue;
+				if ( !SvROK( *sv ) || SvTYPE( SvRV( *sv ) ) != SVt_PVHV )
+					croak( "must be a hashref" );
+				hash = (HV *) SvRV( *sv );
+
+				tmp = hv_fetchs( hash, "fd", 0 );
+				if ( tmp && *tmp && SvOK( *tmp ) )
+					wait_for[i].fd = SvIV( *tmp );
+
+				tmp = hv_fetchs( hash, "events", 0 );
+				if ( tmp && *tmp && SvOK( *tmp ) )
+					wait_for[i].events = SvIV( *tmp );
+
+				/* there is also revents which will be returned by curl */
+			}
+		}
+
+		ret = curl_multi_wait( multi->handle, wait_for, extra_nfds, timeout,
+			&remaining );
+
+		if ( wait_for )
+		{
+			int i;
+			AV *array = (AV *) SvRV( extra_fds );
+			for ( i = 0; i < extra_nfds; i++ )
+			{
+				HV *hash;
+				SV **sv;
+				short revents = wait_for[i].revents;
+				if ( !revents )
+					continue;
+				sv = av_fetch( array, i, 0 );
+				hash = (HV *) SvRV( *sv );
+
+				(void) hv_stores( hash, "revents", newSViv( revents ) );
+			}
+
+			Safefree( wait_for );
+		}
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
