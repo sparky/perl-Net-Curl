@@ -484,7 +484,7 @@ wait( multi, timeout, extra_fds=NULL )
 			if ( !SvROK( extra_fds ) || SvTYPE( SvRV( extra_fds ) ) != SVt_PVAV )
 				croak( "must be an arrayref" );
 			array = (AV *) SvRV( extra_fds );
-			extra_nfds = av_len( array );
+			extra_nfds = 1 + av_len( array );
 
 			Newxz( wait_for, extra_nfds, struct curl_waitfd );
 
