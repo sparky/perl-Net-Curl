@@ -1,6 +1,6 @@
-/* vim: ts=4:sw=4:ft=xs:fdm=marker: */
-/*
- * Copyright 2011 (C) Przemyslaw Iskra <sparky at pld-linux.org>
+/* vim: ts=4:sw=4:ft=xs:fdm=marker
+ *
+ * Copyright 2011-2015 (C) Przemyslaw Iskra <sparky at pld-linux.org>
  *
  * Loosely based on code by Cris Bailiff <c.bailiff+curl at devsecure.com>,
  * and subsequent fixes by other contributors.

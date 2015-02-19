@@ -255,7 +255,7 @@ L<curl_formadd(3)>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2011 Przemyslaw Iskra <sparky at pld-linux.org>.
+Copyright (c) 2011-2015 Przemyslaw Iskra <sparky at pld-linux.org>.
 
 You may opt to use, copy, modify, merge, publish, distribute and/or sell
 copies of the Software, and permit persons to whom the Software is furnished

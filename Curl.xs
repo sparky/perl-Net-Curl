@@ -1,12 +1,12 @@
-/* vim: ts=4:sw=4:fdm=marker: */
+/* vim: ts=4:sw=4:fdm=marker
 
-/*
+ *
  * Perl interface for libcurl. Check out the file README for more info.
  */
 
 /*
  * Copyright (C) 2000, 2001, 2002, 2005, 2008 Daniel Stenberg, Cris Bailiff, et al.
- * Copyright (C) 2011 Przemyslaw Iskra.
+ * Copyright (C) 2011-2015 Przemyslaw Iskra.
  * You may opt to use, copy, modify, merge, publish, distribute and/or
  * sell copies of the Software, and permit persons to whom the
  * Software is furnished to do so, under the terms of the MPL or

@@ -168,7 +168,7 @@ and a long list of contributors. However, currently it shares no common code.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2011 Przemyslaw Iskra.
+Copyright (c) 2011-2015 Przemyslaw Iskra.
 
 You may opt to use, copy, modify, merge, publish, distribute and/or sell
 copies of the Software, and permit persons to whom the Software is furnished

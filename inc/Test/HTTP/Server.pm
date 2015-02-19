@@ -1,6 +1,6 @@
 package Test::HTTP::Server;
 #
-# 2011 (c) Przemysław Iskra <sparky@pld-linux.org>
+# 2011-2015 (c) Przemysław Iskra <sparky@pld-linux.org>
 #		This program is free software,
 # you may distribute it under the same terms as Perl.
 #
