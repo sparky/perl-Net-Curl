@@ -465,17 +465,23 @@ perform( multi )
 #if LIBCURL_VERSION_NUM >= 0x071C00
 
 int
-wait( multi, timeout, extra_fds=NULL )
+wait( multi, ... )
 	Net::Curl::Multi multi
-	long timeout
-	SV *extra_fds
+	PROTOTYPE: $;$$
 	PREINIT:
+		int timeout = -1;
+		SV *extra_fds = NULL;
 		int remaining;
 		CURLMcode ret;
 		struct curl_waitfd *wait_for = NULL;
 		unsigned int extra_nfds = 0;
 	CODE:
 		CLEAR_ERRSV();
+
+		if ( items > 1 )
+			timeout = SvIV( ST( items - 1 ) );
+		if ( items > 2 )
+			extra_fds = ST( 1 );
 
 		if ( extra_fds && SvOK( extra_fds ) )
 		{
