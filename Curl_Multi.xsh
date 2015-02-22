@@ -514,6 +514,9 @@ wait( multi, ... )
 					wait_for[i].events = SvIV( *tmp );
 
 				/* there is also revents which will be returned by curl */
+				tmp = hv_fetchs( hash, "revents", 0 );
+				if ( tmp && *tmp && SvOK( *tmp ) )
+					wait_for[i].revents = SvIV( *tmp );
 			}
 		}
 
@@ -529,8 +532,6 @@ wait( multi, ... )
 				HV *hash;
 				SV **sv;
 				short revents = wait_for[i].revents;
-				if ( !revents )
-					continue;
 				sv = av_fetch( array, i, 0 );
 				hash = (HV *) SvRV( *sv );
 

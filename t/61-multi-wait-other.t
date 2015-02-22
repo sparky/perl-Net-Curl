@@ -33,13 +33,13 @@ my $ret = $multi->wait( [ $ev_read ], 100 );
 
 is( $ret, 0, "Expect nothing" );
 
-ok( (not exists $ev_read->{revents}), "No events here" );
+ok( (not $ev_read->{revents}), "No events here" );
 
 $ret = $multi->wait( [ $ev_read, $ev_write ], 500 );
 
 is( $ret, 1, "One handle ready" );
 
-ok( (not exists $ev_read->{revents}), "No events to read" );
+ok( (not $ev_read->{revents}), "No events to read" );
 is( $ev_write->{revents}, CURL_WAIT_POLLOUT, "Ready to write" );
 
 print $fh_write "Hello!\n";
