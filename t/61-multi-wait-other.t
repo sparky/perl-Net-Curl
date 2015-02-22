@@ -49,4 +49,18 @@ $ret = $multi->wait( [ $ev_read ], 500 );
 is( $ret, 1, "One handle ready" );
 is( $ev_read->{revents}, CURL_WAIT_POLLIN, "Ready to read" );
 
+$ev_read->{revents} = 0;
+$ret = $multi->wait( [ $ev_read ], 500 );
+is( $ret, 1, "One handle ready" );
+is( $ev_read->{revents}, CURL_WAIT_POLLIN, "Ready to read" );
 
+my $line = <$fh_read>;
+
+$ret = $multi->wait( [ $ev_read ], 100 );
+is( $ret, 0, "Nothing ready" );
+is( $ev_read->{revents}, CURL_WAIT_POLLIN, "Ready to read, because we did not reset" );
+
+$ev_read->{revents} = 0;
+$ret = $multi->wait( [ $ev_read ], 100 );
+is( $ret, 0, "Nothing ready" );
+ok( !$ev_read->{revents}, "No events here" );
