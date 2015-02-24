@@ -26,7 +26,7 @@ my $minimum_libcurl_ver = "7.15.5";
 my $constant_names;
 
 # XXX: some compilers may not support those flags
-my $devel_cflags = "-Wall ";
+my $devel_cflags = "-Wall -Wno-unknown-pragmas";
 #$devel_cflags .= "-Werror -DCALLBACK_TYPECHECK " if -d ".git";
 
 if ( $curl{libs} and $curl{version} ) {
