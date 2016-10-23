@@ -303,6 +303,14 @@ sub get_constants_headers
 		open (H, "<", $curl_h)
 			or die "Cannot open $curl_h: ".$!;
 		while(<H>) {
+			# Skip defines without values like:
+			#	#define CURL_STRICTER
+			if (/^#define (CURL[A-Za-z0-9_]*)$/) {
+				chomp;
+				warn "Skipping '$_': does not define a symbol";
+				next;
+			}
+
 			if (/^#define (CURL[A-Za-z0-9_]*)/) {
 				$syms{ $1 } = 1;
 			}
