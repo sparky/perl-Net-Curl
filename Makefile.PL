@@ -258,8 +258,7 @@ sub get_constants_symbols
 	open my $fin, "<", "inc/symbols-in-versions"
 		or die "Cannot open symbols file: $!\n";
 	while ( <$fin> ) {
-		next if /^\s+/;
-		next if /^\s*$/;
+		next if /^[#\s]/;
 		my ( $sym, $in, $dep, $out ) = split /\s+/, $_;
 
 		if ( $out ) {
