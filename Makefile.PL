@@ -305,15 +305,13 @@ sub get_constants_headers
 		while(<H>) {
 			# Skip defines without values like:
 			#	#define CURL_STRICTER
-			if (/^#define (CURL[A-Za-z0-9_]*)$/) {
+			if (m{^#\s*define\s+(CURL\w*)\s*$}) {
 				chomp;
 				warn "Skipping '$_': does not define a symbol";
 				next;
 			}
 
-			if (/^#define (CURL[A-Za-z0-9_]*)/) {
-				$syms{ $1 } = 1;
-			}
+			m{^#\s*define\s+(CURL\w*)} and $syms{$1}++;
 		}
 		close H;
 	}
