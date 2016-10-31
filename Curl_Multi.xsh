@@ -48,6 +48,11 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 /*{{{*/ {
 	perl_curl_multi_callback_code_t i;
 
+	if ( multi->handle ) {
+		curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION, NULL );
+		curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION, NULL );
+	}
+
 	/* remove and mortalize all easy handles */
 	if ( multi->easies ) {
 		simplell_t *next, *now = multi->easies;
