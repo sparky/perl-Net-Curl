@@ -51,9 +51,11 @@ $cnt = select $rout = $vec, undef, $eout = $vec, 2;
 ok( $cnt, "ready to read" );
 
 my $buffer;
-
+my $received = 0;
 eval {
-	$c->recv( $buffer, 1024 * 16 );
+	while ($received < $sent) {
+		$received += $c->recv( $buffer, 1024 * 16 );
+	}
 };
 ok( !$@, "received data" );
 
