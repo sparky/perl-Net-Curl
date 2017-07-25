@@ -258,8 +258,7 @@ sub get_constants_symbols
 	open my $fin, "<", "inc/symbols-in-versions"
 		or die "Cannot open symbols file: $!\n";
 	while ( <$fin> ) {
-		next if /^\s+/;
-		next if /^\s*$/;
+		next if /^[#\s]/;
 		my ( $sym, $in, $dep, $out ) = split /\s+/, $_;
 
 		if ( $out ) {
@@ -304,9 +303,15 @@ sub get_constants_headers
 		open (H, "<", $curl_h)
 			or die "Cannot open $curl_h: ".$!;
 		while(<H>) {
-			if (/^#define (CURL[A-Za-z0-9_]*)/) {
-				$syms{ $1 } = 1;
+			# Skip defines without values like:
+			#	#define CURL_STRICTER
+			if (m{^#\s*define\s+(CURL\w*)\s*$}) {
+				chomp;
+				warn "Skipping '$_': does not define a symbol";
+				next;
 			}
+
+			m{^#\s*define\s+(CURL\w*)} and $syms{$1}++;
 		}
 		close H;
 	}
