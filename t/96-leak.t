@@ -42,14 +42,15 @@ use Net::Curl::Share qw(:constants);
 
 my $iofile = IO::File->new;
 
-my $easy = Net::Curl::Easy->new;
+Net::Curl::Easy->new for 1 .. 5; # warmup
 test_leak { my $easy_ = Net::Curl::Easy->new or die }
     q(Net::Curl::Easy->new);
 
-my $form = Net::Curl::Form->new;
+Net::Curl::Form->new for 1 .. 5; # warmup
 test_leak { my $form_ = Net::Curl::Form->new or die }
     q(Net::Curl::Form->new);
 
+Net::Curl::Multi->new for 1 .. 5; # warmup
 my $multi = Net::Curl::Multi->new;
 SKIP: {
     skip q(libcurl/7.29.0 crashes here: http://sourceforge.net/p/curl/bugs/1194/), 1
@@ -58,6 +59,7 @@ SKIP: {
         q(Net::Curl::Multi->new);
 }
 
+Net::Curl::Share->new for 1 .. 5; # warmup
 my $share = Net::Curl::Share->new;
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
 $share->setopt(CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
