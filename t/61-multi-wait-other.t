@@ -3,7 +3,7 @@ use strict;
 use warnings qw(all);
 use lib 'inc';
 
-use Test::More tests => 7;
+use Test::More tests => 13;
 use Test::HTTP::Server;
 
 use Net::Curl::Easy qw(/^CURL_WAIT_/);
