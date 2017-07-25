@@ -42,7 +42,7 @@ my $cnt;
 $cnt = select undef, $wout = $vec, $eout = $vec, 1;
 ok( $cnt, "ready to write" );
 
-my $tosend = "GET / HTTP/1.1\r\nHost: $host\r\n\r\n";
+my $tosend = "GET /repeat/10/qwertyuiop HTTP/1.1\r\nHost: $host\r\n\r\n";
 my $sent = $c->send( $tosend );
 
 ok( length $tosend == $sent, "sent all data at once" );
@@ -51,18 +51,26 @@ $cnt = select $rout = $vec, undef, $eout = $vec, 2;
 ok( $cnt, "ready to read" );
 
 my $buffer;
-my $received = 0;
 eval {
-	while ($received < $sent) {
-		$received += $c->recv( $buffer, 1024 * 16 );
+	for (;;) {
+		# check if the socket is readable
+		1 until select $rout = $vec, undef, $eout = $vec, 2;
+		$c->recv( $buffer, 1024 );
+		# check if the whole pattern was received
+		last if $buffer =~ /(?:qwertyuiop){10}/;
 	}
 };
 ok( !$@, "received data" );
 
 alarm 2;
+my $received = 0;
 eval {
-	1 while $c->recv( $buffer, 1024 * 16 );
+	for (;;) {
+		my $n = $c->recv( $buffer, 1024 );
+		last unless $n;
+		$received += $n;
+	}
 };
-ok( $@ && ( $@ == CURLE_AGAIN() || $@ == CURLE_UNSUPPORTED_PROTOCOL() ),
+ok( ( !$@ && !$received ) || ( $@ == CURLE_AGAIN() || $@ == CURLE_UNSUPPORTED_PROTOCOL() ),
 	"no more data to read" );
 
