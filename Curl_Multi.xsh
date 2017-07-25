@@ -50,7 +50,9 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 
 	if ( multi->handle ) {
 		curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION, NULL );
+#ifdef CURLMOPT_TIMERFUNCTION
 		curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION, NULL );
+#endif
 	}
 
 	/* remove and mortalize all easy handles */
