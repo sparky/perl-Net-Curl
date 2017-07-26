@@ -1,6 +1,19 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.38 2017-07-26T06:54:00Z
+ [Andy Jack <andyjack@cpan.org>]
+ - Correct number of tests.
+ [Ferenc Erki <ferki@cpan.org>]
+ - Fix handling of constants without values.
+ [Nick Kostyria <kni@cpan.org>]
+ - Fix perl_curl_multi_delete for GlobalDestruction.
+ [Daniel Ruoso <daniel@ruoso.com>]
+ - In t/old-22sendrecv.t, the data may come in more than one read.
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Regression fixes & housekeeping;
+ - Synced symbols-in-versions from libcurl/7.54.1.
+
 0.37 2015-02-01T09:25:00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Synced symbols-in-versions from libcurl/7.40.0.
