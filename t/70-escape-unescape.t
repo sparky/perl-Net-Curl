@@ -28,7 +28,7 @@ my $tests = [
 my $is_centos = 0;
 if (open(my $fh, '<', '/etc/redhat-release')) {
     my $rh = <$fh>;
-    chmop $rh;
+    chomp $rh;
     $is_centos = 1
         if $rh =~ /^CentOS/i;
     close $fh;
