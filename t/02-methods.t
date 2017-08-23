@@ -9,22 +9,23 @@ use Net::Curl::Form;
 use Net::Curl::Multi;
 use Net::Curl::Share;
 
-my %methods = (
-	Net::Curl:: => [ qw(version version_info getdate) ],
-	Net::Curl::Easy:: => [ qw(new duphandle setopt pushopt perform
-		getinfo error strerror form multi reset share), ],
-	Net::Curl::Form:: => [ qw(new add get strerror) ],
-	Net::Curl::Multi:: => [ qw(new add_handle remove_handle info_read
-		fdset timeout setopt perform socket_action strerror handles) ],
-	Net::Curl::Share:: => [ qw(new setopt strerror) ],
-);
+subtest methods => sub {
+    my %methods = (
+        Net::Curl:: => [ qw(version version_info getdate) ],
+        Net::Curl::Easy:: => [ qw(new duphandle setopt pushopt perform
+            getinfo error strerror form multi reset share), ],
+        Net::Curl::Form:: => [ qw(new add get strerror) ],
+        Net::Curl::Multi:: => [ qw(new add_handle remove_handle info_read
+            fdset timeout setopt perform socket_action strerror handles) ],
+        Net::Curl::Share:: => [ qw(new setopt strerror) ],
+    );
 
-my $count = map { @$_ } values %methods;
-print "# there are $count functions to test\n";
-
-while ( my ($pkg, $methods) = each %methods ) {
-	can_ok( $pkg, @$methods );
-}
+    while ( my ($pkg, $methods) = each %methods ) {
+        subtest $pkg => sub {
+            ok $pkg->can($_), $_ for @$methods;
+        };
+    }
+};
 
 subtest "version-dependent methods" => sub {
     my $libcurl_version = Net::Curl::LIBCURL_VERSION_NUM();
