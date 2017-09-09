@@ -1,7 +1,7 @@
 #!perl
 use strict;
 use warnings;
-use Test::More tests => 10;
+use Test::More tests => 2;
 
 use Net::Curl;
 use Net::Curl::Easy;
@@ -9,42 +9,42 @@ use Net::Curl::Form;
 use Net::Curl::Multi;
 use Net::Curl::Share;
 
-my %methods = (
-	Net::Curl:: => [ qw(version version_info getdate) ],
-	Net::Curl::Easy:: => [ qw(new duphandle setopt pushopt perform
-		getinfo error strerror form multi reset share), ],
-	Net::Curl::Form:: => [ qw(new add get strerror) ],
-	Net::Curl::Multi:: => [ qw(new add_handle remove_handle info_read
-		fdset timeout setopt perform socket_action strerror handles) ],
-	Net::Curl::Share:: => [ qw(new setopt strerror) ],
-);
+subtest methods => sub {
+    my %methods = (
+        Net::Curl:: => [ qw(version version_info getdate) ],
+        Net::Curl::Easy:: => [ qw(new duphandle setopt pushopt perform
+            getinfo error strerror form multi reset share), ],
+        Net::Curl::Form:: => [ qw(new add get strerror) ],
+        Net::Curl::Multi:: => [ qw(new add_handle remove_handle info_read
+            fdset timeout setopt perform socket_action strerror handles) ],
+        Net::Curl::Share:: => [ qw(new setopt strerror) ],
+    );
 
-my $count = map { @$_ } values %methods;
-print "# there are $count functions to test\n";
+    while ( my ($pkg, $methods) = each %methods ) {
+        subtest $pkg => sub {
+            ok $pkg->can($_), $_ for @$methods;
+        };
+    }
+};
 
-while ( my ($pkg, $methods) = each %methods ) {
-	can_ok( $pkg, @$methods );
-}
+subtest "version-dependent methods" => sub {
+    my $libcurl_version = Net::Curl::LIBCURL_VERSION_NUM();
+    diag 'LIBCURL_VERSION: ', $libcurl_version;
 
-if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x071C00 ) {
-	ok( Net::Curl::Multi->can( "wait" ), "Multi has wait method" );
-} else {
-	ok( ! Net::Curl::Multi->can( "wait" ), "Multi does not have wait method" );
-}
-if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x070F05 ) {
-	ok( Net::Curl::Multi->can( "assign" ), "Multi has assign method" );
-} else {
-	ok( ! Net::Curl::Multi->can( "assign" ), "Multi does not have assign method" );
-}
-if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x071200 ) {
-	ok( Net::Curl::Easy->can( "pause" ), "Easy has pause method" );
-} else {
-	ok( ! Net::Curl::Easy->can( "pause" ), "Easy does not have pause method" );
-}
-if ( Net::Curl::LIBCURL_VERSION_NUM() >= 0x071202 ) {
-	ok( Net::Curl::Easy->can( "send" ), "Easy has send method" );
-	ok( Net::Curl::Easy->can( "recv" ), "Easy has recv method" );
-} else {
-	ok( ! Net::Curl::Easy->can( "send" ), "Easy does not have send method" );
-	ok( ! Net::Curl::Easy->can( "recv" ), "Easy does not have recv method" );
-}
+    my @version_methods = (
+        [ 'Net::Curl::Multi', 'wait', 0x071C00 ],
+        [ 'Net::Curl::Multi', 'assign', 0x070F05 ],
+        [ 'Net::Curl::Easy', 'pause', 0x071200 ],
+        [ 'Net::Curl::Easy', 'send', 0x071202 ],
+        [ 'Net::Curl::Easy', 'recv', 0x071202 ],
+    );
+
+    for ( @version_methods ) {
+        my( $package, $method, $min_version ) = @$_;
+        my $should_have = $libcurl_version >= $min_version;
+        my $prefix = $should_have ? 'has ' : "hasn't ";
+        my $message = $prefix . join( '::', $package, $method ) . " - $min_version";
+
+        is !!$package->can( $method ) => $should_have, $message;
+    }
+};
