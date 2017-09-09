@@ -152,7 +152,7 @@ WriteMakefile(
 	VERSION_FROM	=> 'lib/Net/Curl.pm',
 	ABSTRACT_FROM	=> 'lib/Net/Curl.pm',
 	AUTHOR		=> "Przemys${l_}aw Iskra <sparky at pld-linux.org>",
-	CCFLAGS		=> $devel_cflags . $curl{cflags} . $bits,
+	CCFLAGS		=> $devel_cflags . ' ' . $curl{cflags} . $bits,
 	LIBS		=> $curl{libs},
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
