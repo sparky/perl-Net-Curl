@@ -143,9 +143,9 @@ my $bits = (length(pack(p => 0)) < 8)
     : '';
 
 # older perl seems to choke on it, maybe utf8::upgrade would work ?
-my ($l_, $a_) = ($] >= 5.010)
-    ? ("\x{142}", "\x{e1}")
-    : qw(l a);
+my ($l_, $a_, $c_) = ($] >= 5.010)
+    ? ("\x{142}", "\x{e1}", "\x{107}")
+    : qw(l a c);
 
 WriteMakefile(
 	NAME 		=> 'Net::Curl',
@@ -177,6 +177,9 @@ WriteMakefile(
 			"Ferenc Erki",
 			"Nick Kostyria",
 			"Daniel Ruoso",
+			"H.Merijn Brand",
+			"Yanick Champoux",
+			"Slaven Rezi${c_}",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
