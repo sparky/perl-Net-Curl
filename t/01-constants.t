@@ -65,7 +65,12 @@ foreach my $sym ( @check ) {
 	eval { $value = LIBCURL_TIMESTAMP() };
 	is( $@, "", 'LIBCURL_TIMESTAMP constant can be retrieved' );
 	ok( defined( $value ), "LIBCURL_TIMESTAMP is defined");
-	like( $value, qr/[a-z]/i, 'LIBCURL_TIMESTAMP is a string' );
+	# Format changed over time in /usr/include/curl/curlver.h
+	# libcurl-devel-7.37.0-16.3.1:
+	#   #define LIBCURL_TIMESTAMP "Wed May 21 05:58:26 UTC 2014"
+	# libcurl-devel-7.54.1-1.2:
+	#   #define LIBCURL_TIMESTAMP "2017-06-14"
+	like( $value, qr/\b[0-9]{4}\b/i, 'LIBCURL_TIMESTAMP is a string' );
 }
 {
 	my $value;
