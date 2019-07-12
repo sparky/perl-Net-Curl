@@ -39,6 +39,9 @@ static const CURLoption perl_curl_easy_option_slist[] = {
 #ifdef CURLOPT_RESOLVE
 	CURLOPT_RESOLVE,
 #endif
+#ifdef CURLOPT_CONNECT_TO
+	CURLOPT_CONNECT_TO,
+#endif
 	CURLOPT_TELNETOPTIONS
 };
 #define perl_curl_easy_option_slist_num \
