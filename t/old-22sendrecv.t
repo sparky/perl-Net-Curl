@@ -6,6 +6,8 @@ use Test::More;
 use Test::HTTP::Server;
 use Net::Curl::Easy qw(:constants);
 
+local $ENV{no_proxy} = '*';
+
 my $vi = Net::Curl::version_info();
 if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x071202 ) {
 	my $ver = Net::Curl::LIBCURL_VERSION();
