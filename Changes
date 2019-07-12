@@ -1,6 +1,17 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.40 2019-07-12T10:42:00Z
+ [Slaven Rezić <slaven@rezic.de>]
+ - Fixed the failing test old-10errbuf.t.
+
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed tests failing due to HTTP_PROXY setting;
+ - Synced symbols-in-versions from libcurl/7.65.1.
+
+ [Yuni Kim <yunik@apple.com>]
+ - Support CURLOPT_CONNECT_TO.
+
 0.39 2017-09-09T19:13:00Z
  [H.Merijn Brand <h.m.brand@xs4all.nl>]
  - LIBCURL_TIMESTAMP format changed in header.
