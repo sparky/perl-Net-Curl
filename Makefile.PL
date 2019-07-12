@@ -180,6 +180,7 @@ WriteMakefile(
 			"H.Merijn Brand",
 			"Yanick Champoux",
 			"Slaven Rezi${c_}",
+			"Yuni Kim",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
