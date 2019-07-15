@@ -1,6 +1,10 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.41 2019-07-15T10:46:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Test old-10errbuf.t was still failing; more fixes.
+
 0.40 2019-07-12T10:42:00Z
  [Slaven Rezić <slaven@rezic.de>]
  - Fixed the failing test old-10errbuf.t.
