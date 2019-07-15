@@ -81,6 +81,7 @@ my $start = tell *DATA;
 unshift @INC, sub {
 	my $pkg = $packages{ $_[1] };
 	return unless defined $pkg;
+	## no critic (RequireUseOfExceptions)
 	open(my $fh, '<&', *DATA) or croak "can't read from __DATA__";
 	seek $fh, $start + $pkg, 0;
 	return $fh;
