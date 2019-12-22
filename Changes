@@ -1,6 +1,12 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.42 2019-12-22T10:45:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed POD links to libcurl docs.
+ - Updated libcurl symbols.
+ - Fixed t/old-23socket-action.t bitrot.
+
 0.41 2019-07-15T10:46:00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Test old-10errbuf.t was still failing; more fixes.
