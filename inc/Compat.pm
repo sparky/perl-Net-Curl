@@ -69,7 +69,7 @@ VERSION
 # Dirty hack so Test::ConsistentVersion passes
 sub VERSION {
 	return (caller)[0] eq 'Test::ConsistentVersion'
-		? 0.41
+		? 0.42
 		: $VERSION;
 }
 
