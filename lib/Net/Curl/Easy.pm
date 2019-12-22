@@ -91,7 +91,7 @@ object.
 
  my $easy = Net::Curl::Easy->new( [qw(my very private data)] );
 
-Calls L<curl_easy_init(3)> and presets some defaults.
+Calls L<curl_easy_init(3)|https://curl.haxx.se/libcurl/c/curl_easy_init.html> and presets some defaults.
 
 =back
 
@@ -109,7 +109,7 @@ If you want it copied you must do it on your own.
  use Storable qw(dclone);
  my $deep_clone = $easy->duphandle( dclone( $easy ) );
 
-Calls L<curl_easy_duphandle(3)>.
+Calls L<curl_easy_duphandle(3)|https://curl.haxx.se/libcurl/c/curl_easy_duphandle.html>.
 
 =item setopt( OPTION, VALUE )
 
@@ -118,7 +118,7 @@ VALUE depends on whatever that option expects.
 
  $easy->setopt( Net::Curl::Easy::CURLOPT_URL, $uri );
 
-Calls L<curl_easy_setopt(3)>. Throws L</Net::Curl::Easy::Code> on error.
+Calls L<curl_easy_setopt(3)|https://curl.haxx.se/libcurl/c/curl_easy_setopt.html>. Throws L</Net::Curl::Easy::Code> on error.
 
 =item pushopt( OPTION, ARRAYREF )
 
@@ -128,7 +128,7 @@ replacing the old slist.
  $easy->pushopt( Net::Curl::Easy::CURLOPT_HTTPHEADER,
      ['More: headers'] );
 
-Builds a slist and calls L<curl_easy_setopt(3)>.
+Builds a slist and calls L<curl_easy_setopt(3)|https://curl.haxx.se/libcurl/c/curl_easy_setopt.html>.
 Throws L</Net::Curl::Easy::Code> on error.
 
 =item reset( )
@@ -137,7 +137,7 @@ Reinitializes easy handle B<(was broken before v0.27!)>.
 
  $easy->reset();
 
-Calls L<curl_easy_reset(3)> and presets some defaults.
+Calls L<curl_easy_reset(3)|https://curl.haxx.se/libcurl/c/curl_easy_reset.html> and presets some defaults.
 
 =item perform( )
 
@@ -145,7 +145,7 @@ Perform upload and download process.
 
  $easy->perform();
 
-Calls L<curl_easy_perform(3)>. Rethrows exceptions from callbacks.
+Calls L<curl_easy_perform(3)|https://curl.haxx.se/libcurl/c/curl_easy_perform.html>. Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Easy::Code> on other errors.
 
 =item getinfo( OPTION )
@@ -154,14 +154,14 @@ Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
 
  my $socket = $self->getinfo( CURLINFO_LASTSOCKET );
 
-Calls L<curl_easy_getinfo(3)>.
+Calls L<curl_easy_getinfo(3)|https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html>.
 Throws L</Net::Curl::Easy::Code> on error.
 
 =item pause( )
 
 Pause the transfer.
 
-Calls L<curl_easy_pause(3)>. Not available in curl before 7.18.0.
+Calls L<curl_easy_pause(3)|https://curl.haxx.se/libcurl/c/curl_easy_pause.html>. Not available in curl before 7.18.0.
 Throws L</Net::Curl::Easy::Code> on error.
 
 =item send( BUFFER )
@@ -170,7 +170,7 @@ Send raw data.
 
  $easy->send( $data );
 
-Calls L<curl_easy_send(3)>. Not available in curl before 7.18.2.
+Calls L<curl_easy_send(3)|https://curl.haxx.se/libcurl/c/curl_easy_send.html>. Not available in curl before 7.18.2.
 Throws L</Net::Curl::Easy::Code> on error.
 
 =item recv( BUFFER, MAXLENGTH )
@@ -180,14 +180,14 @@ concatenated to BUFFER.
 
  $easy->recv( $buffer, $len );
 
-Calls L<curl_easy_recv(3)>. Not available in curl before 7.18.2.
+Calls L<curl_easy_recv(3)|https://curl.haxx.se/libcurl/c/curl_easy_recv.html>. Not available in curl before 7.18.2.
 Throws L</Net::Curl::Easy::Code> on error.
 
 =item error( )
 
 Get last error message.
 
-See information on C<CURLOPT_ERRORBUFFER> in L<curl_easy_setopt(3)> for
+See information on C<CURLOPT_ERRORBUFFER> in L<curl_easy_setopt(3)|https://curl.haxx.se/libcurl/c/curl_easy_setopt.html> for
 a longer description.
 
  my $error = $easy->error();
@@ -226,7 +226,7 @@ URL encodes the given string.
 
  my $escaped = $easy->escape( "+foo" );
 
-Calls L<curl_easy_escape(3)> which URL encode the given string.
+Calls L<curl_easy_escape(3)|https://curl.haxx.se/libcurl/c/curl_easy_escape.html> which URL encode the given string.
 
 =item unescape( )
 
@@ -234,7 +234,7 @@ URL decodes the given string.
 
  my $unescaped = $easy->unescape( "%2Bbar" );
 
-Calls L<curl_easy_unescape(3)> which URL decodes the given string.
+Calls L<curl_easy_unescape(3)|https://curl.haxx.se/libcurl/c/curl_easy_unescape.html> which URL decodes the given string.
 
 If you are sure the unescaped data contains a utf8 string, you can mark it
 with utf8::decode( $unescaped )
@@ -255,7 +255,7 @@ Return a string for error code CODE.
      Net::Curl::Easy::CURLE_OK
  );
 
-Calls L<curl_easy_strerror(3)>.
+Calls L<curl_easy_strerror(3)|https://curl.haxx.se/libcurl/c/curl_easy_strerror.html>.
 
 =back
 

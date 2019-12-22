@@ -96,7 +96,7 @@ object.
 
 =item add( CURLFORM_option => DATA, ... )
 
-Adds new section to form object. See L<curl_formadd(3)> for more info.
+Adds new section to form object. See L<curl_formadd(3)|https://curl.haxx.se/libcurl/c/curl_formadd.html> for more info.
 
 Unlike in libcurl function, there is no need to add CURLFORM_END as the last
 argument.
@@ -200,7 +200,7 @@ serialization will be aborted.
 
 =back
 
-Calls L<curl_formget(3)>. Rethrows exceptions from callbacks.
+Calls L<curl_formget(3)|https://curl.haxx.se/libcurl/c/curl_formget.html>. Rethrows exceptions from callbacks.
 
 =back
 
@@ -229,7 +229,7 @@ String is extracted from error constant name.
 
 Most of those constants can be used in add() method. Currently CURLFORM_STREAM
 and CURLFORM_ARRAY are not supported. Others will behave in the way described
-in L<curl_formadd(3)>.
+in L<curl_formadd(3)|https://curl.haxx.se/libcurl/c/curl_formadd.html>.
 
 =item CURL_FORMADD_*
 
@@ -251,7 +251,7 @@ function to display a nice message.
 
 L<Net::Curl>
 L<Net::Curl::Easy>
-L<curl_formadd(3)>
+L<curl_formadd(3)|https://curl.haxx.se/libcurl/c/curl_formadd.html>
 
 =head1 COPYRIGHT
 

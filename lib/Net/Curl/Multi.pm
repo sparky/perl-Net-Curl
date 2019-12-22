@@ -73,7 +73,7 @@ object.
 
  my $multi = Net::Curl::Multi->new( [qw(my very private data)] );
 
-Calls L<curl_multi_init(3)> and presets some defaults.
+Calls L<curl_multi_init(3)|https://curl.haxx.se/libcurl/c/curl_multi_init.html> and presets some defaults.
 
 =back
 
@@ -87,7 +87,7 @@ Add Net::Curl::Easy to this Net::Curl::Multi object.
 
  $multi->add_handle( $easy );
 
-Calls L<curl_multi_add_handle(3)>.
+Calls L<curl_multi_add_handle(3)|https://curl.haxx.se/libcurl/c/curl_multi_add_handle.html>.
 Throws L</Net::Curl::Multi::Code> on error.
 
 =item remove_handle( EASY )
@@ -96,7 +96,7 @@ Remove Net::Curl::Easy from this Net::Curl::Multi object.
 
  $multi->remove_handle( $easy );
 
-Calls L<curl_multi_remove_handle(3)>.
+Calls L<curl_multi_remove_handle(3)|https://curl.haxx.se/libcurl/c/curl_multi_remove_handle.html>.
 Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Multi::Code> on error.
 
@@ -110,7 +110,7 @@ $msg contains one of CURLMSG_* values, currently only CURLMSG_DONE is returned.
 $easy is the L<Net::Curl::Easy> object. Result is a
 L<Net::Curl::Easy::Code> dualvar object.
 
-Calls L<curl_multi_info_read(3)>.
+Calls L<curl_multi_info_read(3)|https://curl.haxx.se/libcurl/c/curl_multi_info_read.html>.
 
 =item fdset( )
 
@@ -119,7 +119,7 @@ L<select()|perlfunc/select> and L<vec()|perlfunc/vec> perl builtins.
 
  my ( $rvec, $wvec, $evec ) = $multi->fdset();
 
-Calls L<curl_multi_fdset(3)>.
+Calls L<curl_multi_fdset(3)|https://curl.haxx.se/libcurl/c/curl_multi_fdset.html>.
 Throws L</Net::Curl::Multi::Code> on error.
 
 =item timeout( )
@@ -128,7 +128,7 @@ Returns timeout value in miliseconds.
 
  my $timeout_ms = $multi->timeout();
 
-Calls L<curl_multi_timeout(3)>.
+Calls L<curl_multi_timeout(3)|https://curl.haxx.se/libcurl/c/curl_multi_timeout.html>.
 Throws L</Net::Curl::Multi::Code> on error.
 
 =item setopt( OPTION, VALUE )
@@ -138,7 +138,7 @@ VALUE depends on whatever that option expects.
 
  $multi->setopt( CURLMOPT_MAXCONNECTS, 10 );
 
-Calls L<curl_multi_setopt(3)>.
+Calls L<curl_multi_setopt(3)|https://curl.haxx.se/libcurl/c/curl_multi_setopt.html>.
 Throws L</Net::Curl::Multi::Code> on error.
 
 =item perform( )
@@ -148,7 +148,7 @@ or timeout has just reached zero.
 
  my $active = $multi->perform();
 
-Calls L<curl_multi_perform(3)>.
+Calls L<curl_multi_perform(3)|https://curl.haxx.se/libcurl/c/curl_multi_perform.html>.
 Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Multi::Code> on error.
 
@@ -173,7 +173,7 @@ It will also poll on all filehandles requested. Each event descriptor is a hash 
    ...
  }
 
-Calls L<curl_multi_wait(3)>
+Calls L<curl_multi_wait(3)|https://curl.haxx.se/libcurl/c/curl_multi_wait.html>
 (L<available since libcurl/7.28.0|http://curl.haxx.se/libcurl/c/curl_multi_wait.html>).
 Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Multi::Code> on error.
@@ -187,7 +187,7 @@ Signalize action on a socket.
  # there is data to read on socket:
  my $active = $multi->socket_action( $socket, CURL_CSELECT_IN );
 
-Calls L<curl_multi_socket_action(3)>.
+Calls L<curl_multi_socket_action(3)|https://curl.haxx.se/libcurl/c/curl_multi_socket_action.html>.
 Rethrows exceptions from callbacks.
 Throws L</Net::Curl::Multi::Code> on error.
 
@@ -201,7 +201,7 @@ specified. The value is used only in socket callback.
  # store socket object for socket callback
  $multi->assign( $socket->fileno(), $socket );
 
-Calls L<curl_multi_assign(3)>.
+Calls L<curl_multi_assign(3)|https://curl.haxx.se/libcurl/c/curl_multi_assign.html>.
 Throws L</Net::Curl::Multi::Code> on error.
 
 =item handles( )
@@ -225,7 +225,7 @@ Return a string for error code CODE.
 
  my $message = $multi->strerror( CURLM_BAD_EASY_HANDLE );
 
-See L<curl_multi_strerror(3)> for more info.
+See L<curl_multi_strerror(3)|https://curl.haxx.se/libcurl/c/curl_multi_strerror.html> for more info.
 
 =back
 
@@ -269,7 +269,7 @@ Socket callback will be called only if socket_action() method is being used.
 It receives 6 arguments: multi handle, easy handle, socket file number, poll
 action, socket data (see assign), and CURLMOPT_SOCKETDATA value. It must
 return 0.
-For more information refer to L<curl_multi_socket_action(3)>.
+For more information refer to L<curl_multi_socket_action(3)|https://curl.haxx.se/libcurl/c/curl_multi_socket_action.html>.
 
  sub cb_socket {
      my ( $multi, $easy, $socketfn, $action, $socketdata, $uservar ) = @_;

@@ -82,11 +82,11 @@ Returns libcurl version string.
  # libcurl/7.21.4 GnuTLS/2.10.4 zlib/1.2.5 c-ares/1.7.4 ...
  print $libcurl_verstr;
 
-Calls L<curl_version(3)> function.
+Calls L<curl_version(3)|https://curl.haxx.se/libcurl/c/curl_version.html> function.
 
 =item version_info
 
-Returns a hashref with the same information as L<curl_version_info(3)>.
+Returns a hashref with the same information as L<curl_version_info(3)|https://curl.haxx.se/libcurl/c/curl_version_info.html>.
 
  my $libcurl_ver = Net::Curl::version_info();
  print Dumper( $libcurl_ver );
@@ -128,7 +128,7 @@ Decodes date string returning its numerical value, in seconds.
  print "$timestr\n";
  # Sun Nov  6 08:49:37 1994
 
-See L<curl_getdate(3)> for more info on supported input formats.
+See L<curl_getdate(3)|https://curl.haxx.se/libcurl/c/curl_getdate.html> for more info on supported input formats.
 
 =back
 
@@ -138,7 +138,7 @@ See L<curl_getdate(3)> for more info on supported input formats.
 
 =item CURL_VERSION_* and CURLVERSION_*
 
-Can be used for decoding version_info() values. L<curl_version_info(3)>
+Can be used for decoding version_info() values. L<curl_version_info(3)|https://curl.haxx.se/libcurl/c/curl_version_info.html>
 
 =item LIBCURL_*
 
