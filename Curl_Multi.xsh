@@ -195,17 +195,6 @@ static MGVTBL perl_curl_multi_vtbl = {
 			die_code( "Multi", code ); \
 	} STMT_END
 
-perl_curl_easy_t*
-easy_sv_to_ptr(pTHX_ SV* easy_sv)
-{
-    return (perl_curl_easy_t*) perl_curl_getptr_fatal( aTHX_
-        easy_sv,
-        &perl_curl_easy_vtbl,
-        "$easy",
-        "Net::Curl::Easy"
-    );
-}
-
 MODULE = Net::Curl	PACKAGE = Net::Curl::Multi
 
 INCLUDE: const-multi-xs.inc
@@ -240,12 +229,12 @@ new( sclass="Net::Curl::Multi", base=HASHREF_BY_DEFAULT )
 
 
 void
-add_handle( multi, SV* easy_sv )
+add_handle( multi, easy )
 	Net::Curl::Multi multi
+	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
-        perl_curl_easy_t* easy = easy_sv_to_ptr(aTHX_ easy_sv);
 		if ( easy->multi )
 			croak( "Specified easy handle is attached to %s multi handle already",
 				easy->multi == multi ? "this" : "another" );
@@ -260,18 +249,16 @@ add_handle( multi, SV* easy_sv )
 
             // Ensure that the easy stays alive until the multi is gone.
             SvREFCNT_inc(easy->perl_self);
-        sv_dump(easy->perl_self);
 		}
 		MULTI_DIE( ret );
 
 void
-remove_handle( multi, SV* easy_sv )
+remove_handle( multi, easy )
 	Net::Curl::Multi multi
+	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
-        perl_curl_easy_t* easy = easy_sv_to_ptr(aTHX_ easy_sv);
-
 		CLEAR_ERRSV();
 		if ( easy->multi != multi )
 			croak( "Specified easy handle is not attached to %s multi handle",

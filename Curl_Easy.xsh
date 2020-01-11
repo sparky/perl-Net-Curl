@@ -163,7 +163,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, NULL );
 
     if ( easy->multi )
-        warn("Cleaning up multi-attached easy handle .. segfault likely!\n");
+        warn("Cleaning up multi-attached easy handle .. possible error!\n");
 
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );
