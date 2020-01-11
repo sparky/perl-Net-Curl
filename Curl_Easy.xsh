@@ -146,6 +146,18 @@ perl_curl_easy_delete_mostly( pTHX_ perl_curl_easy_t *easy )
 		sv_2mortal( easy->form_sv );
 } /*}}}*/
 
+static inline CURLMcode
+perl_curl_easy_remove_from_multi( pTHX_  perl_curl_easy_t* easy )
+{
+    CURLMcode ret = CURLM_OK;
+
+    if (easy->multi) {
+        ret = curl_multi_remove_handle( easy->multi->handle, easy->handle );
+        easy->multi = NULL;
+    }
+
+    return ret;
+}
 
 static void
 perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
@@ -166,10 +178,7 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	 * chance Perl might clear the easy first, leading to a segfault when
 	 * the multi tries to remove an easy that is already cleaned up.
 	 * This prevents that. */
-	if ( easy->multi ) {
-		curl_multi_remove_handle( easy->multi->handle, easy->handle );
-		easy->multi = NULL;
-	}
+	perl_curl_easy_remove_from_multi( aTHX_ easy );
 
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );

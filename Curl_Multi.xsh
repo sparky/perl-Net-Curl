@@ -37,10 +37,7 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
 
-			if (easy->multi) {
-				curl_multi_remove_handle( multi->handle, easy->handle );
-				easy->multi = NULL;
-			}
+			perl_curl_easy_remove_from_multi( aTHX_ easy );
 
 			next = now->next;
 			sv_2mortal( (SV *) now->value );
@@ -239,7 +236,7 @@ remove_handle( multi, easy )
 			croak( "Specified easy handle is not attached to %s multi handle",
 				easy->multi ? "this" : "any" );
 
-		ret = curl_multi_remove_handle( multi->handle, easy->handle );
+		ret = perl_curl_easy_remove_from_multi( aTHX_ easy );
 		{
 			SV *easysv;
 			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
@@ -248,7 +245,6 @@ remove_handle( multi, easy )
 				croak( "internal Net::Curl error" );
 			sv_2mortal( easysv );
 		}
-		easy->multi = NULL;
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
