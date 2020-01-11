@@ -149,14 +149,14 @@ perl_curl_easy_delete_mostly( pTHX_ perl_curl_easy_t *easy )
 static inline CURLMcode
 perl_curl_easy_remove_from_multi( pTHX_  perl_curl_easy_t* easy )
 {
-    CURLMcode ret = CURLM_OK;
+	CURLMcode ret = CURLM_OK;
 
-    if (easy->multi) {
-        ret = curl_multi_remove_handle( easy->multi->handle, easy->handle );
-        easy->multi = NULL;
-    }
+	if (easy->multi) {
+		ret = curl_multi_remove_handle( easy->multi->handle, easy->handle );
+		easy->multi = NULL;
+	}
 
-    return ret;
+	return ret;
 }
 
 static void
