@@ -196,12 +196,14 @@ static MGVTBL perl_curl_multi_vtbl = {
 #endif
 };
 
+
 #define MULTI_DIE( ret )		\
 	STMT_START {				\
 		CURLMcode code = (ret);	\
 		if ( code != CURLM_OK )	\
 			die_code( "Multi", code ); \
 	} STMT_END
+
 
 MODULE = Net::Curl	PACKAGE = Net::Curl::Multi
 
