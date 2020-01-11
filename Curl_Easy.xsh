@@ -162,8 +162,11 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION, NULL );
 	curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, NULL );
 
-    if ( easy->multi )
-        warn("Cleaning up multi-attached easy handle .. possible error!\n");
+	/* Normally the multi should be cleaned up before the easy.
+	 * We try to ensure that by manipulating reference counts
+	 * (see Curl_Multi.xsh), but there may still be problems. */
+	if ( easy->multi )
+		warn("Cleaning up multi-attached easy handle .. possible !\n");
 
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );
