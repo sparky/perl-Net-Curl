@@ -162,6 +162,9 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION, NULL );
 	curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, NULL );
 
+    if ( easy->multi )
+        warn("Cleaning up multi-attached easy handle .. segfault likely!\n");
+
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );
 
@@ -178,6 +181,8 @@ static int
 perl_curl_easy_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
 	if ( mg->mg_ptr ) {
+fprintf(stderr, "perl_curl_easy_magic_free start\n");
+sv_dump(sv);
 		/* prevent recursive destruction */
 		SvREFCNT( sv ) = 1 << 30;
 

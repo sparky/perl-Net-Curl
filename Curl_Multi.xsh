@@ -48,12 +48,14 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 /*{{{*/ {
 	perl_curl_multi_callback_code_t i;
 
+fprintf(stderr, "perl_curl_multi_delete start\n");
 	if ( multi->handle ) {
 		curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION, NULL );
 #ifdef CURLMOPT_TIMERFUNCTION
 		curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION, NULL );
 #endif
 	}
+fprintf(stderr, "perl_curl_multi_delete 2\n");
 
 	/* remove and mortalize all easy handles */
 	if ( multi->easies ) {
@@ -61,17 +63,22 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 		do {
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
+fprintf(stderr, "perl_curl_multi_delete 2.1 (%p, %p)\n", multi->handle, easy->handle);
 			curl_multi_remove_handle( multi->handle, easy->handle );
 			easy->multi = NULL;
+            SvREFCNT_dec(easy->perl_self);
+fprintf(stderr, "perl_curl_multi_delete 2.2\n");
 
 			next = now->next;
 			sv_2mortal( (SV *) now->value );
 			Safefree( now );
 		} while ( ( now = next ) != NULL );
 	}
+fprintf(stderr, "perl_curl_multi_delete 3\n");
 
 	if ( multi->handle )
 		curl_multi_cleanup( multi->handle );
+fprintf(stderr, "perl_curl_multi_delete 4\n");
 
 	SIMPLELL_FREE( multi->socket_data, sv_2mortal );
 
@@ -134,14 +141,18 @@ static curl_multi_timer_callback pct_timer __attribute__((unused)) = cb_multi_ti
 static int
 perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
+    fprintf(stderr, "perl_curl_multi_magic_free start\n");
 	if ( mg->mg_ptr ) {
 		/* prevent recursive destruction */
 		SvREFCNT( sv ) = 1 << 30;
+    fprintf(stderr, "perl_curl_multi_magic_free start 2\n");
 
 		perl_curl_multi_delete( aTHX_ (void *) mg->mg_ptr );
+    fprintf(stderr, "perl_curl_multi_magic_free start 3\n");
 
 		SvREFCNT( sv ) = 0;
 	}
+    fprintf(stderr, "perl_curl_multi_magic_free end\n");
 	return 0;
 }
 
@@ -194,6 +205,16 @@ static MGVTBL perl_curl_multi_vtbl = {
 			die_code( "Multi", code ); \
 	} STMT_END
 
+perl_curl_easy_t*
+easy_sv_to_ptr(pTHX_ SV* easy_sv)
+{
+    return (perl_curl_easy_t*) perl_curl_getptr_fatal( aTHX_
+        easy_sv,
+        &perl_curl_easy_vtbl,
+        "$easy",
+        "Net::Curl::Easy"
+    );
+}
 
 MODULE = Net::Curl	PACKAGE = Net::Curl::Multi
 
@@ -229,12 +250,12 @@ new( sclass="Net::Curl::Multi", base=HASHREF_BY_DEFAULT )
 
 
 void
-add_handle( multi, easy )
+add_handle( multi, SV* easy_sv )
 	Net::Curl::Multi multi
-	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
+        perl_curl_easy_t* easy = easy_sv_to_ptr(aTHX_ easy_sv);
 		if ( easy->multi )
 			croak( "Specified easy handle is attached to %s multi handle already",
 				easy->multi == multi ? "this" : "another" );
@@ -246,16 +267,21 @@ add_handle( multi, easy )
 				PTR2nat( easy ) );
 			*easysv_ptr = SELF2PERL( easy );
 			easy->multi = multi;
+
+            // Ensure that the easy stays alive until the multi is gone.
+            SvREFCNT_inc(easy->perl_self);
+        sv_dump(easy->perl_self);
 		}
 		MULTI_DIE( ret );
 
 void
-remove_handle( multi, easy )
+remove_handle( multi, SV* easy_sv )
 	Net::Curl::Multi multi
-	Net::Curl::Easy easy
 	PREINIT:
 		CURLMcode ret;
 	CODE:
+        perl_curl_easy_t* easy = easy_sv_to_ptr(aTHX_ easy_sv);
+
 		CLEAR_ERRSV();
 		if ( easy->multi != multi )
 			croak( "Specified easy handle is not attached to %s multi handle",
@@ -271,6 +297,7 @@ remove_handle( multi, easy )
 			sv_2mortal( easysv );
 		}
 		easy->multi = NULL;
+        SvREFCNT_dec(easy->perl_self);
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
