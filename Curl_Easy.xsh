@@ -181,8 +181,6 @@ static int
 perl_curl_easy_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
 	if ( mg->mg_ptr ) {
-fprintf(stderr, "perl_curl_easy_magic_free start\n");
-sv_dump(sv);
 		/* prevent recursive destruction */
 		SvREFCNT( sv ) = 1 << 30;
 

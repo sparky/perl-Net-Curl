@@ -48,14 +48,12 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 /*{{{*/ {
 	perl_curl_multi_callback_code_t i;
 
-fprintf(stderr, "perl_curl_multi_delete start\n");
 	if ( multi->handle ) {
 		curl_multi_setopt( multi->handle, CURLMOPT_SOCKETFUNCTION, NULL );
 #ifdef CURLMOPT_TIMERFUNCTION
 		curl_multi_setopt( multi->handle, CURLMOPT_TIMERFUNCTION, NULL );
 #endif
 	}
-fprintf(stderr, "perl_curl_multi_delete 2\n");
 
 	/* remove and mortalize all easy handles */
 	if ( multi->easies ) {
@@ -63,22 +61,18 @@ fprintf(stderr, "perl_curl_multi_delete 2\n");
 		do {
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
-fprintf(stderr, "perl_curl_multi_delete 2.1 (%p, %p)\n", multi->handle, easy->handle);
 			curl_multi_remove_handle( multi->handle, easy->handle );
 			easy->multi = NULL;
             SvREFCNT_dec(easy->perl_self);
-fprintf(stderr, "perl_curl_multi_delete 2.2\n");
 
 			next = now->next;
 			sv_2mortal( (SV *) now->value );
 			Safefree( now );
 		} while ( ( now = next ) != NULL );
 	}
-fprintf(stderr, "perl_curl_multi_delete 3\n");
 
 	if ( multi->handle )
 		curl_multi_cleanup( multi->handle );
-fprintf(stderr, "perl_curl_multi_delete 4\n");
 
 	SIMPLELL_FREE( multi->socket_data, sv_2mortal );
 
@@ -141,18 +135,14 @@ static curl_multi_timer_callback pct_timer __attribute__((unused)) = cb_multi_ti
 static int
 perl_curl_multi_magic_free( pTHX_ SV *sv, MAGIC *mg )
 {
-    fprintf(stderr, "perl_curl_multi_magic_free start\n");
 	if ( mg->mg_ptr ) {
 		/* prevent recursive destruction */
 		SvREFCNT( sv ) = 1 << 30;
-    fprintf(stderr, "perl_curl_multi_magic_free start 2\n");
 
 		perl_curl_multi_delete( aTHX_ (void *) mg->mg_ptr );
-    fprintf(stderr, "perl_curl_multi_magic_free start 3\n");
 
 		SvREFCNT( sv ) = 0;
 	}
-    fprintf(stderr, "perl_curl_multi_magic_free end\n");
 	return 0;
 }
 
