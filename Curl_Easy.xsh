@@ -162,11 +162,14 @@ perl_curl_easy_delete( pTHX_ perl_curl_easy_t *easy )
 	curl_easy_setopt( easy->handle, CURLOPT_HEADERFUNCTION, NULL );
 	curl_easy_setopt( easy->handle, CURLOPT_WRITEHEADER, NULL );
 
-	/* Normally the multi should be cleaned up before the easy.
-	 * We try to ensure that by manipulating reference counts
-	 * (see Curl_Multi.xsh), but there may still be problems. */
-	if ( easy->multi )
-		warn("Cleaning up multi-attached easy handle .. possible !\n");
+	/* If Perl reaps an easy and its multi "together", there is a
+	 * chance Perl might clear the easy first, leading to a segfault when
+	 * the multi tries to remove an easy that is already cleaned up.
+	 * This prevents that. */
+	if ( easy->multi ) {
+		curl_multi_remove_handle( easy->multi->handle, easy->handle );
+		easy->multi = NULL;
+	}
 
 	if ( easy->handle )
 		curl_easy_cleanup( easy->handle );

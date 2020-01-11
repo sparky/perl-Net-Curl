@@ -107,6 +107,47 @@ typedef struct {
 	SV *data;
 } callback_t;
 
+typedef struct simplell_s simplell_t;
+struct simplell_s {
+	/* next in the linked list */
+	simplell_t *next;
+
+	/* curl option it belongs to */
+	PTRV key;
+
+	/* the actual data */
+	void *value;
+};
+
+//----------------------------------------------------------------------
+
+typedef enum {
+	CB_MULTI_SOCKET = 0,
+	CB_MULTI_TIMER,
+	CB_MULTI_LAST,
+} perl_curl_multi_callback_code_t;
+
+struct perl_curl_multi_s {
+	/* last seen version of this object */
+	SV *perl_self;
+
+	/* curl multi handle */
+	CURLM *handle;
+
+	/* list of callbacks */
+	callback_t cb[ CB_MULTI_LAST ];
+
+	/* list of data assigned to sockets */
+	/* key: socket fd; value: user sv */
+	simplell_t *socket_data;
+
+	/* list of easy handles attached to this multi */
+	/* key: our easy pointer, value: easy SV */
+	simplell_t *easies;
+};
+
+//----------------------------------------------------------------------
+
 typedef struct perl_curl_easy_s perl_curl_easy_t;
 typedef struct perl_curl_form_s perl_curl_form_t;
 typedef struct perl_curl_share_s perl_curl_share_t;
@@ -137,18 +178,6 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 
 	return slist;
 }
-
-typedef struct simplell_s simplell_t;
-struct simplell_s {
-	/* next in the linked list */
-	simplell_t *next;
-
-	/* curl option it belongs to */
-	PTRV key;
-
-	/* the actual data */
-	void *value;
-};
 
 #if 0
 static void *

@@ -115,13 +115,13 @@ my @constant_types = divide_constants();
 write_defenums( "const-defenums-h.inc" );
 
 write_constants( "", $constant_types[ 0 ] );
+write_constants( "Multi", $constant_types[ 3 ] );
 write_constants( "Easy", $constant_types[ 1 ] );
 write_constants( "Form", $constant_types[ 2 ] );
-write_constants( "Multi", $constant_types[ 3 ] );
 write_constants( "Share", $constant_types[ 4 ] );
+split_xs( "Multi" );
 split_xs( "Easy" );
 split_xs( "Form" );
-split_xs( "Multi" );
 split_xs( "Share" );
 
 write_examples_pod( 'lib/Net/Curl/examples.pod' );
@@ -197,8 +197,8 @@ WriteMakefile(
 	},
 	depend		=> {
 		'Makefile'	=> '$(VERSION_FROM)',
-		'$(FIRST_MAKEFILE)' => join ( " ", qw(Curl_Easy.xsh Curl_Form.xsh
-			Curl_Multi.xsh Curl_Share.xsh Curl_Easy_setopt.c
+		'$(FIRST_MAKEFILE)' => join ( " ", qw(Curl_Multi.xsh Curl_Easy.xsh
+			Curl_Form.xsh Curl_Share.xsh Curl_Easy_setopt.c
 			Curl_Easy_callbacks.c inc/symbols-in-versions),
 			glob "examples/*.pl" ),
 	},
