@@ -42,6 +42,17 @@ perl_curl_multi_new( void )
 	return multi;
 } /*}}}*/
 
+static inline CURLMcode
+remove_easy_from_multi( pTHX_ perl_curl_easy_t *easy, perl_curl_multi_t *multi )
+{
+	CURLMcode ret = curl_multi_remove_handle( multi->handle, easy->handle );
+
+	easy->multi = NULL;
+	SvREFCNT_dec(easy->perl_self);
+
+	return ret;
+}
+
 /* delete the multi */
 static void
 perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
@@ -61,9 +72,7 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 		do {
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
-			curl_multi_remove_handle( multi->handle, easy->handle );
-			easy->multi = NULL;
-            SvREFCNT_dec(easy->perl_self);
+			remove_easy_from_multi( aTHX_ easy, multi );
 
 			next = now->next;
 			sv_2mortal( (SV *) now->value );
@@ -187,7 +196,6 @@ static MGVTBL perl_curl_multi_vtbl = {
 #endif
 };
 
-
 #define MULTI_DIE( ret )		\
 	STMT_START {				\
 		CURLMcode code = (ret);	\
@@ -247,8 +255,8 @@ add_handle( multi, easy )
 			*easysv_ptr = SELF2PERL( easy );
 			easy->multi = multi;
 
-            // Ensure that the easy stays alive until the multi is gone.
-            SvREFCNT_inc(easy->perl_self);
+			// Ensure that the easy stays alive until the multi is gone.
+			SvREFCNT_inc(easy->perl_self);
 		}
 		MULTI_DIE( ret );
 
@@ -264,7 +272,7 @@ remove_handle( multi, easy )
 			croak( "Specified easy handle is not attached to %s multi handle",
 				easy->multi ? "this" : "any" );
 
-		ret = curl_multi_remove_handle( multi->handle, easy->handle );
+		ret = remove_easy_from_multi(aTHX_ easy, multi);
 		{
 			SV *easysv;
 			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
@@ -273,8 +281,6 @@ remove_handle( multi, easy )
 				croak( "internal Net::Curl error" );
 			sv_2mortal( easysv );
 		}
-		easy->multi = NULL;
-        SvREFCNT_dec(easy->perl_self);
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
