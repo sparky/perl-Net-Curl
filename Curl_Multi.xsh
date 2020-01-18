@@ -7,31 +7,6 @@
  */
 
 
-typedef enum {
-	CB_MULTI_SOCKET = 0,
-	CB_MULTI_TIMER,
-	CB_MULTI_LAST,
-} perl_curl_multi_callback_code_t;
-
-struct perl_curl_multi_s {
-	/* last seen version of this object */
-	SV *perl_self;
-
-	/* curl multi handle */
-	CURLM *handle;
-
-	/* list of callbacks */
-	callback_t cb[ CB_MULTI_LAST ];
-
-	/* list of data assigned to sockets */
-	/* key: socket fd; value: user sv */
-	simplell_t *socket_data;
-
-	/* list of easy handles attached to this multi */
-	/* key: our easy pointer, value: easy SV */
-	simplell_t *easies;
-};
-
 /* make a new multi */
 static perl_curl_multi_t *
 perl_curl_multi_new( void )
@@ -61,8 +36,8 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 		do {
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
-			curl_multi_remove_handle( multi->handle, easy->handle );
-			easy->multi = NULL;
+
+			perl_curl_easy_remove_from_multi( aTHX_ easy );
 
 			next = now->next;
 			sv_2mortal( (SV *) now->value );
@@ -261,7 +236,7 @@ remove_handle( multi, easy )
 			croak( "Specified easy handle is not attached to %s multi handle",
 				easy->multi ? "this" : "any" );
 
-		ret = curl_multi_remove_handle( multi->handle, easy->handle );
+		ret = perl_curl_easy_remove_from_multi( aTHX_ easy );
 		{
 			SV *easysv;
 			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
@@ -270,7 +245,6 @@ remove_handle( multi, easy )
 				croak( "internal Net::Curl error" );
 			sv_2mortal( easysv );
 		}
-		easy->multi = NULL;
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
