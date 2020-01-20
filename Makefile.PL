@@ -168,6 +168,7 @@ WriteMakefile(
 		},
 		x_contributors	=> [
 			"B${a_}lint Szilakszi",
+			"Felipe Gasper",
 			"Fuji, Goro",
 			"Przemys${l_}aw Iskra",
 			"Stanislaw Pusep",
