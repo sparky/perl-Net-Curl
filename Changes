@@ -1,6 +1,13 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.43 2020-01-20T11:51:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Synced symbols-in-versions from libcurl/7.69.0;
+ - Recognize SecureTransport as a valid ssl support in t/compat-08ssl.t.
+ [Felipe Gasper <felipe@felipegasper.com>]
+ - Fixed the segfault caused by curl_easy_cleanup() being called before curl_multi_remove_handle().
+
 0.42 2019-12-22T10:45:00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Fixed POD links to libcurl docs.
