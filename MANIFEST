@@ -32,6 +32,8 @@ lib/Net/Curl/Form.pm
 lib/Net/Curl/Multi.pm
 lib/Net/Curl/Share.pm
 lib/Net/Curl/examples.pod
+perl_curl.h
+perl_curl_multi.h
 t/00-info.t
 t/01-constants.t
 t/02-methods.t
@@ -48,7 +50,9 @@ t/61-multi-wait-other.t
 t/70-escape-unescape.t
 t/96-leak.t
 t/99-symbols.t
+t/assets/add_then_throw.pl
 t/author-critic.t
+t/cleanup.t
 t/compat-00constants.t
 t/compat-01basic.t
 t/compat-02callbacks.t
