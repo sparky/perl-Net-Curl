@@ -237,14 +237,6 @@ remove_handle( multi, easy )
 				easy->multi ? "this" : "any" );
 
 		ret = perl_curl_easy_remove_from_multi( aTHX_ easy );
-		{
-			SV *easysv;
-			easysv = perl_curl_simplell_del( aTHX_ &multi->easies,
-				PTR2nat( easy ) );
-			if ( !easysv )
-				croak( "internal Net::Curl error" );
-			sv_2mortal( easysv );
-		}
 
 		/* rethrow errors */
 		if ( SvTRUE( ERRSV ) )
