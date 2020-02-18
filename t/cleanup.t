@@ -5,7 +5,16 @@ use warnings;
 
 use FindBin;
 
-use Test::More tests => 1;
+use Test::More;
+
+system $^X, "$FindBin::Bin/assets/add_then_throw.pl";
+
+if ($? != (42 << 8)) {
+    require Config;
+    plan skip_all => "This perl ($Config::Config{'version'}) doesn’t appear to set exit value from \$? in END.\n";
+}
+
+plan tests => 1;
 
 my @inc_args = map { ('-I', $_) } @INC;
 
