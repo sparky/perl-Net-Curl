@@ -6,6 +6,11 @@
  * and subsequent fixes by other contributors.
  */
 
+#define VERIFY_MULTI_CALLBACK(multi, cbindex, desc) \
+	if ( !(&multi->cb[cbindex])->func || !SvOK((&multi->cb[cbindex])->func) ) { \
+		warn("multi object lacks %s callback!", desc); \
+		return -1; \
+	}
 
 /* make a new multi */
 static perl_curl_multi_t *
@@ -68,6 +73,9 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 	perl_curl_easy_t *easy;
 
 	multi = (perl_curl_multi_t *) userptr;
+
+	VERIFY_MULTI_CALLBACK(multi, CB_MULTI_SOCKET, "CURLMOPT_SOCKETFUNCTION");
+
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
 
 	/* $multi, $easy, $socket, $what, $socketdata, $userdata */
@@ -91,6 +99,8 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 
 	perl_curl_multi_t *multi;
 	multi = (perl_curl_multi_t *) userptr;
+
+	VERIFY_MULTI_CALLBACK(multi, CB_MULTI_TIMER, "CURLMOPT_TIMERFUNCTION");
 
 	/* $multi, $timeout, $userdata */
 	SV *args[] = {
