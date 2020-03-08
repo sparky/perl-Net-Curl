@@ -106,6 +106,13 @@ sub easy
 	$easy->setopt( Net::Curl::Easy::CURLOPT_FILE(),
 		\$easy->{body} );
 	$easy->setopt( Net::Curl::Easy::CURLOPT_SHARE(), $share );
+
+	# This wasn't needed prior to curl 7.67, which changed the interface
+	# so that an easy that uses a cookie-share now requires an explicit
+	# cookie-engine enable to use cookies. Previously the easy's use of
+	# a cookie-share implicitly enabled the easy's cookie engine.
+	$easy->setopt( Net::Curl::Easy::CURLOPT_COOKIEFILE(), q<> );
+
 	return $easy;
 }
 
