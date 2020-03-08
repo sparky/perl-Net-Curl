@@ -51,6 +51,7 @@ t/70-escape-unescape.t
 t/96-leak.t
 t/99-symbols.t
 t/assets/add_then_throw.pl
+t/assets/end_42_on_die.pl
 t/author-critic.t
 t/cleanup.t
 t/compat-00constants.t
