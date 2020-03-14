@@ -1,10 +1,11 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
-0.44 2020-03-08T12:05:00Z
+0.44 2020-03-14T09:43:00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Synced symbols-in-versions from libcurl/7.69.0 (NOW FOR REAL!);
  [Felipe Gasper <felipe@felipegasper.com>]
+ - Fix cookies in 02-multi-simple.pl to work with libcurl 7.67+;
  - Fix failure to remove freed easy objects from multi->easies;
  - more explicit warnings;
  - Skip t/cleanup.t in Perl 5.8.9;
