@@ -61,3 +61,5 @@
 \bCurl\.[co]$
 \.inc$
 \.bs$
+
+^Dockerfile
