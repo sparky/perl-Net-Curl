@@ -1,6 +1,10 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.45 2020-06-01T17:59:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Synced symbols-in-versions from libcurl/7.70.0.
+
 0.44 2020-03-14T09:43:00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Synced symbols-in-versions from libcurl/7.69.0 (NOW FOR REAL!);
