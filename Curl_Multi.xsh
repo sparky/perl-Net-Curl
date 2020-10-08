@@ -42,11 +42,11 @@ perl_curl_multi_delete( pTHX_ perl_curl_multi_t *multi )
 			perl_curl_easy_t *easy;
 			easy = INT2PTR( perl_curl_easy_t *, now->key );
 
+			next = now->next;
+
+			/* This frees `now` and does sv_2mortal(now->value): */
 			perl_curl_easy_remove_from_multi( aTHX_ easy );
 
-			next = now->next;
-			sv_2mortal( (SV *) now->value );
-			Safefree( now );
 		} while ( ( now = next ) != NULL );
 	}
 
