@@ -357,7 +357,11 @@ setopt( multi, option, value )
 	SV *value
 	PREINIT:
 		CURLMcode ret1 = CURLM_OK, ret2 = CURLM_OK;
+#ifdef CURLMOPT_PIPELINING_SERVER_BL
+#ifdef CURLMOPT_PIPELINING_SITE_BL
 		char **blacklist;
+#endif
+#endif
 	CODE:
 		switch ( option ) {
 			case CURLMOPT_SOCKETDATA:
