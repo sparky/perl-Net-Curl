@@ -45,7 +45,7 @@ jobs:
       - name: perl -V
         run: perl -V
       - name: Install libcurl
-        run: apt install libcurl3-dbg
+        run: apt search curl
       - name: Install Dependencies
         run: cpanm --notest --installdeps .
       - name: perl Makefile.PL
