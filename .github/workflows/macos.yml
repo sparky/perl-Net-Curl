@@ -1,0 +1,36 @@
+name: macos
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  perl:
+
+    runs-on: macOS-latest
+
+    env:
+       PERL_USE_UNSAFE_INC: 0
+       AUTHOR_TESTING: 1
+       AUTOMATED_TESTING: 1
+       RELEASE_TESTING: 0
+       PERL_CARTON_PATH: $GITHUB_WORKSPACE/local
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Perl
+        run: brew install perl
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -L https://cpanmin.us | perl - --notest --installdeps .
+      - name: perl Makefile.PL
+        run: perl Makefile.PL
+      - name: make
+        run: make
+      - name: Run Tests
+        run: make test
