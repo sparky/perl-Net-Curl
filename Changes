@@ -1,6 +1,14 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.47 2020-11-03T12:54:00Z
+ [Felipe Gasper <felipe@felipegasper.com>]
+ - Add GitHub CI;
+ - Fix segfault from recursive curl_multi_remove_handle();
+ - Suppress warning about unused “blacklist” in old curls.
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Synced symbols-in-versions from libcurl/7.73.0.
+
 0.46 2020-10-13T09:25:00Z
  [Felipe Gasper <felipe@felipegasper.com>]
  - Fix double-free and extra sv_2mortal() in multi.
