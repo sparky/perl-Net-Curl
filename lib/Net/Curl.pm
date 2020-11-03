@@ -8,7 +8,7 @@ use Exporter 'import';
 our @ISA;
 our $VERSION;
 BEGIN {
-	$VERSION = '0.46';
+	$VERSION = '0.47';
 
 	my $loaded = 0;
 
