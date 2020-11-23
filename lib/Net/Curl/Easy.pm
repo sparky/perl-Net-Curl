@@ -275,7 +275,7 @@ base object.
 =item CURLOPT_ERRORBUFFER
 
 setopt() does not allow to use this constant. You can always retrieve latest
-error message with $east->error() method.
+error message with $easy->error() method.
 
 =back
 
