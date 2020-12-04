@@ -157,6 +157,9 @@ Retrieve a value. OPTION is one of C<CURLINFO_*> constants.
 Calls L<curl_easy_getinfo(3)|https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html>.
 Throws L</Net::Curl::Easy::Code> on error.
 
+In the case of C<CURLINFO_CERTINFO>, the return is an array reference of
+hash references; each hash represents one certificate.
+
 =item pause( )
 
 Pause the transfer.

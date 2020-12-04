@@ -45,7 +45,10 @@ my $url_list=[
 if (&WWW::Curl::Easy::version() !~ /ssl|nss|tls|SecureTransport/i) {
 	plan skip_all => 'libcurl was compiled without ssl support, skipping ssl tests';
 } else {
-	plan tests => scalar(@{$url_list})+7;
+	my $each_url = 1;
+	$each_url++ if Net::Curl::Easy->can('CURLINFO_CERTINFO');
+
+	plan tests => ($each_url * @{$url_list}) + 7;
 }
 
 # Init the curl session
@@ -96,7 +99,28 @@ for my $test_list (@$url_list) {
 
     $curl->setopt(CURLOPT_URL, $url);
 
+    if (my $cr = Net::Curl::Easy->can('CURLOPT_CERTINFO')) {
+        $curl->setopt($cr->(), 1);
+    }
+
     $retcode = $curl->perform();
     ok(($retcode != 0) == $result, "$url ssl test succeeds");
-}
 
+    if (my $cr = Net::Curl::Easy->can('CURLINFO_CERTINFO')) {
+        subtest CURLINFO_CERTINFO => sub {
+            my $info_ar = $curl->getinfo($cr->());
+
+            is( Internals::SvREFCNT($info_ar), 1, 'ref count of array ref' );
+            is( Internals::SvREFCNT(@$info_ar), 1, 'ref count of referent array' );
+
+            if (@$info_ar) {
+                is( Internals::SvREFCNT($info_ar->[0]), 1, "ref count of first array member" );
+                is( Internals::SvREFCNT(%{$info_ar->[0]}), 1, 'ref count of referent hash' );
+
+                if ( my $somekey = (keys %{$info_ar->[0]})[0]) {
+                    is( Internals::SvREFCNT($info_ar->[0]{$somekey}), 1, "ref count of value" );
+                }
+            }
+        };
+    }
+}
