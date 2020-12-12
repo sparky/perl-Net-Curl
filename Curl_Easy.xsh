@@ -47,7 +47,6 @@ static const CURLoption perl_curl_easy_option_slist[] = {
 #define perl_curl_easy_option_slist_num \
 	sizeof(perl_curl_easy_option_slist) / sizeof(perl_curl_easy_option_slist[0])
 
-
 struct perl_curl_easy_s {
 	/* last seen perl object */
 	SV *perl_self;
@@ -495,12 +494,50 @@ getinfo( easy, option )
 			case CURLINFO_SLIST:
 			{
 				CURLcode ret;
-				struct curl_slist *vlist, *entry;
+				struct curl_slist *entry;
 				AV *items = NULL;
 #ifdef CURLINFO_CERTINFO
-				if ( option == CURLINFO_CERTINFO )
-					croak( "CURLINFO_CERTINFO is not supported" );
+				if ( option == CURLINFO_CERTINFO ) {
+					struct curl_certinfo *ci;
+					ret = curl_easy_getinfo( easy->handle, option, &ci );
+					EASY_DIE( ret );
+
+					items = newAV();
+
+					if (ci->num_of_certs) {
+						av_extend( items, ci->num_of_certs - 1 );
+						int i;
+
+						for (i = 0; i < ci->num_of_certs; i++) {
+							HV *certhv = newHV();
+							char *colon;
+
+							av_store( items, i, newRV_noinc( (SV *) certhv ) );
+
+							for (entry = ci->certinfo[i]; entry; entry = entry->next) {
+								colon = strchr(entry->data, ':');
+
+								if (colon == NULL) {
+									warn("No colon found: %s", entry->data);
+								}
+								else {
+									hv_store(
+										certhv,
+										entry->data,
+										colon - entry->data,
+										newSVpv(1 + colon, 0),
+										0
+									);
+								}
+							}
+						}
+					}
+
+					RETVAL = newRV_noinc( (SV *) items );
+				}
+				else {
 #endif
+				struct curl_slist *vlist;
 				ret = curl_easy_getinfo( easy->handle, option, &vlist );
 				EASY_DIE( ret );
 
@@ -516,6 +553,9 @@ getinfo( easy, option )
 				} else {
 					RETVAL = &PL_sv_undef;
 				}
+#ifdef CURLINFO_CERTINFO
+				}
+#endif
 				break;
 			}
 			default: {
