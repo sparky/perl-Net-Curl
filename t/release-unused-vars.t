@@ -12,7 +12,7 @@ use Test::More 0.96 tests => 1;
 eval { require Test::Vars };
 
 SKIP: {
-    skip 1 => 'Test::Vars required for testing for unused vars'
+    skip 'Test::Vars required for testing for unused vars' => 1
         if $@;
     Test::Vars->import;
 
