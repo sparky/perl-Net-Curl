@@ -1,6 +1,13 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.48 2020-12-14T10:16:00Z
+ [Felipe Gasper <felipe@felipegasper.com>]
+ - Add CURLINFO_CERTINFO support.
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fixed t/release-unused-vars.t;
+ - Synced symbols-in-versions from libcurl/7.74.0
+
 0.47 2020-11-03T12:54:00Z
  [Felipe Gasper <felipe@felipegasper.com>]
  - Add GitHub CI;
