@@ -1,3 +1,5 @@
+.github/workflows/linux.yml
+.github/workflows/macos.yml
 Changes
 Curl.xs
 Curl_Easy.xsh
@@ -51,8 +53,10 @@ t/70-escape-unescape.t
 t/96-leak.t
 t/99-symbols.t
 t/assets/add_then_throw.pl
+t/assets/easy_outlives_multi.pl
 t/assets/end_42_on_die.pl
 t/author-critic.t
+t/cleanup-easy-outlives-multi.t
 t/cleanup.t
 t/compat-00constants.t
 t/compat-01basic.t
