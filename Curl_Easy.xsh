@@ -164,17 +164,20 @@ perl_curl_easy_remove_from_multi( pTHX_  perl_curl_easy_t* easy )
 			sv_2mortal( easysv );
 		}
 
-		/* This will call cb_multi_timer(). If that function calls into
-		   Perl it will call FREETMPS, which in a certain hard-to-reproduce
-		   case at global destruction causes the multi SV to be freed, which,
-		   because multi->easies wasn’t emptied yet, caused the present
-		   function to be called again--the net result being that a call to
-		   curl_multi_remove_handle() would itself recursively call
-		   curl_multi_remove_handle(), which caused a segfault.
+		/* In certain cases curl_multi_remove_handle() invokes a callback
+		   that may decrement the multi SV’s reference count, which triggers
+		   Perl’s garbage collection, which frees the multi while curl
+		   is in the middle of removing an easy from it, which in turn
+		   triggers a segfault.
 
-		   So we now call this function AFTER altering multi->easies.
+		   We avoid that by incrementing/decrementing the reference count.
 		*/
+		SvREFCNT_inc( easy->multi->perl_self );
+
 		ret = curl_multi_remove_handle( easy->multi->handle, easy->handle );
+
+		/* As described above: */
+		SvREFCNT_dec( easy->multi->perl_self );
 
 		easy->multi = NULL;
 	}
