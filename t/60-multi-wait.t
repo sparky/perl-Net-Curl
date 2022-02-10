@@ -23,6 +23,7 @@ SKIP: {
         if Net::Curl::LIBCURL_VERSION_NUM() < 0x071E00;
 
     $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING(), 1);
+    $multi->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION(), sub { 0 });
 
     eval {
         $multi->setopt(Net::Curl::Multi::CURLMOPT_PIPELINING_SERVER_BL(), [
