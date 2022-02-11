@@ -1,6 +1,13 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.50 2022-02-10T07:54:00Z
+ [Felipe Gasper <felipe@felipegasper.com>]
+ - Omit github stuff from MANIFEST.
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Fix failing test
+ - Synced symbols-in-versions from libcurl/7.81.0
+
 0.49 2021-05-13T05:31:00Z
  [Felipe Gasper <felipe@felipegasper.com>]
  - Prevent multi from being freed during curl_multi_remove_handle().
