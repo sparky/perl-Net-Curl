@@ -35,6 +35,7 @@ sub cb_write
 my $ref;
 
 my $curlm = new Net::Curl::Multi;
+$curlm->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION(), sub { 0 });
 {
 	my $curl = Net::Curl::Easy->new();
 	$curl->setopt( CURLOPT_URL, $url );

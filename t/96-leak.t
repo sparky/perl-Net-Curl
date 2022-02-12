@@ -52,6 +52,7 @@ test_leak { my $form_ = Net::Curl::Form->new or die }
 
 Net::Curl::Multi->new for 1 .. 5; # warmup
 my $multi = Net::Curl::Multi->new;
+$multi->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION(), sub { 0 });
 SKIP: {
     skip q(libcurl/7.29.0 crashes here: http://sourceforge.net/p/curl/bugs/1194/), 1
         if Net::Curl::version_info()->{version} eq q(7.29.0);

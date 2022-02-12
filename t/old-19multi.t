@@ -68,6 +68,7 @@ sub action_wait {
     ok( $curl2->{private} = 42, "Setting private data");
 
     my $curlm = new Net::Curl::Multi;
+    $curlm->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION(), sub { 0 });
     my @fds = $curlm->fdset;
     print_fdset( @fds );
     ok( @fds == 3 && ref($fds[0]) eq '' && ref($fds[1]) eq '' && ref($fds[2]) eq '', "fdset returns 3 vectors");

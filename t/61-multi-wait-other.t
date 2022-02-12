@@ -16,6 +16,8 @@ plan skip_all => "curl_multi_wait() is implemented since libcurl/7.28.0"
 my $multi = Net::Curl::Multi->new()
 	or die "I forgot how to curl\n";
 
+$multi->setopt(Net::Curl::Multi::CURLMOPT_SOCKETFUNCTION(), sub { 0 });
+
 pipe my $fh_read, my $fh_write;
 
 my $ev_write = {
