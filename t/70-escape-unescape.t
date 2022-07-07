@@ -25,16 +25,16 @@ my $tests = [
     ["a\xffb\xfec\xf0d", "a%FFb%FEc%F0d"],
 ];
 
-my $is_centos = 0;
+my $is_redhat_6 = 0;
 if (open(my $fh, '<', '/etc/redhat-release')) {
     my $rh = <$fh>;
     chomp $rh;
-    $is_centos = 1
-        if $rh =~ /^CentOS/i;
+    $is_redhat_6 = 1
+        if $rh =~ /^[^0-9]+ 6/;
     close $fh;
 }
 
-unless ($is_centos) {
+unless ($is_redhat_6) {
     # libcurl version 7.21.2 and newer do not escape those characters, older versions do
     push @$tests, ["~-_.", Net::Curl::LIBCURL_VERSION_NUM() < 0x071502 ? "%7E%2D%5F%2E" : "~-_."],
 }
