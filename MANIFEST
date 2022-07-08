@@ -1,5 +1,3 @@
-.github/workflows/linux.yml
-.github/workflows/macos.yml
 Changes
 Curl.xs
 Curl_Easy.xsh
