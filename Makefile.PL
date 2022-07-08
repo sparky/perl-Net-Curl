@@ -183,6 +183,7 @@ WriteMakefile(
 			"Yanick Champoux",
 			"Slaven Rezi${c_}",
 			"Yuni Kim",
+			"Todd Rinaldo",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
