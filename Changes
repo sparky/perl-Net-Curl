@@ -1,6 +1,13 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.51 2022-07-08T08:57:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Synced symbols-in-versions from libcurl/7.84.0
+
+ [Todd Rinaldo <toddr@cpan.org>]
+ - Skip tests for all RHEL 6 derivatives, not all CentOS distros.
+
 0.50 2022-02-12T08:53:00Z
  [Felipe Gasper <felipe@felipegasper.com>]
  - Omit github stuff from MANIFEST.
