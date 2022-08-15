@@ -437,8 +437,12 @@ setopt( easy, option, value )
 			perl_curl_easy_setopt_function( aTHX_ easy, option, value );
 		} else if ( opttype == CURLOPTTYPE_OFF_T ) {
 			perl_curl_easy_setopt_off_t( aTHX_ easy, option, value );
+#ifdef CURLOPTTYPE_BLOB
+		} else if ( opttype == CURLOPTTYPE_BLOB ) {
+			perl_curl_easy_setopt_blob( aTHX_ easy, option, value );
+#endif
 		} else {
-			croak( "invalid option %d", option );
+			perl_curl_croak_invalid_option(aTHX_ option);
 		}
 
 
