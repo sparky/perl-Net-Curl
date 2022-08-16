@@ -271,6 +271,68 @@ perl_curl_easy_setopt_functiondata( pTHX_ perl_curl_easy_t *easy, long option,
 	return ret;
 }
 
+static void perl_curl_croak_invalid_option( pTHX_ long option )
+{
+	croak( "invalid option %ld", option );
+}
+
+#ifdef CURLOPTTYPE_BLOB
+static void
+perl_curl_easy_setopt_blob( pTHX_ perl_curl_easy_t *easy, long option,
+		SV *value )
+{
+	int ret = CURLE_OK;
+
+	struct curl_blob blob_struct = {
+		.flags = CURL_BLOB_COPY,
+	};
+
+	switch ( option ) {
+#ifdef CURLOPT_CAINFO_BLOB
+		case CURLOPT_CAINFO_BLOB:
+#endif
+#ifdef CURLOPT_PROXY_CAINFO_BLOB
+		case CURLOPT_PROXY_CAINFO_BLOB:
+#endif
+#ifdef CURLOPT_SSLCERT_BLOB
+		case CURLOPT_SSLCERT_BLOB:
+#endif
+#ifdef CURLOPT_PROXY_SSLCERT_BLOB
+		case CURLOPT_PROXY_SSLCERT_BLOB:
+#endif
+#ifdef CURLOPT_SSLKEY_BLOB
+		case CURLOPT_SSLKEY_BLOB:
+#endif
+#ifdef CURLOPT_PROXY_SSLKEY_BLOB
+		case CURLOPT_PROXY_SSLKEY_BLOB:
+#endif
+#ifdef CURLOPT_ISSUERCERT_BLOB
+		case CURLOPT_ISSUERCERT_BLOB:
+#endif
+#ifdef CURLOPT_PROXY_ISSUERCERT_BLOB
+		case CURLOPT_PROXY_ISSUERCERT_BLOB:
+#endif
+		case 0xffffffffL:
+			if (!SvOK(value)) croak("undef is nonsensical");
+			if (SvROK(value)) croak("Reference (%" SVf ") is nonsensical", value);
+
+			STRLEN bytelen;
+			const char* blob = SvPVbyte(value, bytelen);
+
+			blob_struct.data = (void*) blob;
+			blob_struct.len = bytelen;
+
+			break;
+
+		default:
+			perl_curl_croak_invalid_option(aTHX_ option);
+	}
+
+	ret = curl_easy_setopt( easy->handle, option, &blob_struct );
+	EASY_DIE(ret);
+}
+#endif
+
 static void
 perl_curl_easy_setopt_object( pTHX_ perl_curl_easy_t *easy, long option,
 		SV *value )
