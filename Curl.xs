@@ -14,8 +14,19 @@
  */
 #define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
+
+/* Implement perl5 7169efc77525df for older perls (part 1): */
+#define STMT_START  do
+#define STMT_END    while (0)
+
 #include "perl.h"
 #include "XSUB.h"
+
+/* Implement perl5 7169efc77525df for older perls (part 2): */
+#undef STMT_START
+#undef STMT_END
+#define STMT_START  do
+#define STMT_END    while (0)
 
 #include <curl/curl.h>
 #include <curl/easy.h>
