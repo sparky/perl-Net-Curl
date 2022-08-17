@@ -1,9 +1,10 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
-0.52
+0.52 2022-08-17T09:19:00Z
  [Felipe Gasper <felipe@felipegasper.com>]
  - Add *_BLOB setopt options.
+ - Silence the flood of compiler warnings on newer macOS versions.
 
 0.51 2022-07-08T08:57:00Z
  [Stanislaw Pusep <stas@sysd.org>]
