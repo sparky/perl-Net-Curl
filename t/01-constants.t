@@ -77,5 +77,5 @@ foreach my $sym ( @check ) {
 	eval { $value = LIBCURL_VERSION() };
 	is( $@, "", 'LIBCURL_VERSION constant can be retrieved' );
 	ok( defined( $value ), "LIBCURL_VERSION is defined");
-	like( $value, qr/^7\.\d{2}\.\d{1,2}(-.*)?$/, 'LIBCURL_VERSION is correct' );
+	like( $value, qr/^[78]\.\d{1,2}\.\d{1,2}(-.*)?$/, 'LIBCURL_VERSION is correct' );
 }
