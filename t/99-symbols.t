@@ -22,11 +22,22 @@ Curl_Share.xsh
 # extract constants which were introduced after $cver
 my @check;
 {
+	my %ex;
+
+	open my $ein, "<", "inc/symbols-excluded"
+		or die "Cannot open symbols-excluded file: $!\n";
+	while ( <$ein> ) {
+		s/^\s+|\s+$//g;
+		$ex{ $_ }++;
+	}
+
 	open my $fin, "<", "inc/symbols-in-versions"
 	    or die "Cannot open symbols file: $!\n";
 	while ( <$fin> ) {
 		next if /^[#\s]/;
 		my ( $sym, $in, $dep, $out ) = split /\s+/, $_;
+
+		next if $ex{ $sym };
 
 		if ( $in ne "-" ) {
 			my $vin = eval "v$in";
