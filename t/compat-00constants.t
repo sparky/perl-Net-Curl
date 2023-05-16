@@ -12,6 +12,15 @@ my $ver_num_raw = WWW::Curl::Easy::version();
 my ($ver_num) = $ver_num_raw =~ m!libcurl/(\d\.\d+\.\d+)!;
 my ($major, $minor, $bugfix) = split(/\./, $ver_num);
 
+my %ex;
+
+open my $ein, "<", "inc/symbols-excluded"
+    or die "Cannot open symbols-excluded file: $!\n";
+while ( <$ein> ) {
+    s/^\s+|\s+$//g;
+    $ex{ $_ }++;
+}
+
 open(my $fh, '<', 'inc/symbols-in-versions') or die($!);
 
 my @consts;
@@ -19,6 +28,7 @@ for my $row (<$fh>) {
 	chomp($row);
 	next if ($row =~ m/^[#\s]/);
 	my ($name, $intro, $dep, $remov) = split(/\s+/, $row);
+	next if !$name || $ex{ $name };
 	push @consts, [$name, $intro, $dep, $remov];
 }
 

@@ -264,6 +264,15 @@ sub get_constants_symbols
 	$curlver =~ s/[^\d]*$//;
 	my $cver = eval "v$curlver";
 
+	my %ex;
+
+	open my $ein, "<", "inc/symbols-excluded"
+		or die "Cannot open symbols-excluded file: $!\n";
+	while ( <$ein> ) {
+		s/^\s+|\s+$//g;
+		$ex{ $_ }++;
+	}
+
 	my %out;
 
 	open my $fin, "<", "inc/symbols-in-versions"
@@ -271,6 +280,8 @@ sub get_constants_symbols
 	while ( <$fin> ) {
 		next if /^[#\s]/;
 		my ( $sym, $in, $dep, $out ) = split /\s+/, $_;
+
+		next if $ex{ $sym };
 
 		if ( $out ) {
 			my $vout = eval "v$out";

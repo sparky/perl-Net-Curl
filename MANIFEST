@@ -24,6 +24,7 @@ inc/Compat/WWW/Curl/Multi.pm
 inc/Compat/WWW/Curl/Share.pm
 inc/Test/HTTP/Server.pm
 inc/Test/UnConstant.pm
+inc/symbols-excluded
 inc/symbols-in-versions
 lib/Net/Curl.pm
 lib/Net/Curl/Compat.pm
