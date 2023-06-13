@@ -29,6 +29,7 @@ typedef enum {
 
 static const CURLoption perl_curl_easy_option_slist[] = {
 	CURLOPT_HTTPHEADER,
+	CURLOPT_PROXYHEADER,
 	CURLOPT_HTTP200ALIASES,
 #ifdef CURLOPT_MAIL_RCPT
 	CURLOPT_MAIL_RCPT,
