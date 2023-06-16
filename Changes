@@ -1,6 +1,11 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.54 2023-06-16T11:21:00Z
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Added support for CURLOPT_PROXYHEADER, introduced in libcurl/7.37.0
+ - Synced symbols-in-versions from libcurl/8.1.2
+
 0.53 2023-05-16T10:57:20Z
  [Stanislaw Pusep <stas@sysd.org>]
  - GitHub workflow for Perl 5.34 & 5.36
