@@ -13,7 +13,8 @@ local $ENV{no_proxy} = '*';
 
 my $server = Test::HTTP::Server->new;
 plan skip_all => "Could not run http server\n" unless $server;
-plan tests => 20;
+my $proxyheader_tests = Net::Curl::LIBCURL_VERSION_NUM() < 0x072500 ? 0 : 2;
+plan tests => 18 + $proxyheader_tests;
 
 
 # Init the curl session
@@ -41,8 +42,11 @@ $myheaders[0] = "Server: www";
 $myheaders[1] = "User-Agent: Perl interface for libcURL";
 ok(! $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders), "Setting CURLOPT_HTTPHEADER");
 ok(! $curl->pushopt(CURLOPT_HTTPHEADER, ["Random: header"]));
-ok(! $curl->setopt(CURLOPT_PROXYHEADER, \@myheaders), "Setting CURLOPT_PROXYHEADER");
-ok(! $curl->pushopt(CURLOPT_PROXYHEADER, ["Random: header"]));
+
+if ($proxyheader_tests) {
+    ok(! $curl->setopt(CURLOPT_PROXYHEADER, \@myheaders), "Setting CURLOPT_PROXYHEADER");
+    ok(! $curl->pushopt(CURLOPT_PROXYHEADER, ["Random: header"]));
+}
 
 $curl->setopt(CURLOPT_COOKIEFILE, "");
 eval { $curl->perform(); };
