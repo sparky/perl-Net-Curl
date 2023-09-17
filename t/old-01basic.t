@@ -44,8 +44,8 @@ ok(! $curl->setopt(CURLOPT_HTTPHEADER, \@myheaders), "Setting CURLOPT_HTTPHEADER
 ok(! $curl->pushopt(CURLOPT_HTTPHEADER, ["Random: header"]));
 
 if ($proxyheader_tests) {
-    ok(! $curl->setopt(CURLOPT_PROXYHEADER, \@myheaders), "Setting CURLOPT_PROXYHEADER");
-    ok(! $curl->pushopt(CURLOPT_PROXYHEADER, ["Random: header"]));
+    ok(! $curl->setopt(CURLOPT_PROXYHEADER(), \@myheaders), "Setting CURLOPT_PROXYHEADER");
+    ok(! $curl->pushopt(CURLOPT_PROXYHEADER(), ["Random: header"]));
 }
 
 $curl->setopt(CURLOPT_COOKIEFILE, "");
