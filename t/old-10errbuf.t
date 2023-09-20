@@ -42,6 +42,11 @@ ok( $@, "Non-zero return code indicates the expected failure");
 
 seek $new_error, 0, 0;
 my $line = <$new_error>;
+chomp $line;
+if ($line eq "* processing: badprotocol://127.0.0.1:2") {
+    $line = <$new_error>;
+    chomp $line;
+}
 like( $line, qr/^\*\s+(?:
     Protocol \s "? badprotocol "? \s not \s supported \s or \s disabled \s in \s libcurl |
     Unsupported \s protocol: \s badprotocol |
