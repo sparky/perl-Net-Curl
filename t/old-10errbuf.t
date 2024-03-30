@@ -49,6 +49,7 @@ if ($line eq "* processing: badprotocol://127.0.0.1:2") {
 }
 like( $line, qr/^\*\s+(?:
     Protocol \s "? badprotocol "? \s not \s supported \s or \s disabled \s in \s libcurl |
+    Protocol \s "? badprotocol "? \s not \s supported |
     Unsupported \s protocol: \s badprotocol |
     Rebuilt \s URL \s to: \s badprotocol:\/\/.+ |
     Closing \s connection \s -1 |
