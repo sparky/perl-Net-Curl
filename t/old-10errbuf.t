@@ -35,7 +35,7 @@ ok(! $curl->setopt(CURLOPT_STDERR, $new_error), "Setting CURLOPT_STDERR");
 
 # create a (hopefully) bad URL, so we get an error
 
-ok(! $curl->setopt(CURLOPT_URL, "badprotocol://127.0.0.1:2"), "Setting CURLOPT_URL succeeds, even with a bad protocol");
+ok(! $curl->setopt(CURLOPT_URL, "http://0.0.0.0:123456"), "Setting CURLOPT_URL succeeds, even with a bad port");
 
 eval { $curl->perform(); };
 ok( $@, "Non-zero return code indicates the expected failure");
@@ -43,20 +43,16 @@ ok( $@, "Non-zero return code indicates the expected failure");
 seek $new_error, 0, 0;
 my $line = <$new_error>;
 chomp $line;
-if ($line eq "* processing: badprotocol://127.0.0.1:2") {
+if ($line eq "* processing: http://0.0.0.0:123456") {
     $line = <$new_error>;
     chomp $line;
 }
-like( $line, qr/^\*\s+(?:
-    Protocol \s "? badprotocol "? \s not \s supported \s or \s disabled \s in \s libcurl |
-    Protocol \s "? badprotocol "? \s not \s supported |
-    Unsupported \s protocol: \s badprotocol |
-    Rebuilt \s URL \s to: \s badprotocol:\/\/.+ |
+like( $line, qr(^\*\s+(?:
     Closing \s connection \s -1 |
-    Could \s not \s resolve \s host: \s badprotocol |
-    Could \s not \s resolve: \s badprotocol \(Domain \s name \s not \s found\) |
-    Expire \s in \s 0 \s ms \s for \s 6 \s \(transfer \s 0x[0-9a-f]+\) |
-    Uses \s proxy \s env \s variable \s https?_proxy \s == \s '[^']+'
-)$/ix, "Reading redirected STDERR" );
+    URL \s using \s bad/illegal \s format \s or \s missing URL |
+    URL \s rejected: \s Port \s number \s was \s not \s a \s decimal \s number \s between \s 0 \s and \s 65535 |
+    Port \s number \s too \s large: \s 123456 |
+    Rebuilt \s URL \s to: \s http://0.0.0.0:123456/
+)$)ix, "Reading redirected STDERR" );
 
 unlink $tempname;
