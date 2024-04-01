@@ -41,18 +41,13 @@ eval { $curl->perform(); };
 ok( $@, "Non-zero return code indicates the expected failure");
 
 seek $new_error, 0, 0;
-my $line = <$new_error>;
-chomp $line;
-if ($line eq "* processing: http://0.0.0.0:123456") {
-    $line = <$new_error>;
-    chomp $line;
-}
-like( $line, qr(^\*\s+(?:
+my $line = do { local $/ = undef; <$new_error> };
+like( $line, qr(\*\s+(?:
     Closing \s connection \s -1 |
     URL \s using \s bad/illegal \s format \s or \s missing URL |
     URL \s rejected: \s Port \s number \s was \s not \s a \s decimal \s number \s between \s 0 \s and \s 65535 |
     Port \s number \s too \s large: \s 123456 |
     Rebuilt \s URL \s to: \s http://0.0.0.0:123456/
-)$)ix, "Reading redirected STDERR" );
+))isx, "Reading redirected STDERR" );
 
 unlink $tempname;
