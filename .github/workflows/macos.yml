@@ -36,6 +36,7 @@ jobs:
           export LDFLAGS="-L$HOMEBREW_PREFIX/opt/curl/lib"
           export CPPFLAGS="-I$HOMEBREW_PREFIX/opt/curl/include"
           export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/curl/lib/pkgconfig"
+          export PATH="$HOMEBREW_PREFIX/opt/curl/bin:$PATH"
           perl Makefile.PL
       - name: make
         run: make
