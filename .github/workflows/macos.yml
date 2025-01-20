@@ -23,11 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up libcurl & Perl
-        run: brew install curl perl
+        run: brew install cpanminus curl perl
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
-        run: curl -L https://cpanmin.us | perl - --notest --installdeps .
+        run: |
+          cpanm --notest --installdeps .
+          cpanm --notest ExtUtils::PkgConfig
       - name: perl Makefile.PL
         run: |
           eval $( brew shellenv )
