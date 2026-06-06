@@ -35,6 +35,18 @@ if ( $curl{libs} and $curl{version} ) {
 	while ( my ($k, $v) = each %curl ) {
 		printf " %8s => %s\n", $k, $v;
 	}
+} elsif ( exists $ENV{CURL_CONFIG} ) {
+	eval {
+		%curl = get_curl_config( $ENV{CURL_CONFIG} );
+	};
+	if ( $@ ) {
+		print STDERR "$ENV{CURL_CONFIG} failed:\n$@\n\n",
+			"libcurl development files do not seem to be available\n",
+			"You must install libcurl $minimum_libcurl_ver or newer to\n",
+			"build this module\n\n";
+		print STDERR "NA: Unable to build distribution on this platform.\n";
+		exit 0;
+	}
 } else {
 	eval {
 		require ExtUtils::PkgConfig;
@@ -53,8 +65,7 @@ if ( $curl{libs} and $curl{version} ) {
 		print STDERR "pkgconfig failed:\n$@\n";
 
 		eval {
-			%curl = get_curl_config();
-			$curl{version} =~ s/libcurl\s//;
+			%curl = get_curl_config('curl-config');
 		};
 		if ( $@ ) {
 			print STDERR "curl-config failed:\n$@\n\n",
@@ -217,8 +228,8 @@ exit 0;
 
 sub get_curl_config
 {
-	my $curl_config = $ENV{CURL_CONFIG} || 'curl-config';
-	print "Using $curl_config script.\n";
+	my $curl_config = $_[0];
+	print "Using $curl_config script: $curl_config\n";
 	my %cc;
 	foreach my $opt ( qw(vernum version prefix cflags libs) ) {
 		my $ret = `${curl_config} --$opt`;
@@ -227,6 +238,9 @@ sub get_curl_config
 				"is your libcurl installed correctly ?\n";
 		}
 		chomp $ret;
+		if ( $opt eq 'version' ) {
+			$ret =~ s/libcurl\s//;
+		}
 		$cc{ $opt } = $ret;
 		# print "${curl_config} --$opt: $ret\n";
 	}
