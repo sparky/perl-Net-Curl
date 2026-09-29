@@ -65,15 +65,26 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 
 	perl_curl_multi_t *multi;
 	perl_curl_easy_t *easy;
+	SV *easy_sv;
 
 	multi = (perl_curl_multi_t *) userptr;
 
+	if ( ! multi->cb[ CB_MULTI_SOCKET ].func || ! SvOK( multi->cb[ CB_MULTI_SOCKET ].func ) ) {
+		return 0; /* Ignore socket events if no Perl callback is registered */
+	}
+
 	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
+
+	if ( easy ) {
+		easy_sv = SELF2PERL( easy );
+	} else {
+		easy_sv = &PL_sv_undef;
+	}
 
 	/* $multi, $easy, $socket, $what, $socketdata, $userdata */
 	SV *args[] = {
 		/* 0 */ SELF2PERL( multi ),
-		/* 1 */ SELF2PERL( easy ),
+		/* 1 */ easy_sv,
 		/* 2 */ newSVuv( s ),
 		/* 3 */ newSViv( what ),
 		/* 4 */ &PL_sv_undef
@@ -91,6 +102,10 @@ cb_multi_timer( CURLM *multi_handle, long timeout_ms, void *userptr )
 
 	perl_curl_multi_t *multi;
 	multi = (perl_curl_multi_t *) userptr;
+
+	if ( ! multi->cb[ CB_MULTI_TIMER ].func || ! SvOK( multi->cb[ CB_MULTI_TIMER ].func ) ) {
+		return 0; /* Ignore timer events if no Perl callback is registered */
+	}
 
 	/* $multi, $timeout, $userdata */
 	SV *args[] = {

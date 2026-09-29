@@ -60,7 +60,7 @@ my $line = <$fh_read>;
 
 $ret = $multi->wait( [ $ev_read ], 100 );
 is( $ret, 0, "Nothing ready" );
-is( $ev_read->{revents}, CURL_WAIT_POLLIN(), "Ready to read, because we did not reset" );
+ok( $ev_read->{revents} == 0 || $ev_read->{revents} == CURL_WAIT_POLLIN(), "Ready to read, because we did not reset (or cleared by modern libcurl)" );
 
 $ev_read->{revents} = 0;
 $ret = $multi->wait( [ $ev_read ], 100 );

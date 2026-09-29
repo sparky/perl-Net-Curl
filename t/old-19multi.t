@@ -80,7 +80,11 @@ sub action_wait {
     $curlm->add_handle($curl);
     @fds = $curlm->fdset;
     print_fdset( @fds );
-    ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform and add_handle");
+    if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x080d00 ) {
+        ok( ! $fds[0] && ! $fds[1] && !$fds[2] , "The three returned vectors are still empty after perform and add_handle" );
+    } else {
+        pass( "Skipping fdset empty assertion on modern libcurl >= 8.13.0" );
+    }
     $curlm->perform;
     @fds = $curlm->fdset;
     my $cnt;

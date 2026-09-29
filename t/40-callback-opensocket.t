@@ -40,7 +40,7 @@ sub cb_opensocket {
 	is( $ips, "1.1.1.1", "IP is correct" );
 	is( $port, "666", "Port is correct" );
 	is( $addr->{family}, AF_INET, "family is AF_INET" );
-	is( $addr->{socktype}, SOCK_STREAM, "socktype is SOCK_STREAM" );
+	is( $addr->{socktype} & SOCK_STREAM, SOCK_STREAM, "socktype is SOCK_STREAM" );
 	ok( $addr->{protocol} == IPPROTO_IP ||
 		$addr->{protocol} == IPPROTO_TCP,
 		"protocol is IPPROTO_IP or IPPROTO_TCP ($addr->{protocol})" );

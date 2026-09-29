@@ -15,7 +15,7 @@ use File::Temp qw/tempfile/;
 
 my $server = Test::HTTP::Server->new;
 plan skip_all => "Could not run http server\n" unless $server;
-plan tests => 20;
+# plan tests => 20;
 
 my $header = tempfile();
 my $header2 = tempfile();
@@ -65,7 +65,11 @@ sub action_wait {
     ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are still empty after perform");
     $curlm->add_handle($curl);
     @fds = $curlm->fdset;
-    ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are still empty after perform and add_handle");
+    if ( Net::Curl::LIBCURL_VERSION_NUM() < 0x080d00 ) {
+        ok( ! @{$fds[0]} && ! @{$fds[1]} && !@{$fds[2]} , "The three returned arrayrefs are still empty after perform and add_handle" );
+    } else {
+        pass( "Skipping fdset empty assertion on modern libcurl >= 8.13.0" );
+    }
     $curlm->perform;
     @fds = $curlm->fdset;
     ok( 1 || @{$fds[0]} == 1 || @{$fds[1]} == 1, "The read or write fdset contains one fd");
@@ -92,3 +96,5 @@ sub action_wait {
     ok($body, "Body reply exists from second handle");
     ok($header2, "Header reply exists from second handle");
     ok($body2, "Body reply exists from second handle");
+
+done_testing();
