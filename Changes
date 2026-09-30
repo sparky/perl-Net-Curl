@@ -1,6 +1,14 @@
 Change log for Net::Curl. See the complete list of changes at:
 https://github.com/sparky/perl-Net-Curl/commits/master
 
+0.59 2026-09-30T07:59+00Z
+ [C.J. Collier <cjac@google.com>]
+ - Fix compatibility crashes and test failures with modern libcurl (8.13.0+)
+ [Chris Novakovic <chris@chrisn.me.uk>]
+ - `Makefile.PL`: prioritise `CURL_CONFIG` over pkg-config auto-detection
+ [Stanislaw Pusep <stas@sysd.org>]
+ - Synced symbols-in-versions from libcurl/8.22.0
+
 0.58 2025-08-14T08:48+00Z
  [Stanislaw Pusep <stas@sysd.org>]
  - Skip t/old-23socket-action.t on libcurl/8.13.0+

@@ -196,6 +196,8 @@ WriteMakefile(
 			"Slaven Rezi${c_}",
 			"Yuni Kim",
 			"Todd Rinaldo",
+			"C.J. Collier",
+			"Chris Novakovic",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
