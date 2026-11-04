@@ -183,7 +183,7 @@ perl_curl_array2slist( pTHX_ struct curl_slist *slist, SV *arrayref )
 		sv = av_fetch( array, i, 0 );
 		if ( !SvOK( *sv ) )
 			continue;
-		string = SvPV_nolen( *sv );
+		string = SvPVbyte_nolen( *sv );
 		slist = curl_slist_append( slist, string );
 	}
 

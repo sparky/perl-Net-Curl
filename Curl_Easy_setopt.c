@@ -413,15 +413,12 @@ perl_curl_easy_setopt_object( pTHX_ perl_curl_easy_t *easy, long option,
 		ppv = perl_curl_simplell_add( aTHX_ &easy->strings, option );
 		if ( ppv )
 			Safefree( *ppv );
-#ifdef savesvpv
-		pv = *ppv = savesvpv( value );
-#else
 		{
+			/* bytes, not Perl's internal representation (see #60) */
 			STRLEN len;
-			char *src = SvPV( value, len );
+			char *src = SvPVbyte( value, len );
 			pv = *ppv = savepvn( src, len );
 		}
-#endif
 	} else {
 		pv = perl_curl_simplell_del( aTHX_ &easy->strings, option );
 		if ( pv )

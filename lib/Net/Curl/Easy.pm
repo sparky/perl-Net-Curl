@@ -118,6 +118,11 @@ VALUE depends on whatever that option expects.
 
  $easy->setopt( Net::Curl::Easy::CURLOPT_URL, $uri );
 
+String values (and slist entries) are passed to libcurl as bytes, regardless
+of the string's internal representation. Encode character strings first,
+e.g. with C<utf8::encode( $payload )>; a string with characters above 0xFF
+dies with "Wide character".
+
 Calls L<curl_easy_setopt(3)|https://curl.haxx.se/libcurl/c/curl_easy_setopt.html>. Throws L</Net::Curl::Easy::Code> on error.
 
 =item pushopt( OPTION, ARRAYREF )
