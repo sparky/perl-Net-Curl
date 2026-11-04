@@ -169,14 +169,29 @@ WriteMakefile(
 	SIGN		=> 1,
 	LICENSE		=> 'mit',
 	META_MERGE	=> {
-		recommends		=> {
-			"ExtUtils::PkgConfig" => 0,
-			"XSLoader" => 0,
+		'meta-spec'		=> { version => 2 },
+		prereqs			=> {
+			configure	=> {
+				recommends	=> {
+					"ExtUtils::PkgConfig" => 0,
+				},
+			},
+			runtime		=> {
+				recommends	=> {
+					"XSLoader" => 0,
+				},
+			},
 		},
 		resources		=> {
-			bugtracker	=> 'https://github.com/sparky/perl-Net-Curl/issues',
+			bugtracker	=> {
+				web	=> 'https://github.com/sparky/perl-Net-Curl/issues',
+			},
 			homepage	=> 'https://github.com/sparky/perl-Net-Curl',
-			repository	=> 'git://github.com/sparky/perl-Net-Curl.git',
+			repository	=> {
+				type	=> 'git',
+				url	=> 'https://github.com/sparky/perl-Net-Curl.git',
+				web	=> 'https://github.com/sparky/perl-Net-Curl',
+			},
 		},
 		x_contributors	=> [
 			"B${a_}lint Szilakszi",
