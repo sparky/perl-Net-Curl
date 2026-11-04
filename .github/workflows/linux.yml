@@ -24,7 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         perl-version:
-          - '5.40'
           - '5.38'
           - '5.36'
           - '5.34'
