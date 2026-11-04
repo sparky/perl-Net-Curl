@@ -64,7 +64,7 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 	dTHX;
 
 	perl_curl_multi_t *multi;
-	perl_curl_easy_t *easy;
+	perl_curl_easy_t *easy = NULL;
 	SV *easy_sv;
 
 	multi = (perl_curl_multi_t *) userptr;
@@ -73,7 +73,12 @@ cb_multi_socket( CURL *easy_handle, curl_socket_t s, int what, void *userptr,
 		return 0; /* Ignore socket events if no Perl callback is registered */
 	}
 
-	(void) curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy );
+	/* libcurl 8.23 and newer also report sockets of its own internal easy
+	 * handles here. curl_easy_getinfo() refuses those with an error and
+	 * leaves the output argument untouched, so check the return code
+	 * instead of trusting an uninitialized pointer. */
+	if ( curl_easy_getinfo( easy_handle, CURLINFO_PRIVATE, (void *) &easy ) != CURLE_OK )
+		easy = NULL;
 
 	if ( easy ) {
 		easy_sv = SELF2PERL( easy );
@@ -271,11 +276,14 @@ info_read( multi )
 		while ( (msg = curl_multi_info_read( multi->handle, &queue ) ) ) {
 			/* most likely CURLMSG_DONE */
 			if ( msg->msg != CURLMSG_NONE && msg->msg != CURLMSG_LAST ) {
-				Net__Curl__Easy easy;
+				Net__Curl__Easy easy = NULL;
 				SV *errsv;
 
-				curl_easy_getinfo( msg->easy_handle,
-					CURLINFO_PRIVATE, (void *) &easy );
+				/* Same as in cb_multi_socket(): messages for libcurl's
+				 * internal easy handles carry no Perl handle, skip them. */
+				if ( curl_easy_getinfo( msg->easy_handle,
+					CURLINFO_PRIVATE, (void *) &easy ) != CURLE_OK || ! easy )
+					continue;
 
 				EXTEND( SP, 3 );
 				mPUSHs( newSViv( msg->msg ) );
