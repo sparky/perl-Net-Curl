@@ -198,6 +198,8 @@ WriteMakefile(
 			"Todd Rinaldo",
 			"C.J. Collier",
 			"Chris Novakovic",
+			"Ysincit",
+			"Funda Wang",
 		],
 	},
 	MIN_PERL_VERSION => 5.008001,
