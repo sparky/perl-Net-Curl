@@ -49,6 +49,7 @@ t/55-crash-reset.t
 t/60-multi-wait.t
 t/61-multi-wait-other.t
 t/70-escape-unescape.t
+t/71-setopt-bytes.t
 t/96-leak.t
 t/99-symbols.t
 t/assets/add_then_throw.pl
